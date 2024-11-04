@@ -121,7 +121,7 @@ def execute(context):
         ]]
 
         # Household municipality
-        df_households["commune_id"] = df_households["RESCOMM"].astype("category")
+        df_households["commune_id"] = df_households["RESCOMM"].astype(str)
         df_persons = pd.merge(df_persons, df_households[["household_id", "commune_id"]], how = "left")
         assert np.all(~df_persons["commune_id"].isna())
         
