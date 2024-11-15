@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
-from synthesis.population.income.utils import income_uniform_sample, MAXIMUM_INCOME_FACTOR
+from synthesis.population.income.utils import (
+    income_uniform_sample,
+    MAXIMUM_INCOME_FACTOR,
+)
 from bhepop2.tools import add_household_size_attribute, add_household_type_attribute
 from bhepop2.sources.marginal_distributions import QuantitativeMarginalDistributions
 from bhepop2.enrichment.bhepop2 import Bhepop2Enrichment
@@ -55,15 +58,17 @@ def _sample_income(context, args):
             "Filosofi",
             attribute_selection=[
                 "size",  # modalities: ["1_pers", "2_pers", "3_pers", "4_pers", "5_pers_or_more"]
-                "family_comp"  # modalities: ["Single_man", "Single_wom", "Couple_without_child", "Couple_with_child", "Single_parent", "complex_hh"]
+                "family_comp",  # modalities: ["Single_man", "Single_wom", "Couple_without_child", "Couple_with_child", "Single_parent", "complex_hh"]
             ],
             abs_minimum=0,
             relative_maximum=MAXIMUM_INCOME_FACTOR,
-            delta_min=1000
+            delta_min=1000,
         )
 
         # create enrichment class
-        enrich_class = Bhepop2Enrichment(df_selected, source, feature_name=INCOME_COLUMN, seed=random_seed)
+        enrich_class = Bhepop2Enrichment(
+            df_selected, source, feature_name=INCOME_COLUMN, seed=random_seed
+        )
 
         # evaluate feature values on the population
         pop = enrich_class.assign_feature_values()
@@ -84,7 +89,12 @@ def _sample_income(context, args):
         # get global distribution of the commune
         distrib_all = distribs[distribs["modality"] == "all"]
         assert len(distrib_all) == 1
-        centiles = list(distrib_all[["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"]].iloc[0].values / 12)
+        centiles = list(
+            distrib_all[["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9"]]
+            .iloc[0]
+            .values
+            / 12
+        )
 
         incomes = income_uniform_sample(random, centiles, len(df_selected))
 
@@ -102,29 +112,39 @@ def execute(context):
     df_population = add_household_size_attribute(df_population)
     df_population = add_household_type_attribute(df_population)
 
-    df_households = df_population[[
-        "household_id", "consumption_units", "size", "family_comp"
-    ]].drop_duplicates("household_id")
+    df_households = df_population[
+        ["household_id", "consumption_units", "size", "family_comp"]
+    ].drop_duplicates("household_id")
 
-    df_homes = context.stage("synthesis.population.spatial.home.zones")[[
-        "household_id", "commune_id"
-    ]]
+    df_homes = context.stage("synthesis.population.spatial.home.zones")[
+        ["household_id", "commune_id"]
+    ]
 
     df_households = pd.merge(df_households, df_homes)
 
     commune_ids = df_households["commune_id"].unique()
-    random_seeds = random.randint(10000, size = len(commune_ids))
+    random_seeds = random.randint(10000, size=len(commune_ids))
 
     # Perform sampling per commune
-    with context.progress(label = "Imputing income ...", total = len(commune_ids)) as progress:
-        with context.parallel(dict(households = df_households, income = df_income)) as parallel:
+    with context.progress(
+        label="Imputing income ...", total=len(commune_ids)
+    ) as progress:
+        with context.parallel(
+            dict(households=df_households, income=df_income)
+        ) as parallel:
 
-            for f, incomes, method in parallel.imap(_sample_income, zip(commune_ids, random_seeds)):
-                df_households.loc[f, "household_income"] = incomes * df_households.loc[f, "consumption_units"]
+            for f, incomes, method in parallel.imap(
+                _sample_income, zip(commune_ids, random_seeds)
+            ):
+                df_households.loc[f, "household_income"] = (
+                    incomes * df_households.loc[f, "consumption_units"]
+                )
                 df_households.loc[f, "method"] = method
 
     # Cleanup
-    df_households = df_households[["household_id", "household_income", "consumption_units"]]
+    df_households = df_households[
+        ["household_id", "household_income", "consumption_units"]
+    ]
     assert len(df_households) == len(df_households["household_id"].unique())
 
     return df_households

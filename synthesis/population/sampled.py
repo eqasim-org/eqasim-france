@@ -8,25 +8,31 @@ household weights given by INSEE. The resulting sample size can be controlled
 through the 'sampling_rate' configuration option.
 """
 
+
 def configure(context):
     if context.config("projection_year", None) is None:
-        context.stage("data.census.filtered", alias = "source")
+        context.stage("data.census.filtered", alias="source")
     else:
-        context.stage("synthesis.population.projection.reweighted", alias = "source")
+        context.stage("synthesis.population.projection.reweighted", alias="source")
 
     context.config("random_seed")
     context.config("sampling_rate")
 
+
 def execute(context):
-    df_census = context.stage("source").sort_values(by = "household_id").copy()
+    df_census = context.stage("source").sort_values(by="household_id").copy()
 
     sampling_rate = context.config("sampling_rate")
     random = np.random.RandomState(context.config("random_seed"))
 
     # Perform stochastic rounding for the population (and scale weights)
-    df_rounding = df_census[["household_id", "weight", "household_size"]].drop_duplicates("household_id")
+    df_rounding = df_census[
+        ["household_id", "weight", "household_size"]
+    ].drop_duplicates("household_id")
     df_rounding["multiplicator"] = np.floor(df_rounding["weight"])
-    df_rounding["multiplicator"] += random.random_sample(len(df_rounding)) <= (df_rounding["weight"] - df_rounding["multiplicator"])
+    df_rounding["multiplicator"] += random.random_sample(len(df_rounding)) <= (
+        df_rounding["weight"] - df_rounding["multiplicator"]
+    )
     df_rounding["multiplicator"] = df_rounding["multiplicator"].astype(int)
 
     # Multiply households (use same multiplicator for all household members)
@@ -50,7 +56,9 @@ def execute(context):
 
     household_sizes = np.repeat(household_sizes, household_multiplicators)
     household_count = np.sum(household_multiplicators)
-    df_census.loc[:, "household_id"] = np.repeat(np.arange(household_count), household_sizes)
+    df_census.loc[:, "household_id"] = np.repeat(
+        np.arange(household_count), household_sizes
+    )
 
     # Select sample from 100% population
     selector = random.random_sample(household_count) < sampling_rate

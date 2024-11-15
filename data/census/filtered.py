@@ -7,9 +7,11 @@ This stage filters out census observations which live or work outside of
 Île-de-France.
 """
 
+
 def configure(context):
     context.stage("data.census.cleaned")
     context.stage("data.spatial.codes")
+
 
 def execute(context):
     df = context.stage("data.census.cleaned")
@@ -20,7 +22,9 @@ def execute(context):
     requested_departements = df_codes["departement_id"].unique()
     df = df[df["departement_id"].isin(requested_departements)]
 
-    excess_communes = set(df["commune_id"].unique()) - set(df_codes["commune_id"].unique())
+    excess_communes = set(df["commune_id"].unique()) - set(
+        df_codes["commune_id"].unique()
+    )
     if not excess_communes == {"undefined"}:
         raise RuntimeError("Found additional communes: %s" % excess_communes)
 

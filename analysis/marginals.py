@@ -20,25 +20,44 @@ GENERAL_HOUSEHOLD_MARGINALS = [("household_size_class",), ("number_of_vehicles_c
 CENSUS_PERSON_MARGINALS = GENERAL_PERSON_MARGINALS + [("socioprofessional_class",)]
 CENSUS_HOUSEHOLD_MARGINALS = GENERAL_HOUSEHOLD_MARGINALS
 
-HTS_PERSON_MARGINALS = GENERAL_PERSON_MARGINALS + [("has_license",), ("has_pt_subscription",)]
+HTS_PERSON_MARGINALS = GENERAL_PERSON_MARGINALS + [
+    ("has_license",),
+    ("has_pt_subscription",),
+]
 HTS_HOUSEHOLD_MARGINALS = GENERAL_HOUSEHOLD_MARGINALS + [("number_of_bikes_class",)]
 
 SOCIOPROFESIONAL_CLASS_LABELS = [
-    "???", "Agriculture", "Independent", "Science", "Intermediate", "Employee", "Worker", "Retired", "Other"
+    "???",
+    "Agriculture",
+    "Independent",
+    "Science",
+    "Intermediate",
+    "Employee",
+    "Worker",
+    "Retired",
+    "Other",
 ]
+
 
 def prepare_classes(df):
     if "age" in df:
-        df["age_class"] = np.digitize(df["age"], AGE_CLASS_BOUNDS, right = True)
+        df["age_class"] = np.digitize(df["age"], AGE_CLASS_BOUNDS, right=True)
 
     if "household_size" in df:
-        df["household_size_class"] = np.digitize(df["household_size"], HOUSEHOLD_SIZE_BOUNDS, right = True)
+        df["household_size_class"] = np.digitize(
+            df["household_size"], HOUSEHOLD_SIZE_BOUNDS, right=True
+        )
 
     if "number_of_vehicles" in df:
-        df["number_of_vehicles_class"] = np.digitize(df["number_of_vehicles"], NUMBER_OF_VEHICLES_BOUNDS, right = True)
+        df["number_of_vehicles_class"] = np.digitize(
+            df["number_of_vehicles"], NUMBER_OF_VEHICLES_BOUNDS, right=True
+        )
 
     if "number_of_bikes" in df:
-        df["number_of_bikes_class"] = np.digitize(df["number_of_bikes"], NUMBER_OF_BIKES_BOUNDS, right = True)
+        df["number_of_bikes_class"] = np.digitize(
+            df["number_of_bikes"], NUMBER_OF_BIKES_BOUNDS, right=True
+        )
+
 
 def cross(*marginals):
     result = []
@@ -56,6 +75,7 @@ def cross(*marginals):
 
     return list(set(result))
 
+
 def combine(*marginals):
     result = []
 
@@ -64,21 +84,22 @@ def combine(*marginals):
 
     return list(set(result))
 
+
 ALL_PERSON_MARGINALS = combine(CENSUS_PERSON_MARGINALS, HTS_PERSON_MARGINALS)
 ALL_HOUSEHOLD_MARGINALS = combine(CENSUS_HOUSEHOLD_MARGINALS, HTS_HOUSEHOLD_MARGINALS)
 
 SPATIAL_MARGINALS = [("departement_id",), ("commune_id",)]
 
 ANALYSIS_PERSON_MARGINALS = combine(
-    ALL_PERSON_MARGINALS, ALL_HOUSEHOLD_MARGINALS,
+    ALL_PERSON_MARGINALS,
+    ALL_HOUSEHOLD_MARGINALS,
     cross(ALL_PERSON_MARGINALS, ALL_PERSON_MARGINALS),
     cross(ALL_HOUSEHOLD_MARGINALS, ALL_HOUSEHOLD_MARGINALS),
-    cross(ALL_PERSON_MARGINALS, ALL_HOUSEHOLD_MARGINALS)
+    cross(ALL_PERSON_MARGINALS, ALL_HOUSEHOLD_MARGINALS),
 )
 
 ANALYSIS_HOUSEHOLD_MARGINALS = combine(
-    ALL_HOUSEHOLD_MARGINALS,
-    cross(ALL_HOUSEHOLD_MARGINALS, ALL_HOUSEHOLD_MARGINALS)
+    ALL_HOUSEHOLD_MARGINALS, cross(ALL_HOUSEHOLD_MARGINALS, ALL_HOUSEHOLD_MARGINALS)
 )
 
 SPATIAL_PERSON_MARGINALS = combine(

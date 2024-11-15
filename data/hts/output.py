@@ -9,23 +9,34 @@ of mode shares. This stage makes it easy to extract the cleaned HTS from the
 pipeline.
 """
 
+
 def configure(context):
     context.stage("data.hts.selected")
 
     context.config("output_path")
     context.config("output_prefix", "ile_de_france_")
 
+
 def execute(context):
     df_households, df_persons, df_trips = context.stage("data.hts.selected")
 
-    df_households.to_csv("%s/%shts_households.csv" % (
-        context.config("output_path"), context.config("output_prefix")
-    ), sep = ";", index = False)
+    df_households.to_csv(
+        "%s/%shts_households.csv"
+        % (context.config("output_path"), context.config("output_prefix")),
+        sep=";",
+        index=False,
+    )
 
-    df_persons.to_csv("%s/%shts_persons.csv" % (
-        context.config("output_path"), context.config("output_prefix")
-    ), sep = ";", index = False)
+    df_persons.to_csv(
+        "%s/%shts_persons.csv"
+        % (context.config("output_path"), context.config("output_prefix")),
+        sep=";",
+        index=False,
+    )
 
-    df_trips.to_csv("%s/%shts_trips.csv" % (
-        context.config("output_path"), context.config("output_prefix")
-    ), sep = ";", index = False)
+    df_trips.to_csv(
+        "%s/%shts_trips.csv"
+        % (context.config("output_path"), context.config("output_prefix")),
+        sep=";",
+        index=False,
+    )

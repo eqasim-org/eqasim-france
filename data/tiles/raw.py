@@ -9,6 +9,7 @@ import numpy as np
 This stage loads the raw data from the French population income, poverty and living standards in tiled data.
 """
 
+
 def configure(context):
     context.stage("data.spatial.departments")
     context.config("data_path")

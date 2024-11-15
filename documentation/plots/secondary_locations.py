@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as tck
 import documentation.plotting as plotting
 
+
 def configure(context):
     context.stage("synthesis.population.spatial.secondary.distance_distributions")
 
@@ -11,17 +12,20 @@ def configure(context):
 
     context.config("hts")
 
+
 def execute(context):
     plotting.setup()
     hts_name = context.config("hts")
 
     # PLOT: Input distributions
-    distributions = context.stage("synthesis.population.spatial.secondary.distance_distributions")
+    distributions = context.stage(
+        "synthesis.population.spatial.secondary.distance_distributions"
+    )
 
     plt.figure()
 
     modes = list(context.stage("analysis.reference.hts.mode_distances").keys())
-    #modes = ["car", "car_passenger", "pt", "bike", "walk"]
+    # modes = ["car", "car_passenger", "pt", "bike", "walk"]
 
     for index, mode in enumerate(modes):
         mode_distribution = distributions[mode]
@@ -36,21 +40,40 @@ def execute(context):
             weights = distribution["weights"] / np.sum(distribution["weights"])
             means.append(np.sum(weights * distribution["values"]))
 
-            q10.append(distribution["values"][np.count_nonzero(distribution["cdf"] < 0.1)])
-            q90.append(distribution["values"][np.count_nonzero(distribution["cdf"] < 0.9)])
+            q10.append(
+                distribution["values"][np.count_nonzero(distribution["cdf"] < 0.1)]
+            )
+            q90.append(
+                distribution["values"][np.count_nonzero(distribution["cdf"] < 0.9)]
+            )
 
         if mode in ("car", "pt"):
-            plt.fill_between([0.0] + list(bounds), q10, q90, color = plotting.COLORSET5[index], alpha = 0.25, linewidth = 0.0)
+            plt.fill_between(
+                [0.0] + list(bounds),
+                q10,
+                q90,
+                color=plotting.COLORSET5[index],
+                alpha=0.25,
+                linewidth=0.0,
+            )
 
-        plt.plot([0.0] + list(bounds), means, label = "%s (%d)" % (plotting.MODE_LABELS[mode], len(bounds)), linewidth = 1.0, marker = ".", markersize = 3, color = plotting.COLORSET5[index])
+        plt.plot(
+            [0.0] + list(bounds),
+            means,
+            label="%s (%d)" % (plotting.MODE_LABELS[mode], len(bounds)),
+            linewidth=1.0,
+            marker=".",
+            markersize=3,
+            color=plotting.COLORSET5[index],
+        )
 
     plt.gca().xaxis.set_major_locator(tck.FixedLocator(np.arange(100) * 60 * 20))
-    plt.gca().xaxis.set_major_formatter(tck.FuncFormatter(lambda x,p: str(x // 60)))
+    plt.gca().xaxis.set_major_formatter(tck.FuncFormatter(lambda x, p: str(x // 60)))
 
     plt.gca().yaxis.set_major_locator(tck.FixedLocator(np.arange(100) * 5 * 1000))
-    plt.gca().yaxis.set_major_formatter(tck.FuncFormatter(lambda x,p: str(x // 1000)))
+    plt.gca().yaxis.set_major_formatter(tck.FuncFormatter(lambda x, p: str(x // 1000)))
 
-    plt.legend(loc = "upper left")
+    plt.legend(loc="upper left")
     plt.xlim([0, 90 * 60 if hts_name == "egt" else 50 * 60])
     plt.ylim([0, 45 * 1000 if hts_name == "egt" else 25 * 1000])
 
@@ -67,29 +90,49 @@ def execute(context):
     df_synthetic = context.stage("analysis.synthesis.mode_distances")
     reference_data = context.stage("analysis.reference.hts.mode_distances")
 
-    plt.figure(figsize =  (6.0, 2.5), dpi = 100) # 2.5 * 2.5
+    plt.figure(figsize=(6.0, 2.5), dpi=100)  # 2.5 * 2.5
 
     limits = dict(
-        car = 20 * 1e3, car_passenger = 20 * 1e3, pt = 20 * 1e3,
-        bike = 6 * 1e3, walk = 1 * 1e3
+        car=20 * 1e3, car_passenger=20 * 1e3, pt=20 * 1e3, bike=6 * 1e3, walk=1 * 1e3
     )
 
-    modes = ["car", "bike" if "bike" in modes else "walk" ]
+    modes = ["car", "bike" if "bike" in modes else "walk"]
 
     for index, mode in enumerate(modes):
         plt.subplot(1, 2, index + 1)
 
         mode_reference = reference_data[mode]
-        plt.plot(mode_reference["values"] * 1e-3, mode_reference["cdf"], linestyle = '--', color = "k", linewidth = 1.0, label = "HTS")
+        plt.plot(
+            mode_reference["values"] * 1e-3,
+            mode_reference["cdf"],
+            linestyle="--",
+            color="k",
+            linewidth=1.0,
+            label="HTS",
+        )
 
         df_mode = df_synthetic[df_synthetic["mode"] == mode]
-        plt.fill_betweenx(df_mode["cdf"], df_mode["min"]* 1e-3, df_mode["max"] * 1e-3, linewidth = 0.0, color = plotting.COLORS[hts_name], alpha = 0.25, label = "Range")
-        plt.plot(df_mode["mean"] * 1e-3, df_mode["cdf"], color = plotting.COLORS[hts_name], linewidth = 1.0, label = "Synthetic")
+        plt.fill_betweenx(
+            df_mode["cdf"],
+            df_mode["min"] * 1e-3,
+            df_mode["max"] * 1e-3,
+            linewidth=0.0,
+            color=plotting.COLORS[hts_name],
+            alpha=0.25,
+            label="Range",
+        )
+        plt.plot(
+            df_mode["mean"] * 1e-3,
+            df_mode["cdf"],
+            color=plotting.COLORS[hts_name],
+            linewidth=1.0,
+            label="Synthetic",
+        )
 
         plt.xlim([0, limits[mode] * 1e-3])
         plt.ylim([0, 1])
 
-        plt.title(plotting.MODE_LABELS[mode], fontsize = plotting.FONT_SIZE)
+        plt.title(plotting.MODE_LABELS[mode], fontsize=plotting.FONT_SIZE)
         plt.xlabel("Euclidean distance [km]")
         plt.grid()
 
@@ -97,7 +140,7 @@ def execute(context):
             plt.ylabel("Cumulative density")
 
         if index % 2 == 1:
-            plt.legend(loc = "best")
+            plt.legend(loc="best")
 
     plt.tight_layout()
     plt.savefig("%s/distance_distributions.pdf" % context.path())

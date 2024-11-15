@@ -7,15 +7,22 @@ import numpy as np
 Transforms the synthetic trip table into a synthetic activity table.
 """
 
+
 def configure(context):
     context.stage("synthesis.population.enriched")
     context.stage("synthesis.population.trips")
+
 
 def execute(context):
     df_activities = context.stage("synthesis.population.trips")
 
     # Add trip count
-    counts = df_activities.groupby("person_id").size().reset_index(name = "trip_count")["trip_count"].values
+    counts = (
+        df_activities.groupby("person_id")
+        .size()
+        .reset_index(name="trip_count")["trip_count"]
+        .values
+    )
     df_activities["trip_count"] = np.hstack([[count] * count for count in counts])
 
     # Shift times and types of trips to arrive at activities
@@ -43,14 +50,40 @@ def execute(context):
     df_last["activity_index"] = df_last["trip_count"]
     df_last["trip_index"] = -1
 
-    df_activities = pd.concat([
-        df_activities[["person_id", "activity_index", "trip_index", "purpose", "start_time", "end_time", "is_first", "is_last"]],
-        df_last[["person_id", "activity_index", "trip_index", "purpose", "start_time", "end_time", "is_first", "is_last"]]
-    ]).sort_values(by = ["person_id", "activity_index"])
+    df_activities = pd.concat(
+        [
+            df_activities[
+                [
+                    "person_id",
+                    "activity_index",
+                    "trip_index",
+                    "purpose",
+                    "start_time",
+                    "end_time",
+                    "is_first",
+                    "is_last",
+                ]
+            ],
+            df_last[
+                [
+                    "person_id",
+                    "activity_index",
+                    "trip_index",
+                    "purpose",
+                    "start_time",
+                    "end_time",
+                    "is_first",
+                    "is_last",
+                ]
+            ],
+        ]
+    ).sort_values(by=["person_id", "activity_index"])
 
     # Add activities for people without trips
     df_missing = context.stage("synthesis.population.enriched")
-    df_missing = df_missing[~df_missing["person_id"].isin(df_activities["person_id"])][["person_id"]]
+    df_missing = df_missing[~df_missing["person_id"].isin(df_activities["person_id"])][
+        ["person_id"]
+    ]
 
     df_missing["activity_index"] = 0
     df_missing["trip_index"] = -1
