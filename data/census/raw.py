@@ -6,6 +6,7 @@ import zipfile
 This stage loads the raw data from the French population census.
 """
 
+
 def configure(context):
     context.stage("data.spatial.codes")
 
@@ -15,23 +16,25 @@ def configure(context):
 
     context.config("projection_year", None)
 
+
 COLUMNS_DTYPES = {
-    "CANTVILLE":"str", 
-    "NUMMI":"str", 
-    "AGED":"str",
-    "COUPLE":"str", 
-    "CS1":"str",
-    "DEPT":"str", 
-    "ETUD":"str",
-    "IPONDI":"str", 
-    "IRIS":"str",
-    "REGION":"str", 
-    "SEXE":"str",
-    "TACT":"str", 
-    "TRANS":"str",
-    "VOIT":"str", 
-    "DEROU":"str"
+    "CANTVILLE": "str",
+    "NUMMI": "str",
+    "AGED": "str",
+    "COUPLE": "str",
+    "CS1": "str",
+    "DEPT": "str",
+    "ETUD": "str",
+    "IPONDI": "str",
+    "IRIS": "str",
+    "REGION": "str",
+    "SEXE": "str",
+    "TACT": "str",
+    "TRANS": "str",
+    "VOIT": "str",
+    "DEROU": "str",
 }
+
 
 def execute(context):
     df_records = []
@@ -42,20 +45,26 @@ def execute(context):
     # only pre-filter if we don't need to reweight the census later
     prefilter_departments = context.config("projection_year") is None
 
-    with context.progress(label = "Reading census ...") as progress:
+    with context.progress(label="Reading census ...") as progress:
         with zipfile.ZipFile(
-            "{}/{}".format(context.config("data_path"), context.config("census_path"))) as archive:
+            "{}/{}".format(context.config("data_path"), context.config("census_path"))
+        ) as archive:
             with archive.open(context.config("census_csv")) as f:
-                csv = pd.read_csv(f, 
-                        usecols = COLUMNS_DTYPES.keys(), sep = ";",
-                        dtype = COLUMNS_DTYPES,
-                        chunksize = 10240)
-    
+                csv = pd.read_csv(
+                    f,
+                    usecols=COLUMNS_DTYPES.keys(),
+                    sep=";",
+                    dtype=COLUMNS_DTYPES,
+                    chunksize=10240,
+                )
+
                 for df_chunk in csv:
                     progress.update(len(df_chunk))
-                    
+
                     if prefilter_departments:
-                        df_chunk = df_chunk[df_chunk["DEPT"].isin(requested_departements)]
+                        df_chunk = df_chunk[
+                            df_chunk["DEPT"].isin(requested_departements)
+                        ]
 
                     if len(df_chunk) > 0:
                         df_records.append(df_chunk)
@@ -64,7 +73,11 @@ def execute(context):
 
 
 def validate(context):
-    if not os.path.exists("{}/{}".format(context.config("data_path"), context.config("census_path"))):
+    if not os.path.exists(
+        "{}/{}".format(context.config("data_path"), context.config("census_path"))
+    ):
         raise RuntimeError("RP 2019 data is not available")
 
-    return os.path.getsize("{}/{}".format(context.config("data_path"), context.config("census_path")))
+    return os.path.getsize(
+        "{}/{}".format(context.config("data_path"), context.config("census_path"))
+    )

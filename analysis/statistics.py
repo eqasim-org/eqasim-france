@@ -4,11 +4,13 @@ import numba
 import numpy as np
 import pandas as pd
 
-@numba.jit(nopython = True, parallel = True)
+
+@numba.jit(nopython=True, parallel=True)
 def _combine_filter(filters):
     return np.logical_and.reduce(filters)
 
-def marginalize(df, marginals, weight_column = "weight", count_column = "weight"):
+
+def marginalize(df, marginals, weight_column="weight", count_column="weight"):
     """
     This function takes a data frame and a list of marginals in the form
 
@@ -58,16 +60,26 @@ def marginalize(df, marginals, weight_column = "weight", count_column = "weight"
     results = {}
 
     for columns in marginals:
-        if len(columns) == 0: # Total is requested
+        if len(columns) == 0:  # Total is requested
             total = len(df) if weight_column is None else df[weight_column].sum()
-            results[columns] = pd.DataFrame.from_records([["value", total]], columns = ["total", count_column])
+            results[columns] = pd.DataFrame.from_records(
+                [["value", total]], columns=["total", count_column]
+            )
         else:
             marginal_records = []
-            value_index_lists = [np.arange(len(unique_values[column])) for column in columns]
+            value_index_lists = [
+                np.arange(len(unique_values[column])) for column in columns
+            ]
 
             for value_indices in itertools.product(*value_index_lists):
-                marginal_values = [unique_values[column][value_index] for column, value_index in zip(columns, value_indices)]
-                marginal_filters = [filters[column][value_index] for column, value_index in zip(columns, value_indices)]
+                marginal_values = [
+                    unique_values[column][value_index]
+                    for column, value_index in zip(columns, value_indices)
+                ]
+                marginal_filters = [
+                    filters[column][value_index]
+                    for column, value_index in zip(columns, value_indices)
+                ]
                 f = np.logical_and.reduce(marginal_filters)
 
                 if weight_column is None:
@@ -77,18 +89,19 @@ def marginalize(df, marginals, weight_column = "weight", count_column = "weight"
 
                 marginal_records.append(marginal_values + [marginal_count])
 
-            marginal_records = pd.DataFrame.from_records(marginal_records, columns = list(columns) + [count_column])
+            marginal_records = pd.DataFrame.from_records(
+                marginal_records, columns=list(columns) + [count_column]
+            )
             results[columns] = marginal_records
 
     return results
 
-def apply_per_marginal(marginals, f):
-    return {
-        marginal: f(df)
-        for marginal, df in marginals.items()
-    }
 
-def collect_sample(dfs, column = "realization"):
+def apply_per_marginal(marginals, f):
+    return {marginal: f(df) for marginal, df in marginals.items()}
+
+
+def collect_sample(dfs, column="realization"):
     """
     This function combines multiple structurally equal data frames into one
     by adding an additional column denoting the number of the realization.
@@ -108,7 +121,8 @@ def collect_sample(dfs, column = "realization"):
 
     return pd.concat(new_dfs)
 
-def combine_marginals(realizations, column = "realization"):
+
+def combine_marginals(realizations, column="realization"):
     """
     This function combines multiple realizations of the "marginalize" output into
     a new data structure that is equivalent to the one of "marginalize", but with
@@ -117,7 +131,9 @@ def combine_marginals(realizations, column = "realization"):
     assert len(realizations) > 0
 
     marginals = realizations[0].keys()
-    marginal_columns = { marginal: list(realizations[0][marginal].columns) for marginal in marginals }
+    marginal_columns = {
+        marginal: list(realizations[0][marginal].columns) for marginal in marginals
+    }
 
     # Check that all realizations have the same structure as the first
     for realization in realizations:
@@ -130,21 +146,33 @@ def combine_marginals(realizations, column = "realization"):
     sample = {}
 
     for marginal in marginals:
-        sample[marginal] = collect_sample([realization[marginal] for realization in realizations], column)
+        sample[marginal] = collect_sample(
+            [realization[marginal] for realization in realizations], column
+        )
 
     return sample
 
-def bootstrap(df, bootstrap_size, random, realization_column = "realization", bootstrap_sample_size = None):
+
+def bootstrap(
+    df,
+    bootstrap_size,
+    random,
+    realization_column="realization",
+    bootstrap_sample_size=None,
+):
     unique_realizations = np.unique(df[realization_column])
 
     realizations = df[realization_column].values
-    indices = [list(np.where(realizations == realization)[0]) for realization in unique_realizations]
+    indices = [
+        list(np.where(realizations == realization)[0])
+        for realization in unique_realizations
+    ]
     lengths = [len(i) for i in indices]
 
     if bootstrap_sample_size is None:
         bootstrap_sample_size = len(indices)
 
-    counts = random.randint(len(indices), size = (bootstrap_size, bootstrap_sample_size))
+    counts = random.randint(len(indices), size=(bootstrap_size, bootstrap_sample_size))
 
     for selection in counts:
         selection_indices = []
@@ -159,17 +187,23 @@ def bootstrap(df, bootstrap_size, random, realization_column = "realization", bo
 
         yield df_sample
 
-def apply_bootstrap(df, bootstrap_size, random, f, realization_column = "realization"):
+
+def apply_bootstrap(df, bootstrap_size, random, f, realization_column="realization"):
     df_bootstrap = []
 
-    for bootstrap_realization, df_sample in enumerate(bootstrap(df, bootstrap_size, random, realization_column)):
+    for bootstrap_realization, df_sample in enumerate(
+        bootstrap(df, bootstrap_size, random, realization_column)
+    ):
         df_sample = f(df_sample)
         df_sample[realization_column] = bootstrap_realization
         df_bootstrap.append(df_sample)
 
     return pd.concat(df_bootstrap)
 
-def analyze_sample(df, realization_column = "realization", columns = ["weight"], statistics = None):
+
+def analyze_sample(
+    df, realization_column="realization", columns=["weight"], statistics=None
+):
     assert realization_column in df
 
     if columns is None or len(columns) == 0:
@@ -183,128 +217,171 @@ def analyze_sample(df, realization_column = "realization", columns = ["weight"],
         assert column in df.columns
 
     group_columns = list(df.columns)
-    for column in columns: group_columns.remove(column)
+    for column in columns:
+        group_columns.remove(column)
     group_columns.remove(realization_column)
 
     if statistics is None:
         statistics = {
             column: [
-                ("mean", "mean"), ("median", "median"), ("min", "min"), ("max", "max"),
-                ("q10", lambda x: x.quantile(0.1)), ("q90", lambda x: x.quantile(0.9)),
-                ("q5", lambda x: x.quantile(0.05)), ("q95", lambda x: x.quantile(0.95))
+                ("mean", "mean"),
+                ("median", "median"),
+                ("min", "min"),
+                ("max", "max"),
+                ("q10", lambda x: x.quantile(0.1)),
+                ("q90", lambda x: x.quantile(0.9)),
+                ("q5", lambda x: x.quantile(0.05)),
+                ("q95", lambda x: x.quantile(0.95)),
             ]
             for column in columns
         }
 
-    df = df[group_columns + columns].groupby(group_columns).aggregate(statistics).reset_index()
+    df = (
+        df[group_columns + columns]
+        .groupby(group_columns)
+        .aggregate(statistics)
+        .reset_index()
+    )
 
     return df
 
-def analyze_sample_and_flatten(df, realization_column = "realization", columns = ["weight"], statistics = None):
+
+def analyze_sample_and_flatten(
+    df, realization_column="realization", columns=["weight"], statistics=None
+):
     df = analyze_sample(df, realization_column, columns, statistics)
     df.columns = [c[1] if c[0] == "weight" else c[0] for c in df.columns]
     return df
 
-def sample_subsets(df, subset_size, random, realization_column = "realization"):
+
+def sample_subsets(df, subset_size, random, realization_column="realization"):
     realizations = len(np.unique(df[realization_column]))
     return bootstrap(df, realizations, random, realization_column, subset_size)
 
-def average_subsets(df, subset_size, random, realization_column = "realization", weight_column = "weight"):
+
+def average_subsets(
+    df, subset_size, random, realization_column="realization", weight_column="weight"
+):
     df_output = []
 
-    for realization, df_subset in enumerate(sample_subsets(df, subset_size, random, realization_column)):
-        df_subset = analyze_sample(df_subset, realization_column, weight_column, [("weight", "mean")])
+    for realization, df_subset in enumerate(
+        sample_subsets(df, subset_size, random, realization_column)
+    ):
+        df_subset = analyze_sample(
+            df_subset, realization_column, weight_column, [("weight", "mean")]
+        )
         df_subset[realization_column] = realization
         df_output.append(df_subset)
 
     return pd.concat(df_output)
 
+
 if __name__ == "__main__":
+
     def create_sample(random_seed):
         random = np.random.RandomState(random_seed)
 
         index = np.arange(100)
-        ages = random.randint(10, size = 100) * 10
-        gender = random.randint(2, size = 100)
+        ages = random.randint(10, size=100) * 10
+        gender = random.randint(2, size=100)
 
-        df = pd.DataFrame.from_records(zip(index, ages, gender), columns = ["person", "age", "gender"])
-        df["gender"] = df["gender"].map({ 0: "male", 1: "female" }).astype("category")
+        df = pd.DataFrame.from_records(
+            zip(index, ages, gender), columns=["person", "age", "gender"]
+        )
+        df["gender"] = df["gender"].map({0: "male", 1: "female"}).astype("category")
         df["weight"] = 1.0
 
         return df
 
-    df = pd.DataFrame.from_records([
-        { "age": 20, "weight": 10.0, "abc": 10.0, "realization": 0 },
-        { "age": 50, "weight": 50.0, "abc": 50.0, "realization": 0 },
-        { "age": 20, "weight": 20.0, "abc": 20.0, "realization": 1 },
-        { "age": 50, "weight": 60.0, "abc": 60.0, "realization": 1 },
-    ])
+    df = pd.DataFrame.from_records(
+        [
+            {"age": 20, "weight": 10.0, "abc": 10.0, "realization": 0},
+            {"age": 50, "weight": 50.0, "abc": 50.0, "realization": 0},
+            {"age": 20, "weight": 20.0, "abc": 20.0, "realization": 1},
+            {"age": 50, "weight": 60.0, "abc": 60.0, "realization": 1},
+        ]
+    )
 
     random = np.random.RandomState(0)
 
     statistics = {
         "weight": [("mean", "mean")],
-        "abc": [("q95", lambda x: x.quantile(0.95))]
+        "abc": [("q95", lambda x: x.quantile(0.95))],
     }
 
-    df = apply_bootstrap(df, 100, random, lambda df: analyze_sample(df, statistics = statistics, columns = ["weight", "abc"]))
+    df = apply_bootstrap(
+        df,
+        100,
+        random,
+        lambda df: analyze_sample(df, statistics=statistics, columns=["weight", "abc"]),
+    )
 
-    df = df.groupby("age").aggregate([
-        ("mean", "mean"),
-        ("q10", lambda x: x.quantile(0.1)),
-        ("q90", lambda x: x.quantile(0.9))
-    ]).reset_index()
+    df = (
+        df.groupby("age")
+        .aggregate(
+            [
+                ("mean", "mean"),
+                ("q10", lambda x: x.quantile(0.1)),
+                ("q90", lambda x: x.quantile(0.9)),
+            ]
+        )
+        .reset_index()
+    )
 
     print(df)
-
-
-
 
     exit()
 
     random = np.random.RandomState(0)
 
-    #for df_subset in sample_subsets(df, 3, random):
+    # for df_subset in sample_subsets(df, 3, random):
     #    print(df_subset)
 
     print(average_subsets(df, 3, random))
 
-    print(apply_bootstrap(average_subsets(df, 3, random), 100, random, lambda df: analyze_sample(df)))
+    print(
+        apply_bootstrap(
+            average_subsets(df, 3, random), 100, random, lambda df: analyze_sample(df)
+        )
+    )
 
     exit()
 
-    #print(analyze(df))
+    # print(analyze(df))
 
-    #for df_sample in bootstrap(df, 100, random):
+    # for df_sample in bootstrap(df, 100, random):
     #    df_sample = analyze(df_sample)
     #    print(df_sample)
 
-    statistics = [
-        ("precision", lambda x: np.mean(x < 55.0))
-    ]
+    statistics = [("precision", lambda x: np.mean(x < 55.0))]
 
-    df = apply_bootstrap(df, 100, random, lambda df: analyze_sample(df, statistics = statistics))
-    df = df.groupby(["age"]).aggregate([
-        ("mean", "mean"),
-        ("q10", lambda x: x.quantile(0.1)),
-        ("q90", lambda x: x.quantile(0.9))
-    ]).reset_index()
-
-
+    df = apply_bootstrap(
+        df, 100, random, lambda df: analyze_sample(df, statistics=statistics)
+    )
+    df = (
+        df.groupby(["age"])
+        .aggregate(
+            [
+                ("mean", "mean"),
+                ("q10", lambda x: x.quantile(0.1)),
+                ("q90", lambda x: x.quantile(0.9)),
+            ]
+        )
+        .reset_index()
+    )
 
     print(df)
     exit()
     print()
-
 
     exit()
 
     sample = [create_sample(R) for R in range(2)]
     random = np.random.RandomState(5)
 
-    #marginals = [marginalize(df, [("age",), ("gender",), ("age", "gender"), tuple()]) for df in sample]
+    # marginals = [marginalize(df, [("age",), ("gender",), ("age", "gender"), tuple()]) for df in sample]
     marginals = [marginalize(df, [("gender",)]) for df in sample]
     marginals = collect_marginalized_sample(marginals)
 
-    metrics = bootstrap_sampled_marginals(marginals, 100, subset_size = 2, random = random)
+    metrics = bootstrap_sampled_marginals(marginals, 100, subset_size=2, random=random)
     print(metrics[("gender",)])

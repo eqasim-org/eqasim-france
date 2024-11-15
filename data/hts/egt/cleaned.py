@@ -7,43 +7,46 @@ import data.hts.hts as hts
 This stage cleans the regional HTS.
 """
 
+
 def configure(context):
     context.stage("data.hts.egt.raw")
 
     if context.config("use_urban_type", False):
         context.stage("data.spatial.urban_type")
 
+
 INCOME_CLASS_BOUNDS = [800, 1200, 1600, 2000, 2400, 3000, 3500, 4500, 5500, 1e6]
 
 PURPOSE_MAP = {
-    1 : "home",
-    2 : "work",
-    3 : "work",
-    4 : "education",
-    5 : "shop",
-    6 : "other",
-    7 : "other",
-    8 : "leisure"
+    1: "home",
+    2: "work",
+    3: "work",
+    4: "education",
+    5: "shop",
+    6: "other",
+    7: "other",
+    8: "leisure",
     # 9 : "other" # default
 }
 
 MODES_MAP = {
-    1 : "pt",
-    2 : "car",
-    3 : "car_passenger",
-    4 : "car",
-    5 : "bike",
-    #6 : "pt", # default (other)
-    7 : "walk"
+    1: "pt",
+    2: "car",
+    3: "car_passenger",
+    4: "car",
+    5: "bike",
+    # 6 : "pt", # default (other)
+    7: "walk",
 }
+
 
 def execute(context):
     df_households, df_persons, df_trips = context.stage("data.hts.egt.raw")
 
     # Make copies
-    df_households = pd.DataFrame(df_households, copy = True)
-    df_persons = pd.DataFrame(df_persons, copy = True)
-    df_trips = pd.DataFrame(df_trips, copy = True)
+    df_households = pd.DataFrame(df_households, copy=True)
+    df_persons = pd.DataFrame(df_persons, copy=True)
+    df_trips = pd.DataFrame(df_trips, copy=True)
 
     # Transform original IDs to integer (they are hierarchichal)
     df_households["egt_household_id"] = df_households["NQUEST"].astype(int)
@@ -57,14 +60,16 @@ def execute(context):
     df_households["household_id"] = np.arange(len(df_households))
 
     df_persons = pd.merge(
-        df_persons, df_households[["egt_household_id", "household_id"]],
-        on = "egt_household_id"
+        df_persons,
+        df_households[["egt_household_id", "household_id"]],
+        on="egt_household_id",
     )
     df_persons["person_id"] = np.arange(len(df_persons))
 
     df_trips = pd.merge(
-        df_trips, df_persons[["egt_person_id", "egt_household_id", "person_id", "household_id"]],
-        on = ["egt_person_id", "egt_household_id"]
+        df_trips,
+        df_persons[["egt_person_id", "egt_household_id", "person_id", "household_id"]],
+        on=["egt_person_id", "egt_household_id"],
     )
     df_trips["trip_id"] = np.arange(len(df_trips))
 
@@ -88,9 +93,13 @@ def execute(context):
 
     # Clean departement
     df_persons["departement_id"] = df_persons["RESDEP"].astype(str).astype("category")
-    df_households["departement_id"] = df_households["RESDEP"].astype(str).astype("category")
+    df_households["departement_id"] = (
+        df_households["RESDEP"].astype(str).astype("category")
+    )
     df_trips["origin_departement_id"] = df_trips["ORDEP"].astype(str).astype("category")
-    df_trips["destination_departement_id"] = df_trips["DESTDEP"].astype(str).astype("category")
+    df_trips["destination_departement_id"] = (
+        df_trips["DESTDEP"].astype(str).astype("category")
+    )
 
     # Clean employment
     df_persons["employed"] = df_persons["OCCP"].isin([1.0, 2.0])
@@ -99,38 +108,50 @@ def execute(context):
     df_persons["studies"] = df_persons["OCCP"].isin([3.0, 4.0, 5.0])
 
     # Number of vehicles
-    df_households["number_of_vehicles"] = df_households["NB_2RM"] + df_households["NB_VD"]
-    df_households["number_of_vehicles"] = df_households["number_of_vehicles"].astype(int)
+    df_households["number_of_vehicles"] = (
+        df_households["NB_2RM"] + df_households["NB_VD"]
+    )
+    df_households["number_of_vehicles"] = df_households["number_of_vehicles"].astype(
+        int
+    )
     df_households["number_of_bikes"] = df_households["NB_VELO"].astype(int)
 
     # License
-    df_persons["has_license"] = (df_persons["PERMVP"] == 1) | (df_persons["PERM2RM"] == 1)
+    df_persons["has_license"] = (df_persons["PERMVP"] == 1) | (
+        df_persons["PERM2RM"] == 1
+    )
 
     # Has subscription
     df_persons["has_pt_subscription"] = df_persons["ABONTC"] > 1
 
     # Household income
     df_households["income_class"] = df_households["REVENU"] - 1
-    df_households.loc[df_households["income_class"].isin([10.0, 11.0, np.nan]), "income_class"] = -1
+    df_households.loc[
+        df_households["income_class"].isin([10.0, 11.0, np.nan]), "income_class"
+    ] = -1
     df_households["income_class"] = df_households["income_class"].astype(int)
 
     # Impute urban type
     if context.config("use_urban_type"):
-        df_urban_type = context.stage("data.spatial.urban_type")[[
-            "commune_id", "urban_type"
-        ]]
+        df_urban_type = context.stage("data.spatial.urban_type")[
+            ["commune_id", "urban_type"]
+        ]
 
         # Household municipality
         df_households["commune_id"] = df_households["RESCOMM"].astype(str)
-        df_persons = pd.merge(df_persons, df_households[["household_id", "commune_id"]], how = "left")
+        df_persons = pd.merge(
+            df_persons, df_households[["household_id", "commune_id"]], how="left"
+        )
         assert np.all(~df_persons["commune_id"].isna())
-        
-        # Impute urban type
-        df_persons = pd.merge(df_persons, df_urban_type, on = "commune_id", how = "left")
-        df_persons["urban_type"] = df_persons["urban_type"].fillna("none").astype("category")
 
-        df_households.drop(columns = ["commune_id"])
-        df_persons.drop(columns = ["commune_id"])
+        # Impute urban type
+        df_persons = pd.merge(df_persons, df_urban_type, on="commune_id", how="left")
+        df_persons["urban_type"] = (
+            df_persons["urban_type"].fillna("none").astype("category")
+        )
+
+        df_households.drop(columns=["commune_id"])
+        df_persons.drop(columns=["commune_id"])
 
     # Trip purpose
     df_trips["following_purpose"] = "other"
@@ -165,8 +186,8 @@ def execute(context):
 
     # Add weight to trips
     df_trips = pd.merge(
-        df_trips, df_persons[["person_id", "person_weight"]], on = "person_id", how = "left"
-    ).rename(columns = { "person_weight": "trip_weight" })
+        df_trips, df_persons[["person_id", "person_weight"]], on="person_id", how="left"
+    ).rename(columns={"person_weight": "trip_weight"})
     df_persons["trip_weight"] = df_persons["person_weight"]
 
     # Chain length
@@ -179,7 +200,9 @@ def execute(context):
 
     # Calculate consumption units
     hts.check_household_size(df_households, df_persons)
-    df_households = pd.merge(df_households, hts.calculate_consumption_units(df_persons), on = "household_id")
+    df_households = pd.merge(
+        df_households, hts.calculate_consumption_units(df_persons), on="household_id"
+    )
 
     # Socioprofessional class
     df_persons["socioprofessional_class"] = df_persons["CS8"].fillna(8).astype(int)
@@ -194,19 +217,29 @@ def execute(context):
     nan_count = np.count_nonzero(f)
     total_count = len(df_persons)
 
-    print("Dropping %d/%d persons because of NaN values in departure and arrival times" % (nan_count, total_count))
+    print(
+        "Dropping %d/%d persons because of NaN values in departure and arrival times"
+        % (nan_count, total_count)
+    )
 
     df_persons = df_persons[~f]
     df_trips = df_trips[df_trips["person_id"].isin(df_persons["person_id"].unique())]
-    df_households = df_households[df_households["household_id"].isin(df_persons["household_id"])]
+    df_households = df_households[
+        df_households["household_id"].isin(df_persons["household_id"])
+    ]
 
     # Fix activity types (because of inconsistent EGT data and removing in the timing fixing step)
     hts.fix_activity_types(df_trips)
 
     return df_households, df_persons, df_trips
 
+
 def calculate_income_class(df):
     assert "household_income" in df
     assert "consumption_units" in df
 
-    return np.digitize(df["household_income"] / df["consumption_units"], INCOME_CLASS_BOUNDS, right = True)
+    return np.digitize(
+        df["household_income"] / df["consumption_units"],
+        INCOME_CLASS_BOUNDS,
+        right=True,
+    )

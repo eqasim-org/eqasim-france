@@ -6,11 +6,13 @@ import zipfile
 This stage loads the raw data from the French service registry.
 """
 
+
 def configure(context):
     context.config("data_path")
     context.config("bpe_path", "bpe_2021/bpe21_ensemble_xy_csv.zip")
     context.config("bpe_csv", "bpe21_ensemble_xy.csv")
     context.stage("data.spatial.codes")
+
 
 def execute(context):
     df_records = []
@@ -18,15 +20,24 @@ def execute(context):
     df_codes = context.stage("data.spatial.codes")
     requested_departements = df_codes["departement_id"].unique()
 
-    with context.progress(label = "Reading BPE ...") as progress:
-        with zipfile.ZipFile("{}/{}".format(context.config("data_path"), context.config("bpe_path"))) as archive:
+    with context.progress(label="Reading BPE ...") as progress:
+        with zipfile.ZipFile(
+            "{}/{}".format(context.config("data_path"), context.config("bpe_path"))
+        ) as archive:
             with archive.open(context.config("bpe_csv")) as f:
-                csv = pd.read_csv(f, usecols = [
-                        "DCIRIS", "LAMBERT_X", "LAMBERT_Y",
-                        "TYPEQU", "DEPCOM", "DEP"
-                    ], sep = ";",
-                    dtype = dict(DEPCOM = str, DEP = str, DCIRIS = str),
-                    chunksize = 10240
+                csv = pd.read_csv(
+                    f,
+                    usecols=[
+                        "DCIRIS",
+                        "LAMBERT_X",
+                        "LAMBERT_Y",
+                        "TYPEQU",
+                        "DEPCOM",
+                        "DEP",
+                    ],
+                    sep=";",
+                    dtype=dict(DEPCOM=str, DEP=str, DCIRIS=str),
+                    chunksize=10240,
                 )
 
                 for df_chunk in csv:
@@ -39,8 +50,13 @@ def execute(context):
 
     return pd.concat(df_records)
 
+
 def validate(context):
-    if not os.path.exists("%s/%s" % (context.config("data_path"), context.config("bpe_path"))):
+    if not os.path.exists(
+        "%s/%s" % (context.config("data_path"), context.config("bpe_path"))
+    ):
         raise RuntimeError("BPE data is not available")
 
-    return os.path.getsize("%s/%s" % (context.config("data_path"), context.config("bpe_path")))
+    return os.path.getsize(
+        "%s/%s" % (context.config("data_path"), context.config("bpe_path"))
+    )

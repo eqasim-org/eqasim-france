@@ -29,10 +29,17 @@ def execute(context):
     df_population = add_household_type_attribute(df_population)
 
     # get most populated commune
-    commune_id = df_population.groupby(["commune_id"], observed=True)["commune_id"].count().drop("undefined").idxmax()
+    commune_id = (
+        df_population.groupby(["commune_id"], observed=True)["commune_id"]
+        .count()
+        .drop("undefined")
+        .idxmax()
+    )
 
     # get income distributions by attributes
-    income_df = context.stage("data.income.municipality").query(f"commune_id == '{commune_id}'")
+    income_df = context.stage("data.income.municipality").query(
+        f"commune_id == '{commune_id}'"
+    )
     income_df = income_df.rename(
         columns={
             "value": "modality",
@@ -48,22 +55,22 @@ def execute(context):
         }
     )
 
-    households_with_attributes = df_population[[
-        "household_id", "commune_id", "size", "family_comp"
-    ]].drop_duplicates("household_id")
+    households_with_attributes = df_population[
+        ["household_id", "commune_id", "size", "family_comp"]
+    ].drop_duplicates("household_id")
 
     # get enriched population with different methods
     uniform_pop_df = context.stage("uniform")
     uniform_pop_df = uniform_pop_df.merge(households_with_attributes, on="household_id")
     uniform_pop_df["household_income"] = (
-            uniform_pop_df["household_income"] * 12 / uniform_pop_df["consumption_units"]
+        uniform_pop_df["household_income"] * 12 / uniform_pop_df["consumption_units"]
     )
     uniform_pop_df = uniform_pop_df.query(f"commune_id == '{commune_id}'")
 
     bhepop2_pop_df = context.stage("bhepop2")
     bhepop2_pop_df = bhepop2_pop_df.merge(households_with_attributes, on="household_id")
     bhepop2_pop_df["household_income"] = (
-            bhepop2_pop_df["household_income"] * 12 / bhepop2_pop_df["consumption_units"]
+        bhepop2_pop_df["household_income"] * 12 / bhepop2_pop_df["consumption_units"]
     )
     bhepop2_pop_df = bhepop2_pop_df.query(f"commune_id == '{commune_id}'")
 
@@ -76,28 +83,29 @@ def execute(context):
         ["size", "family_comp"],
         0,
         relative_maximum=MAXIMUM_INCOME_FACTOR,
-        delta_min=1000
+        delta_min=1000,
     )
 
     # check output folder existence
-    compare_output_path = os.path.join(context.config("output_path"), COMPARE_INCOME_FOLDER)
+    compare_output_path = os.path.join(
+        context.config("output_path"), COMPARE_INCOME_FOLDER
+    )
     if not os.path.exists(compare_output_path):
         os.mkdir(compare_output_path)
 
     # create an analysis instance
     analysis = marginal_distributions_source.compare_with_populations(
-        {
-            "Uniform": uniform_pop_df,
-            "Bhepop2": bhepop2_pop_df
-        },
+        {"Uniform": uniform_pop_df, "Bhepop2": bhepop2_pop_df},
         feature_name="household_income",
-        output_folder=compare_output_path
+        output_folder=compare_output_path,
     )
-    analysis.plot_title_format = analysis.plot_title_format + f" \n(commune={commune_id})"
+    analysis.plot_title_format = (
+        analysis.plot_title_format + f" \n(commune={commune_id})"
+    )
 
     analysis.generate_analysis_plots()
     analysis.generate_analysis_error_table()
 
-    print(f"Generated compared analysis of income assignation methods in {compare_output_path}")
-
-
+    print(
+        f"Generated compared analysis of income assignation methods in {compare_output_path}"
+    )

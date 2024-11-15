@@ -23,6 +23,8 @@ def income_uniform_sample(random_state, deciles, size):
     indices = random_state.randint(10, size=size)
     lower_bounds, upper_bounds = deciles[indices], deciles[indices + 1]
 
-    incomes = lower_bounds + random_state.random_sample(size=size) * (upper_bounds - lower_bounds)
+    incomes = lower_bounds + random_state.random_sample(size=size) * (
+        upper_bounds - lower_bounds
+    )
 
     return incomes

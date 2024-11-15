@@ -18,6 +18,7 @@ MATSim converter to work with the data.
 Additionally, the stage cuts the OSM data to the requested region of the pipeline.
 """
 
+
 def configure(context):
     context.config("data_path")
     context.config("osm_path", "osm_idf")
@@ -28,11 +29,12 @@ def configure(context):
     context.stage("data.osm.osmosis")
     context.stage("data.spatial.municipalities")
 
-def write_poly(df, path, geometry_column = "geometry"):
+
+def write_poly(df, path, geometry_column="geometry"):
     df = df.to_crs("EPSG:4326")
 
     df["aggregate"] = 0
-    area = df.dissolve(by = "aggregate")[geometry_column].values[0]
+    area = df.dissolve(by="aggregate")[geometry_column].values[0]
 
     if not hasattr(area, "exterior"):
         print("Selected area is not connected -> Using convex hull.")
@@ -51,9 +53,12 @@ def write_poly(df, path, geometry_column = "geometry"):
     with open(path, "w+") as f:
         f.write("\n".join(data))
 
+
 def execute(context):
-    input_files = get_input_files("{}/{}".format(context.config("data_path"), context.config("osm_path")))
-    
+    input_files = get_input_files(
+        "{}/{}".format(context.config("data_path"), context.config("osm_path"))
+    )
+
     # Prepare bounding area
     df_area = context.stage("data.spatial.municipalities")
     write_poly(df_area, "%s/boundary.poly" % context.path())
@@ -70,12 +75,22 @@ def execute(context):
 
         absolute_path = os.path.abspath(path)
 
-        data.osm.osmosis.run(context, [
-            "--read-%s" % mode, absolute_path,
-            "--tag-filter", "accept-ways", "highway=%s" % highway_tags, "railway=%s" % railway_tags,
-            "--bounding-polygon", "file=%s/boundary.poly" % context.path(), "completeWays=yes",
-            "--write-pbf", "filtered_%d.osm.pbf" % index
-        ])
+        data.osm.osmosis.run(
+            context,
+            [
+                "--read-%s" % mode,
+                absolute_path,
+                "--tag-filter",
+                "accept-ways",
+                "highway=%s" % highway_tags,
+                "railway=%s" % railway_tags,
+                "--bounding-polygon",
+                "file=%s/boundary.poly" % context.path(),
+                "completeWays=yes",
+                "--write-pbf",
+                "filtered_%d.osm.pbf" % index,
+            ],
+        )
 
     # Merge filtered files if there are multiple ones
     print("Merging and compressing OSM data...")
@@ -98,17 +113,23 @@ def execute(context):
 
     return "output.osm.gz"
 
+
 def get_input_files(base_path):
     osm_paths = sorted(list(glob.glob("{}/*.osm.pbf".format(base_path))))
     osm_paths += sorted(list(glob.glob("{}/*.osm.xml".format(base_path))))
 
     if len(osm_paths) == 0:
-        raise RuntimeError("Did not find any OSM data (.osm.pbf) in {}".format(base_path))
-    
+        raise RuntimeError(
+            "Did not find any OSM data (.osm.pbf) in {}".format(base_path)
+        )
+
     return osm_paths
 
+
 def validate(context):
-    input_files = get_input_files("{}/{}".format(context.config("data_path"), context.config("osm_path")))
+    input_files = get_input_files(
+        "{}/{}".format(context.config("data_path"), context.config("osm_path"))
+    )
     total_size = 0
 
     for path in input_files:

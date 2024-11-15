@@ -8,6 +8,7 @@ they can be translated into each other. These are mainly IRIS, commune,
 departement and région.
 """
 
+
 def configure(context):
     context.config("data_path")
 
@@ -16,19 +17,23 @@ def configure(context):
     context.config("codes_path", "codes_2021/reference_IRIS_geo2021.zip")
     context.config("codes_xlsx", "reference_IRIS_geo2021.xlsx")
 
+
 def execute(context):
     # Load IRIS registry
     with zipfile.ZipFile(
-        "{}/{}".format(context.config("data_path"), context.config("codes_path"))) as archive:
+        "{}/{}".format(context.config("data_path"), context.config("codes_path"))
+    ) as archive:
         with archive.open(context.config("codes_xlsx")) as f:
-            df_codes = pd.read_excel(f,
-                skiprows = 5, sheet_name = "Emboitements_IRIS"
-            )[["CODE_IRIS", "DEPCOM", "DEP", "REG"]].rename(columns = {
-                "CODE_IRIS": "iris_id",
-                "DEPCOM": "commune_id",
-                "DEP": "departement_id",
-                "REG": "region_id"
-            })
+            df_codes = pd.read_excel(f, skiprows=5, sheet_name="Emboitements_IRIS")[
+                ["CODE_IRIS", "DEPCOM", "DEP", "REG"]
+            ].rename(
+                columns={
+                    "CODE_IRIS": "iris_id",
+                    "DEPCOM": "commune_id",
+                    "DEP": "departement_id",
+                    "REG": "region_id",
+                }
+            )
 
     df_codes["iris_id"] = df_codes["iris_id"].astype("category")
     df_codes["commune_id"] = df_codes["commune_id"].astype("category")
@@ -47,12 +52,19 @@ def execute(context):
 
     df_codes["iris_id"] = df_codes["iris_id"].cat.remove_unused_categories()
     df_codes["commune_id"] = df_codes["commune_id"].cat.remove_unused_categories()
-    df_codes["departement_id"] = df_codes["departement_id"].cat.remove_unused_categories()
+    df_codes["departement_id"] = df_codes[
+        "departement_id"
+    ].cat.remove_unused_categories()
 
     return df_codes
 
+
 def validate(context):
-    if not os.path.exists("%s/%s" % (context.config("data_path"), context.config("codes_path"))):
+    if not os.path.exists(
+        "%s/%s" % (context.config("data_path"), context.config("codes_path"))
+    ):
         raise RuntimeError("Spatial reference codes are not available")
 
-    return os.path.getsize("%s/%s" % (context.config("data_path"), context.config("codes_path")))
+    return os.path.getsize(
+        "%s/%s" % (context.config("data_path"), context.config("codes_path"))
+    )

@@ -5,15 +5,23 @@ import shapely.geometry as geo
 import os
 import numpy as np
 
-REQUIRED_SLOTS = [
-    "agency", "stops", "routes", "trips", "stop_times"
-]
+REQUIRED_SLOTS = ["agency", "stops", "routes", "trips", "stop_times"]
 
 OPTIONAL_SLOTS = [
-    "calendar", "calendar_dates", "fare_attributes", "fare_rules",
-    "shapes", "frequencies", "transfers", "pathways", "levels",
-    "feed_info", "translations", "attributions"
+    "calendar",
+    "calendar_dates",
+    "fare_attributes",
+    "fare_rules",
+    "shapes",
+    "frequencies",
+    "transfers",
+    "pathways",
+    "levels",
+    "feed_info",
+    "translations",
+    "attributions",
 ]
+
 
 def read_feed(path):
     feed = {}
@@ -38,8 +46,13 @@ def read_feed(path):
             if not "%s%s.txt" % (prefix, slot) in available_slots:
                 raise RuntimeError("Missing GTFS information: %s" % slot)
 
-        if not "%scalendar.txt" % prefix in available_slots and not "%scalendar_dates.txt" % prefix in available_slots:
-            raise RuntimeError("At least calendar.txt or calendar_dates.txt must be specified.")
+        if (
+            not "%scalendar.txt" % prefix in available_slots
+            and not "%scalendar_dates.txt" % prefix in available_slots
+        ):
+            raise RuntimeError(
+                "At least calendar.txt or calendar_dates.txt must be specified."
+            )
 
         print("Loading GTFS data from %s ..." % path)
 
@@ -48,22 +61,27 @@ def read_feed(path):
                 print("  Loading %s.txt ..." % slot)
 
                 with zip.open("%s%s.txt" % (prefix, slot)) as f:
-                    feed[slot] = pd.read_csv(f, skipinitialspace = True)
+                    feed[slot] = pd.read_csv(f, skipinitialspace=True)
             else:
                 print("  Not loading %s.txt" % slot)
 
     # Some cleanup
 
     for slot in ("calendar", "calendar_dates", "trips"):
-        if slot in feed and "service_id" in feed[slot] and pd.api.types.is_string_dtype(feed[slot]["service_id"]):
+        if (
+            slot in feed
+            and "service_id" in feed[slot]
+            and pd.api.types.is_string_dtype(feed[slot]["service_id"])
+        ):
             initial_count = len(feed[slot])
             feed[slot] = feed[slot][feed[slot]["service_id"].str.len() > 0]
             final_count = len(feed[slot])
 
             if final_count != initial_count:
-                print("WARNING Removed %d/%d entries from %s with empty service_id" % (
-                    initial_count - final_count, initial_count, slot
-                ))
+                print(
+                    "WARNING Removed %d/%d entries from %s with empty service_id"
+                    % (initial_count - final_count, initial_count, slot)
+                )
 
     if "stops" in feed:
         df_stops = feed["stops"]
@@ -83,7 +101,9 @@ def read_feed(path):
             print("WARNING NaN numbers for min_transfer_time in transfers")
             df_transfers = df_transfers[~f]
 
-        df_transfers["min_transfer_time"] = df_transfers["min_transfer_time"].astype(int)
+        df_transfers["min_transfer_time"] = df_transfers["min_transfer_time"].astype(
+            int
+        )
         feed["transfers"] = df_transfers
 
     if "agency" in feed:
@@ -99,16 +119,18 @@ def read_feed(path):
 
         df_routes.loc[df_routes["agency_id"].isna(), "agency_id"] = agency_id
 
-    if "shapes" in feed: del feed["shapes"]
+    if "shapes" in feed:
+        del feed["shapes"]
     feed["trips"]["shape_id"] = np.nan
 
     # Fixes for Nantes PDL
     for item in feed.keys():
-        feed[item] = feed[item].drop(columns = [
-            c for c in feed[item].columns if c.startswith("ext_")
-        ])
+        feed[item] = feed[item].drop(
+            columns=[c for c in feed[item].columns if c.startswith("ext_")]
+        )
 
     return feed
+
 
 def write_feed(feed, path):
     print("Writing GTFS data to %s ..." % path)
@@ -121,7 +143,7 @@ def write_feed(feed, path):
 
                     # We cannot write directly to the file handle as it
                     # is binary, but pandas only writes in text mode.
-                    zip.writestr("%s.txt" % slot, feed[slot].to_csv(index = None))
+                    zip.writestr("%s.txt" % slot, feed[slot].to_csv(index=None))
 
     else:
         if not os.path.exists(path):
@@ -134,9 +156,10 @@ def write_feed(feed, path):
             if slot in feed:
                 with open("%s/%s.txt" % (path, slot), "w+", encoding="utf-8") as f:
                     print("  Writing %s.txt ..." % slot)
-                    feed[slot].to_csv(f, index = None, lineterminator='\n')
+                    feed[slot].to_csv(f, index=None, lineterminator="\n")
 
-def cut_feed(feed, df_area, crs = None):
+
+def cut_feed(feed, df_area, crs=None):
     feed = copy_feed(feed)
 
     df_stops = feed["stops"]
@@ -148,11 +171,10 @@ def cut_feed(feed, df_area, crs = None):
         df_stations = df_stops[df_stops["location_type"] == 1].copy()
 
     df_stations["geometry"] = [
-        geo.Point(*xy)
-        for xy in zip(df_stations["stop_lon"], df_stations["stop_lat"])
+        geo.Point(*xy) for xy in zip(df_stations["stop_lon"], df_stations["stop_lat"])
     ]
 
-    df_stations = gpd.GeoDataFrame(df_stations, crs = "EPSG:4326")
+    df_stations = gpd.GeoDataFrame(df_stations, crs="EPSG:4326")
 
     if not crs is None:
         print("Converting stops to custom CRS", crs)
@@ -164,20 +186,22 @@ def cut_feed(feed, df_area, crs = None):
     print("Filtering stations ...")
     initial_count = len(df_stations)
 
-    df_stations = gpd.sjoin(df_stations, df_area, predicate = "within")
+    df_stations = gpd.sjoin(df_stations, df_area, predicate="within")
     final_count = len(df_stations)
 
-    print("Found %d/%d stations inside the specified area" % (final_count, initial_count))
+    print(
+        "Found %d/%d stations inside the specified area" % (final_count, initial_count)
+    )
     inside_stations = df_stations["stop_id"]
 
     # 1) Remove stations that are not inside stations and not have a parent stop
     df_stops = feed["stops"]
 
     df_stops = df_stops[
-        df_stops["parent_station"].isin(inside_stations) |
-        (
-            df_stops["parent_station"].isna() &
-            df_stops["stop_id"].isin(inside_stations)
+        df_stops["parent_station"].isin(inside_stations)
+        | (
+            df_stops["parent_station"].isna()
+            & df_stops["stop_id"].isin(inside_stations)
         )
     ]
 
@@ -186,15 +210,17 @@ def cut_feed(feed, df_area, crs = None):
 
     # 2) Remove stop times
     df_times = feed["stop_times"]
-    df_times = df_times[df_times["stop_id"].astype(str).isin(remaining_stops.astype(str))]
+    df_times = df_times[
+        df_times["stop_id"].astype(str).isin(remaining_stops.astype(str))
+    ]
     feed["stop_times"] = df_times.copy()
 
     # 3) Remove transfers
     if "transfers" in feed:
         df_transfers = feed["transfers"]
         df_transfers = df_transfers[
-            df_transfers["from_stop_id"].isin(remaining_stops) &
-            df_transfers["to_stop_id"].isin(remaining_stops)
+            df_transfers["from_stop_id"].isin(remaining_stops)
+            & df_transfers["to_stop_id"].isin(remaining_stops)
         ]
         feed["transfers"] = df_transfers.copy()
 
@@ -202,8 +228,8 @@ def cut_feed(feed, df_area, crs = None):
     if "pathways" in feed:
         df_pathways = feed["pathways"]
         df_pathways = df_pathways[
-            df_pathways["from_stop_id"].isin(remaining_stops) &
-            df_pathways["to_stop_id"].isin(remaining_stops)
+            df_pathways["from_stop_id"].isin(remaining_stops)
+            & df_pathways["to_stop_id"].isin(remaining_stops)
         ]
         feed["pathways"] = df_pathways.copy()
 
@@ -212,9 +238,7 @@ def cut_feed(feed, df_area, crs = None):
     remaining_trips = trip_counts[trip_counts > 1].index.values
 
     df_trips = feed["trips"]
-    df_trips = df_trips[
-        df_trips["trip_id"].isin(remaining_trips)
-    ]
+    df_trips = df_trips[df_trips["trip_id"].isin(remaining_trips)]
     feed["trips"] = df_trips.copy()
 
     feed["stop_times"] = feed["stop_times"][
@@ -224,44 +248,73 @@ def cut_feed(feed, df_area, crs = None):
     # 6) Remove frequencies
     if "frequencies" in feed:
         df_frequencies = feed["frequencies"]
-        df_frequencies = df_frequencies[
-            df_frequencies["trip_id"].isin(remaining_trips)
-        ]
+        df_frequencies = df_frequencies[df_frequencies["trip_id"].isin(remaining_trips)]
         feed["frequencies"] = df_frequencies.copy()
 
     return feed
 
+
 SLOT_COLLISIONS = [
-    { "slot": "agency", "identifier": "agency_id", "references": [
-        ("routes", "agency_id"), ("fare_attributes", "agency_id")] },
-    { "slot": "stops", "identifier": "stop_id", "references": [
-        ("stops", "parent_station"), ("stop_times", "stop_id"),
-        ("transfers", "from_stop_id"), ("transfers", "to_stop_id"),
-        ("pathways", "from_stop_id"), ("pathways", "to_stop_id")] },
-    { "slot": "routes", "identifier": "route_id", "references": [
-        ("trips", "route_id"), ("fare_rules", "route_id"),
-        ("attributions", "route_id")] },
-    { "slot": "trips", "identifier": "trip_id", "references": [
-        ("stop_times", "trip_id"), ("frequencies", "trip_id"),
-        ("attributions", "trip_id")] },
-    { "slot": "calendar", "identifier": "service_id", "references": [
-        ("calendar_dates", "service_id"), ("trips", "service_id")] },
-    { "slot": "calendar_dates", "identifier": "service_id", "references": [
-        ("trips", "service_id"), ("calendar", "service_id")] },
-    { "slot": "fare_attributes", "identifier": "fare_id", "references": [
-        ("fare_rules", "fare_id")] },
-    { "slot": "shapes", "identifier": "shape_id", "references": [
-        ("trips", "shape_id")] },
-    { "slot": "pathways", "identifier": "pathway_id", "references": [] },
-    { "slot": "levels", "identifier": "level_id", "references": [
-        ("stops", "level_id")] },
-    { "slot": "attributions", "identifier": "attribution_id" },
+    {
+        "slot": "agency",
+        "identifier": "agency_id",
+        "references": [("routes", "agency_id"), ("fare_attributes", "agency_id")],
+    },
+    {
+        "slot": "stops",
+        "identifier": "stop_id",
+        "references": [
+            ("stops", "parent_station"),
+            ("stop_times", "stop_id"),
+            ("transfers", "from_stop_id"),
+            ("transfers", "to_stop_id"),
+            ("pathways", "from_stop_id"),
+            ("pathways", "to_stop_id"),
+        ],
+    },
+    {
+        "slot": "routes",
+        "identifier": "route_id",
+        "references": [
+            ("trips", "route_id"),
+            ("fare_rules", "route_id"),
+            ("attributions", "route_id"),
+        ],
+    },
+    {
+        "slot": "trips",
+        "identifier": "trip_id",
+        "references": [
+            ("stop_times", "trip_id"),
+            ("frequencies", "trip_id"),
+            ("attributions", "trip_id"),
+        ],
+    },
+    {
+        "slot": "calendar",
+        "identifier": "service_id",
+        "references": [("calendar_dates", "service_id"), ("trips", "service_id")],
+    },
+    {
+        "slot": "calendar_dates",
+        "identifier": "service_id",
+        "references": [("trips", "service_id"), ("calendar", "service_id")],
+    },
+    {
+        "slot": "fare_attributes",
+        "identifier": "fare_id",
+        "references": [("fare_rules", "fare_id")],
+    },
+    {"slot": "shapes", "identifier": "shape_id", "references": [("trips", "shape_id")]},
+    {"slot": "pathways", "identifier": "pathway_id", "references": []},
+    {"slot": "levels", "identifier": "level_id", "references": [("stops", "level_id")]},
+    {"slot": "attributions", "identifier": "attribution_id"},
 ]
 
+
 def copy_feed(feed):
-    return {
-        slot: feed[slot].copy() for slot in feed
-    }
+    return {slot: feed[slot].copy() for slot in feed}
+
 
 def merge_feeds(feeds):
     result = {}
@@ -271,7 +324,8 @@ def merge_feeds(feeds):
 
     return result
 
-def merge_two_feeds(first, second, suffix = "_merged"):
+
+def merge_two_feeds(first, second, suffix="_merged"):
     feed = {}
 
     print("Merging GTFS data ...")
@@ -284,35 +338,52 @@ def merge_two_feeds(first, second, suffix = "_merged"):
             df_first = first[collision["slot"]]
             df_second = second[collision["slot"]]
 
-            df_first[collision["identifier"]] = df_first[collision["identifier"]].astype(str)
-            df_second[collision["identifier"]] = df_second[collision["identifier"]].astype(str)
+            df_first[collision["identifier"]] = df_first[
+                collision["identifier"]
+            ].astype(str)
+            df_second[collision["identifier"]] = df_second[
+                collision["identifier"]
+            ].astype(str)
 
-            df_concat = pd.concat([df_first, df_second], sort = True).drop_duplicates()
-            duplicate_ids = list(df_concat[df_concat[collision["identifier"]].duplicated()][
-                collision["identifier"]].astype(str).unique())
+            df_concat = pd.concat([df_first, df_second], sort=True).drop_duplicates()
+            duplicate_ids = list(
+                df_concat[df_concat[collision["identifier"]].duplicated()][
+                    collision["identifier"]
+                ]
+                .astype(str)
+                .unique()
+            )
 
             if len(duplicate_ids) > 0:
-                print("   Found %d duplicate identifiers in %s" % (
-                    len(duplicate_ids), collision["slot"]))
+                print(
+                    "   Found %d duplicate identifiers in %s"
+                    % (len(duplicate_ids), collision["slot"])
+                )
 
                 replacement_ids = [str(id) + suffix for id in duplicate_ids]
 
-                df_second[collision["identifier"]] = df_second[collision["identifier"]].replace(
-                    duplicate_ids, replacement_ids
-                )
+                df_second[collision["identifier"]] = df_second[
+                    collision["identifier"]
+                ].replace(duplicate_ids, replacement_ids)
 
                 for ref_slot, ref_identifier in collision["references"]:
                     if ref_slot in first and ref_slot in second:
-                        first[ref_slot][ref_identifier] = first[ref_slot][ref_identifier].astype(str)
-                        second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].astype(str)
+                        first[ref_slot][ref_identifier] = first[ref_slot][
+                            ref_identifier
+                        ].astype(str)
+                        second[ref_slot][ref_identifier] = second[ref_slot][
+                            ref_identifier
+                        ].astype(str)
 
-                        second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].replace(
-                            duplicate_ids, replacement_ids
-                        )
+                        second[ref_slot][ref_identifier] = second[ref_slot][
+                            ref_identifier
+                        ].replace(duplicate_ids, replacement_ids)
 
     for slot in REQUIRED_SLOTS + OPTIONAL_SLOTS:
         if slot in first and slot in second:
-            feed[slot] = pd.concat([first[slot], second[slot]], sort = True).drop_duplicates()
+            feed[slot] = pd.concat(
+                [first[slot], second[slot]], sort=True
+            ).drop_duplicates()
         elif slot in first:
             feed[slot] = first[slot].copy()
         elif slot in second:
@@ -320,7 +391,8 @@ def merge_two_feeds(first, second, suffix = "_merged"):
 
     return feed
 
-def despace_stop_ids(feed, replacement = ":::"):
+
+def despace_stop_ids(feed, replacement=":::"):
     feed = copy_feed(feed)
 
     references = None
@@ -332,14 +404,20 @@ def despace_stop_ids(feed, replacement = ":::"):
     df_stops = feed["stops"]
     df_stops["stop_id"] = df_stops["stop_id"].astype(str)
 
-    search_ids = list(df_stops[df_stops["stop_id"].str.contains(" ")]["stop_id"].unique())
+    search_ids = list(
+        df_stops[df_stops["stop_id"].str.contains(" ")]["stop_id"].unique()
+    )
     replacement_ids = [item.replace(" ", replacement) for item in search_ids]
 
     df_stops["stop_id"] = df_stops["stop_id"].replace(search_ids, replacement_ids)
 
     for reference_slot, reference_field in references:
         if reference_slot in feed:
-            feed[reference_slot][reference_field] = feed[reference_slot][reference_field].astype(str).replace(search_ids, replacement_ids)
+            feed[reference_slot][reference_field] = (
+                feed[reference_slot][reference_field]
+                .astype(str)
+                .replace(search_ids, replacement_ids)
+            )
 
     print("De-spaced %d/%d stops" % (len(search_ids), len(df_stops)))
 

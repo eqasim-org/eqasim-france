@@ -1,13 +1,20 @@
 import pandas as pd
 import numpy as np
 
+
 def configure(context):
-    context.stage("data.hts.selected", alias = "hts")
+    context.stage("data.hts.selected", alias="hts")
+
 
 PURPOSE_MAPPING = {
-    "home": "h", "work": "w", "education": "e",
-    "shop": "s", "leisure": "l", "other": "o"
+    "home": "h",
+    "work": "w",
+    "education": "e",
+    "shop": "s",
+    "leisure": "l",
+    "other": "o",
 }
+
 
 def execute(context):
     df_households, df_persons, df_activities = context.stage("hts")
@@ -36,13 +43,37 @@ def execute(context):
     df_last["is_first"] = False
     df_last["is_last"] = True
 
-    df_activities = pd.concat([
-        df_activities[["person_id", "activity_id", "purpose", "start_time", "end_time", "is_first", "is_last"]],
-        df_last[["person_id", "activity_id", "purpose", "start_time", "end_time", "is_first", "is_last"]]
-    ]).sort_values(by = ["person_id", "activity_id"])
+    df_activities = pd.concat(
+        [
+            df_activities[
+                [
+                    "person_id",
+                    "activity_id",
+                    "purpose",
+                    "start_time",
+                    "end_time",
+                    "is_first",
+                    "is_last",
+                ]
+            ],
+            df_last[
+                [
+                    "person_id",
+                    "activity_id",
+                    "purpose",
+                    "start_time",
+                    "end_time",
+                    "is_first",
+                    "is_last",
+                ]
+            ],
+        ]
+    ).sort_values(by=["person_id", "activity_id"])
 
     # Add activities for people without trips
-    df_missing = df_persons[~df_persons["person_id"].isin(df_activities["person_id"])][["person_id"]]
+    df_missing = df_persons[~df_persons["person_id"].isin(df_activities["person_id"])][
+        ["person_id"]
+    ]
 
     df_missing["activity_id"] = 0
     df_missing["purpose"] = "home"

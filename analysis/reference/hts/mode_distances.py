@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
 
+
 def configure(context):
     context.stage("data.hts.selected")
+
 
 def execute(context):
     df_households, df_persons, df_trips = context.stage("data.hts.selected")
@@ -12,11 +14,13 @@ def execute(context):
     df["travel_time"] = df["arrival_time"] - df["departure_time"]
 
     primary_activities = ["home", "work", "education"]
-    #primary_activities = []
-    df = df[~(
-        df["preceding_purpose"].isin(primary_activities) &
-        df["following_purpose"].isin(primary_activities)
-    )]
+    # primary_activities = []
+    df = df[
+        ~(
+            df["preceding_purpose"].isin(primary_activities)
+            & df["following_purpose"].isin(primary_activities)
+        )
+    ]
 
     data = dict()
 
@@ -32,6 +36,6 @@ def execute(context):
             cdf = np.cumsum(weights[sorter])
             cdf /= cdf[-1]
 
-            data[mode] = dict(values = values, cdf = cdf)
+            data[mode] = dict(values=values, cdf=cdf)
 
     return data

@@ -2,9 +2,12 @@ import synthesis.population.spatial.secondary.rda as rda
 import sklearn.neighbors
 import numpy as np
 
+
 class CustomDistanceSampler(rda.FeasibleDistanceSampler):
-    def __init__(self, random, distributions, maximum_iterations = 1000):
-        rda.FeasibleDistanceSampler.__init__(self, random = random, maximum_iterations = maximum_iterations)
+    def __init__(self, random, distributions, maximum_iterations=1000):
+        rda.FeasibleDistanceSampler.__init__(
+            self, random=random, maximum_iterations=maximum_iterations
+        )
 
         self.random = random
         self.distributions = distributions
@@ -12,7 +15,9 @@ class CustomDistanceSampler(rda.FeasibleDistanceSampler):
     def sample_distances(self, problem):
         distances = np.zeros((len(problem["modes"])))
 
-        for index, (mode, travel_time) in enumerate(zip(problem["modes"], problem["travel_times"])):
+        for index, (mode, travel_time) in enumerate(
+            zip(problem["modes"], problem["travel_times"])
+        ):
             mode_distribution = self.distributions[mode]
 
             bound_index = np.count_nonzero(travel_time > mode_distribution["bounds"])
@@ -24,6 +29,7 @@ class CustomDistanceSampler(rda.FeasibleDistanceSampler):
 
         return distances
 
+
 class CandidateIndex:
     def __init__(self, data):
         self.data = data
@@ -34,7 +40,9 @@ class CandidateIndex:
             self.indices[purpose] = sklearn.neighbors.KDTree(data["locations"])
 
     def query(self, purpose, location):
-        index = self.indices[purpose].query(location.reshape(1, -1), return_distance = False)[0][0]
+        index = self.indices[purpose].query(
+            location.reshape(1, -1), return_distance=False
+        )[0][0]
         identifier = self.data[purpose]["identifiers"][index]
         location = self.data[purpose]["locations"][index]
         return identifier, location
@@ -44,6 +52,7 @@ class CandidateIndex:
         identifier = self.data[purpose]["identifiers"][index]
         location = self.data[purpose]["locations"][index]
         return identifier, location
+
 
 class CustomDiscretizationSolver(rda.DiscretizationSolver):
     def __init__(self, index):
@@ -62,8 +71,11 @@ class CustomDiscretizationSolver(rda.DiscretizationSolver):
         assert len(discretized_locations) == problem["size"]
 
         return dict(
-            valid = True, locations = np.vstack(discretized_locations), identifiers = discretized_identifiers
+            valid=True,
+            locations=np.vstack(discretized_locations),
+            identifiers=discretized_identifiers,
         )
+
 
 class CustomFreeChainSolver(rda.RelaxationSolver):
     def __init__(self, random, index):
@@ -76,4 +88,4 @@ class CustomFreeChainSolver(rda.RelaxationSolver):
         locations = np.vstack((anchor, locations))
 
         assert len(locations) == len(distances) + 1
-        return dict(valid = True, locations = locations)
+        return dict(valid=True, locations=locations)
