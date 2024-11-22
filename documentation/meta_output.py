@@ -11,7 +11,7 @@ def configure(context):
 
 def get_version():
     version_path = os.path.dirname(os.path.realpath(__file__))
-    version_path = os.path.realpath("{}/../VERSION".format(version_path))
+    version_path = os.path.realpath("{}/../version.txt".format(version_path))
 
     with open(version_path) as f:
         return f.read().strip()
