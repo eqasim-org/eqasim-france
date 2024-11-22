@@ -597,8 +597,9 @@ def create(output_path):
     ))
     df_education["ARM"] = "Z"
     df_education["IPONDI"] = 1.0
+    df_education["AGEREV10"] = 1
 
-    columns = ["COMMUNE", "DCETUF", "ARM", "IPONDI"]
+    columns = ["COMMUNE", "DCETUF", "ARM", "IPONDI","AGEREV10"]
     df_education.columns = columns
 
     with zipfile.ZipFile("%s/rp_2019/RP2019_MOBSCO_csv.zip" % output_path, "w") as archive:
@@ -877,29 +878,29 @@ def create(output_path):
         df["region"].unique(),
         np.arange(20),
     ], names = [
-        "Code région", "Age au 01/01/2015"
+        "Code région", "Age au 01/01/2021"
     ])).reset_index()
 
     # to enforce string
     df_vehicles_region = pd.concat([df_vehicles_region, pd.DataFrame({
         "Code région": ["AB"],
-        "Age au 01/01/2015": [0],
+        "Age au 01/01/2021": [0],
     })])
 
     df_vehicles_region["Code région"] = df_vehicles_region["Code région"].astype(str)
 
-    df_vehicles_region["Parc au 01/01/2015"] = 100
+    df_vehicles_region["Parc au 01/01/2021"] = 100
     df_vehicles_region["Energie"] = "Gazole"
     df_vehicles_region["Vignette crit'air"] = "Crit'air 1"
 
-    df_vehicles_region["Age au 01/01/2015"] = df_vehicles_region["Age au 01/01/2015"].astype(str)
-    df_vehicles_region["Age au 01/01/2015"] = df_vehicles_region["Age au 01/01/2015"].replace("20", ">20")
-    df_vehicles_region["Age au 01/01/2015"] = df_vehicles_region["Age au 01/01/2015"] + " ans"
+    df_vehicles_region["Age au 01/01/2021"] = df_vehicles_region["Age au 01/01/2021"].astype(str)
+    df_vehicles_region["Age au 01/01/2021"] = df_vehicles_region["Age au 01/01/2021"].replace("20", ">20")
+    df_vehicles_region["Age au 01/01/2021"] = df_vehicles_region["Age au 01/01/2021"] + " ans"
 
     df_vehicles_commune = pd.DataFrame({
         "municipality": df["municipality"].unique()
     })
-    df_vehicles_commune["Parc au 01/01/2015"] = 100
+    df_vehicles_commune["Parc au 01/01/2021"] = 100
     df_vehicles_commune["Energie"] = "Gazole"
     df_vehicles_commune["Vignette Crit'air"] = "Crit'air 1"
 
@@ -913,9 +914,15 @@ def create(output_path):
         "region": "Code région",
     })
 
-    os.mkdir("%s/vehicles_2015" % output_path)
-    df_vehicles_region.to_excel("%s/vehicles_2015/Parc_VP_Regions_2015.xlsx" % output_path)
-    df_vehicles_commune.to_excel("%s/vehicles_2015/Parc_VP_Communes_2015.xlsx" % output_path)
+    os.mkdir("%s/vehicles" % output_path)
+    
+    with zipfile.ZipFile("%s/vehicles/parc_vp_regions.zip" % output_path, "w") as archive:
+        with archive.open("Parc_VP_Regions_2021.xlsx", "w") as f:
+            df_vehicles_region.to_excel(f)
+
+    with zipfile.ZipFile("%s/vehicles/parc_vp_communes.zip" % output_path, "w") as archive:
+        with archive.open("Parc_VP_Communes_2021.xlsx", "w") as f:
+            df_vehicles_commune.to_excel(f)
 
 if __name__ == "__main__":
     import shutil

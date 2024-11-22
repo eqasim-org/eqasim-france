@@ -57,6 +57,9 @@ def execute(context):
 
     df["activity_type"] = df["activity_type"].astype("category")
 
+    #Add 
+    df = df.rename(columns={"TYPEQU":"education_type"})
+    df["weight"] = 500 
     # Clean coordinates
     df["x"] = df["LAMBERT_X"].astype(str).str.replace(",", ".").astype(float)
     df["y"] = df["LAMBERT_Y"].astype(str).str.replace(",", ".").astype(float)
@@ -134,7 +137,7 @@ def execute(context):
         df.loc[outside_indices, "imputed"] = True
 
     # Package up data set
-    df = df[["enterprise_id", "activity_type", "commune_id", "imputed", "x", "y"]]
+    df = df[["enterprise_id", "activity_type","education_type", "commune_id", "imputed", "x", "y","weight"]]
 
     df = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.x, df.y),crs="EPSG:2154")
 

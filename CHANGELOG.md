@@ -2,6 +2,13 @@
 
 **Under development**
 
+- feat: add population analysis output
+- fix: avoid regenerating OSM when population changes
+- feat: add municipality information to households and activities
+- chore: update to `eqasim-java` commit `ece4932`
+- feat: vehicles and vehicle types are now always generated
+- feat: read vehicles data from zip files
+- feat : option parameter to remove filtering for requesting departements in hts
 - fix: secondary location model used same random seed in every parallel thread
 - feat: add a new method for attributing income to housholds using the bhepop2 package
 - fix: fixed special case in repairing ENTD for completely overlapping trips

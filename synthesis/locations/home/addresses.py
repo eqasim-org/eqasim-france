@@ -15,7 +15,7 @@ many adresses). For every building the housing count is distributed to the match
 adresses. For instance, the assigned addresses of a building with 10 housing units
 and two addresses will have a weight of 5.
 
-If no adresses matches a buidling, its centroid is taken as the unique address.
+If no adresses matches a building, its centroid is taken as the unique address.
 """
 
 def configure(context):
@@ -57,18 +57,18 @@ def execute(context):
 
     # Put together matched and missing addresses
     df_addresses = pd.concat([df_addresses, df_missing])
-    df_addresses = gpd.GeoDataFrame(df_addresses, crs = df_buildings.crs)
+    df_addresses = gpd.GeoDataFrame(df_addresses, crs = df_buildings.crs).rename(columns={"building_id":"home_location_id"})
 
     # Obtain weights for all addresses
     if context.config("home_location_weight") == "housing":
-        df_count = df_addresses.groupby("building_id").size().reset_index(name = "count")
-        df_addresses = pd.merge(df_addresses, df_count, on = "building_id")
+        df_count = df_addresses.groupby("home_location_id").size().reset_index(name = "count")
+        df_addresses = pd.merge(df_addresses, df_count, on = "home_location_id")
         df_addresses["weight"] = df_addresses["housing"] / df_addresses["count"]
     else:
         df_addresses["weight"] = 1.0
     
-    return df_addresses[["building_id", "weight", "geometry"]]
+    return df_addresses[["home_location_id", "weight", "geometry"]]
 
 def validate(context):
-    assert context.config("home_location_source") in ("addresses", "buildings")
+    assert context.config("home_location_source") in ("addresses", "buildings","tiles")
     assert context.config("home_location_weight") in ("uniform", "housing")

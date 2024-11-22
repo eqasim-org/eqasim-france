@@ -13,11 +13,11 @@ def configure(context):
     context.stage("data.vehicles.raw")
     context.stage("data.vehicles.types")
 
-    context.config("vehicles_data_year", 2015)
+    context.config("vehicles_year", 2021)
 
 def _sample_vehicle(context, args):
     vehicle = args
-    year = context.config("vehicles_data_year")
+    year = context.config("vehicles_year")
     df_vehicle_fleet_counts, df_vehicle_age_counts = context.data("fleet"), context.data("age")
 
     commune_id = vehicle["commune_id"]
@@ -120,9 +120,11 @@ def execute(context):
 
     df_vehicles = pd.merge(df_persons[["household_id", "person_id"]], df_homes[["household_id", "commune_id"]], on = "household_id")
 
-    df_vehicles = df_vehicles.rename(columns = { "person_id": "vehicle_id" })
-    df_vehicles = df_vehicles.drop_duplicates("vehicle_id")
+    df_vehicles = df_vehicles.rename(columns = { "person_id": "owner_id" })
+    df_vehicles["vehicle_id"] = df_vehicles["owner_id"].astype(str) + ":car"
+    df_vehicles = df_vehicles.drop_duplicates("vehicle_id") # is this needed?
     df_vehicles["type_id"] = "default_car"
+    df_vehicles["mode"] = "car"
 
     df_vehicle_fleet_counts, df_vehicle_age_counts = context.stage("data.vehicles.raw")
 

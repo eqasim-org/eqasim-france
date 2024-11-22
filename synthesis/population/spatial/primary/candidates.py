@@ -11,7 +11,15 @@ def configure(context):
     context.stage("synthesis.population.enriched")
     context.stage("synthesis.population.trips")
 
+    context.config("output_path")
     context.config("random_seed")
+    context.config("education_location_source", "bpe")
+
+EDUCATION_MAPPING = {
+    "primary_school": ["C1"],
+    "middle_school": ["C2"],
+    "high_school": ["C3"],
+    "higher_education": ["C4", "C5", "C6"]}
 
 def sample_destination_municipalities(context, arguments):
     # Load data
@@ -37,7 +45,7 @@ def sample_locations(context, arguments):
     # Prepare state
     random = np.random.RandomState(random_seed)
     df_locations = df_locations[df_locations["commune_id"] == destination_id]
-
+    
     # Determine demand
     df_flow = df_flow[df_flow["destination_id"] == destination_id]
     count = df_flow["count"].sum()
@@ -47,7 +55,7 @@ def sample_locations(context, arguments):
 
     if "weight" in df_locations:
         weight = df_locations["weight"].values / df_locations["weight"].sum()
-
+    
     location_counts = random.multinomial(count, weight)
     location_ids = df_locations["location_id"].values
     location_ids = np.repeat(location_ids, location_counts)
@@ -67,7 +75,7 @@ def sample_locations(context, arguments):
 
     return df_result
 
-def process(context, purpose, random, df_persons, df_od, df_locations):
+def process(context, purpose, random, df_persons, df_od, df_locations,step_name):
     df_persons = df_persons[df_persons["has_%s_trip" % purpose]]
 
     # Sample commute flows based on population
@@ -78,7 +86,7 @@ def process(context, purpose, random, df_persons, df_od, df_locations):
 
     df_flow = []
 
-    with context.progress(label = "Sampling %s municipalities" % purpose, total = len(df_demand)) as progress:
+    with context.progress(label = "Sampling %s municipalities" % step_name, total = len(df_demand)) as progress:
         with context.parallel(dict(df_od = df_od)) as parallel:
             for df_partial in parallel.imap_unordered(sample_destination_municipalities, df_demand.itertuples(index = False, name = None)):
                 df_flow.append(df_partial)
@@ -102,7 +110,7 @@ def process(context, purpose, random, df_persons, df_od, df_locations):
 
 def execute(context):
     # Prepare population data
-    df_persons = context.stage("synthesis.population.enriched")[["person_id", "household_id"]].copy()
+    df_persons = context.stage("synthesis.population.enriched")[["person_id", "household_id", "age_range"]].copy()
     df_trips = context.stage("synthesis.population.trips")
 
     df_persons["has_work_trip"] = df_persons["person_id"].isin(df_trips[
@@ -125,18 +133,26 @@ def execute(context):
     df_locations = context.stage("synthesis.locations.work")
     df_locations["weight"] = df_locations["employees"]
     df_work = process(context, "work", random, df_persons,
-        df_work_od, df_locations
+        df_work_od, df_locations, "work"
     )
 
     df_locations = context.stage("synthesis.locations.education")
-    df_education = process(context, "education", random, df_persons,
-        df_education_od, df_locations
-    )
+    if context.config("education_location_source") == 'bpe':
+        df_education = process(context, "education", random, df_persons, df_education_od, df_locations,"education")
+    else :
+        df_education = []
+        for prefix, education_type in EDUCATION_MAPPING.items():
+            df_education.append(
+                process(context, "education", random,
+                    df_persons[df_persons["age_range"]==prefix],
+                    df_education_od[df_education_od["age_range"]==prefix],df_locations[df_locations["education_type"].isin(education_type)],prefix)
+            )
+        df_education = pd.concat(df_education)
 
     return dict(
         work_candidates = df_work,
         education_candidates = df_education,
         persons = df_persons[df_persons["has_work_trip"] | df_persons["has_education_trip"]][[
-            "person_id", "household_id", "commune_id", "has_work_trip", "has_education_trip"
+            "person_id", "household_id", "age_range", "commune_id", "has_work_trip", "has_education_trip"
         ]]
     )

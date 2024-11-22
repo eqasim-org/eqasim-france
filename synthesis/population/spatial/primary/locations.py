@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import geopandas as gpd
+from .candidates import EDUCATION_MAPPING
 
 def configure(context):
     context.stage("synthesis.population.spatial.primary.candidates")
@@ -8,6 +9,9 @@ def configure(context):
     context.stage("synthesis.population.spatial.home.locations")
     context.stage("synthesis.locations.work")
     context.stage("synthesis.locations.education")
+
+    context.config("education_location_source", "bpe")
+
 
 def define_distance_ordering(df_persons, df_candidates, progress):
     indices = []
@@ -106,13 +110,18 @@ def execute(context):
     df_work_candidates = pd.merge(df_work_candidates, df_locations, how = "left", on = "location_id")
     df_work_candidates = gpd.GeoDataFrame(df_work_candidates)
 
-    df_locations = context.stage("synthesis.locations.education")[["location_id", "geometry"]]
+    df_locations = context.stage("synthesis.locations.education")[["education_type", "location_id", "geometry"]]
     df_education_candidates = data["education_candidates"]
     df_education_candidates = pd.merge(df_education_candidates, df_locations, how = "left", on = "location_id")
     df_education_candidates = gpd.GeoDataFrame(df_education_candidates)
 
     # Assign destinations
     df_work = process(context, "work", df_work, df_work_candidates)
-    df_education = process(context, "education", df_education, df_education_candidates)
-
+    if context.config("education_location_source") == 'bpe':
+        df_education = process(context, "education", df_education, df_education_candidates)
+    else :
+        education = []
+        for prefix, education_type in EDUCATION_MAPPING.items():
+            education.append(process(context, prefix,df_education[df_education["age_range"]==prefix],df_education_candidates[df_education_candidates["education_type"].isin(education_type)]))
+        df_education = pd.concat(education).sort_index()
     return df_work, df_education

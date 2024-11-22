@@ -9,6 +9,7 @@ def configure(context):
 
     context.stage("synthesis.population.activities")
     context.stage("synthesis.population.sampled")
+    context.stage("data.spatial.iris")
 
 def execute(context):
     df_home = context.stage("synthesis.population.spatial.home.locations")
@@ -56,5 +57,11 @@ def execute(context):
 
     assert not df_locations["geometry"].isna().any()
     df_locations = gpd.GeoDataFrame(df_locations, crs = df_home.crs)
+
+    # add municipalities
+    df_iris = context.stage("data.spatial.iris")
+    df_iris = gpd.GeoDataFrame(df_iris, crs = df_home.crs)
+
+    df_locations = gpd.sjoin(df_locations,df_iris,how="left")
 
     return df_locations

@@ -57,7 +57,8 @@ def execute(context):
             "COMMUNE":"str", 
             "ARM":"str", 
             "IPONDI":"float",
-            "DCETUF":"str"
+            "DCETUF":"str",
+            "AGEREV10":"int"
         }
 
         with zipfile.ZipFile(

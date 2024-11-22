@@ -31,10 +31,5 @@ config:
   # Activate if you want to run mode choice
   mode_choice: false
 
-  # Uncommented below to enable vehicle fleet generation
-  # generate_vehicles_file: True
-  # generate_vehicles_method: fleet_sample
-  # vehicles_data_year: 2015
-  
   # Uncomment to use the bhepop2 package for attributing income
   # income_assignation_method: bhepop2
