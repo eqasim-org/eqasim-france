@@ -59,7 +59,6 @@ def build_from_yml(config_path, config_overrides):
 
 
 if __name__ == "__main__":
-    print(os.getcwd())
     logging.basicConfig(level=logging.INFO)
 
     config_file_path = sys.argv[1] if len(sys.argv) > 1 else "config.yml"
