@@ -72,6 +72,12 @@ if __name__ == "__main__":
     for i in range(overrides_starting_index, len(sys.argv)):
         arg = sys.argv[i]
         key, value = arg.split("=")
+        if key == "processes":
+            value = int(value)
+        if key == "mode_choice":
+            value = bool(value)
+        if key == "sampling_rate":
+            value = float(value)
         overrides[key] = value
 
     if not os.path.isfile(config_file_path):
