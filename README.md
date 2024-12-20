@@ -53,9 +53,11 @@ These steps are described in the following documents:
 - [How to run a MATSim simulation of Île-de-France](docs/simulation.md)
 
 Furthermore, we provide documentation on how to make use of the code to create
-popuations and run simulations of other places in France. While these are
-examples, the code can be adapted to any other scenarios as well:
+popuations and run simulations of other places in France.
 
+Documentation for any region: [Generic regions](docs/cases/generic.md)
+
+Documentation for specific regions:
 - [Toulouse and Occitanie region](docs/cases/toulouse.md)
 - [Lyon and neighboring departments](docs/cases/lyon.md)
 - [Nantes and Loire Atlantique](docs/cases/nantes.md)
