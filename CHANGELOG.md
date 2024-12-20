@@ -2,6 +2,7 @@
 
 **Under development**
 
+- feat: add population analysis output
 - fix: avoid regenerating OSM when population changes
 - feat: add municipality information to households and activities
 - chore: update to `eqasim-java` commit `ece4932`

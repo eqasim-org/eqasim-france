@@ -450,3 +450,11 @@ folder as: `{output_prefix}_{age group}_{trip pupose}.html`
 
 Note:
 With `analysis_from_file` at False, the last synthetic population is studied by default. Also if `output_prefix` and `comparison_file_prefix` refer to the same outputs, or `comparison_file_prefix` is not specified, then only a volume visualisation of this particular population is produced.
+
+
+### Comparaison population to source data
+
+Using the population pipeline in the Analysis directory, you can generate multiple tables comparing composition of synthetic population to source data. Right now the tables generated compare : population volume by age range, households volume by number of vehicles, population volume with a license and without, trip volume by age range and trip volume by length.
+Complementary from the synthetic population only, a table of population volume by age range and trip purpose is also created.
+
+To be able to use this pipeline, you must already have create a synthetic population. Then you need to open the `config.yml` and add the `analysis.synthesis.population` stage in the `run` section. 
