@@ -83,8 +83,10 @@ config:
   # ...
 ```
 
-This will make the pipeline filter all data sets for the departments noted in the list and use the
-correct BAN and BDTOPO directory.
+This will make the pipeline filter all data sets for the departments noted in the list (with the
+exception of the national survey ENTD for which all observations are kept since the data is not
+representative at the department level).
+
 
 In case you want to *optionally* use a regional HTS, choose the updated HTS in the config file:
 
