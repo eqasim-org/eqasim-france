@@ -71,10 +71,14 @@ paper presented at the 30th IEEE Intelligent Vehicles Symposium, Paris, June 201
 
 ## Versioning
 
-The current version of the pipeline is `v1.2.0`. You can obtain it by cloning
-the `v1.2.0` tag of this repository. Alternatively, you can also clone the
+[comment]: # (x-release-please-start-version)
+
+The current version of the pipeline is `1.2.0`. You can obtain it by cloning
+the `1.2.0` tag of this repository. Alternatively, you can also clone the
 `develop` branch to make use of the latest developments. The version number
 will be kept in the `develop` branch until a new version is officially released.
+
+[comment]: # (x-release-please-end)
 
 Note that whenever you create a population with this pipeline, the `meta.json`
 in the output will let you know the exact `git` commit with which the
