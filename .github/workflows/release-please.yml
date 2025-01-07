@@ -16,5 +16,4 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v3
         with:
-          token: ${{ secrets.EQASIM_PAT }}
           release-type: simple
