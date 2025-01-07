@@ -10,8 +10,8 @@ def configure(context):
     context.stage("data.spatial.codes")
 
     context.config("data_path")
-    context.config("census_path", "rp_2019/RP2019_INDCVI_csv.zip")
-    context.config("census_csv", "FD_INDCVI_2019.csv")
+    context.config("census_path", "rp_2021/RP2021_indcvi.zip")
+    context.config("census_csv", "FD_INDCVI_2021.csv")
 
     context.config("projection_year", None)
 
@@ -65,6 +65,6 @@ def execute(context):
 
 def validate(context):
     if not os.path.exists("{}/{}".format(context.config("data_path"), context.config("census_path"))):
-        raise RuntimeError("RP 2019 data is not available")
+        raise RuntimeError("RP 2021 data is not available")
 
     return os.path.getsize("{}/{}".format(context.config("data_path"), context.config("census_path")))
