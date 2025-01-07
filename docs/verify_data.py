@@ -7,28 +7,28 @@
 
 tests = [
     {
-        "name": "Census 2019",
+        "name": "Census 2021",
         "urls": [
-            "https://www.insee.fr/fr/statistiques/6544333",
-            "https://www.insee.fr/fr/statistiques/fichier/6544333/RP2019_INDCVIZA_csv.zip",
-            "https://www.insee.fr/fr/statistiques/fichier/6544333/RP2019_INDCVIZD_csv.zip",
-            "https://www.insee.fr/fr/statistiques/fichier/6544333/RP2019_INDCVIZE_csv.zip"
+            "https://www.insee.fr/fr/statistiques/8268848",
+            "https://www.insee.fr/fr/statistiques/fichier/8268848/RP2021_indcviza.zip",
+            "https://www.insee.fr/fr/statistiques/fichier/8268848/RP2021_indcvizd.zip",
+            "https://www.insee.fr/fr/statistiques/fichier/8268848/RP2021_indcvize.zip"
         ]
     },
     {
         "name": "OD Matrices 2019",
         "urls": [
-            "https://www.insee.fr/fr/statistiques/6456056",
-            "https://www.insee.fr/fr/statistiques/6456052",
-            "https://www.insee.fr/fr/statistiques/fichier/6456056/RP2019_mobpro_csv.zip",
-            "https://www.insee.fr/fr/statistiques/fichier/6456052/RP2019_mobsco_csv.zip"
+            "https://www.insee.fr/fr/statistiques/8205896",
+            "https://www.insee.fr/fr/statistiques/8205892",
+            "https://www.insee.fr/fr/statistiques/fichier/8205896/RP2021_mobpro.zip",
+            "https://www.insee.fr/fr/statistiques/fichier/8205892/RP2021_mobsco.zip"
         ]
     },
     {
         "name": "Population totals 2019",
         "urls": [
-            "https://www.insee.fr/fr/statistiques/6543200",
-            "https://www.insee.fr/fr/statistiques/fichier/6543200/base-ic-evol-struct-pop-2019_csv.zip"
+            "https://www.insee.fr/fr/statistiques/8268806",
+            "https://www.insee.fr/fr/statistiques/fichier/8268806/base-ic-evol-struct-pop-2021_csv.zip"
         ]
     },
     {
@@ -40,10 +40,10 @@ tests = [
         ]
     },
     {
-        "name": "BPE 2021",
+        "name": "BPE 2023",
         "urls": [
-            "https://www.insee.fr/fr/statistiques/3568638",
-            "https://www.insee.fr/fr/statistiques/fichier/3568638/bpe21_ensemble_xy_csv.zip"
+            "https://www.insee.fr/fr/statistiques/8217525",
+            "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE23.zip"
         ]
     },
     {
@@ -59,17 +59,17 @@ tests = [
         ]
     },
     {
-        "name": "IRIS 2021",
+        "name": "IRIS 2023",
         "urls": [
             "https://geoservices.ign.fr/contoursiris",
-            "https://wxs.ign.fr/1yhlj2ehpqf3q6dt6a2y7b64/telechargement/inspire/CONTOURS-IRIS-PACK_2021-01$CONTOURS-IRIS_2-1__SHP__FRA_2021-01-01/file/CONTOURS-IRIS_2-1__SHP__FRA_2021-01-01.7z"
+            "https://data.geopf.fr/telechargement/download/CONTOURS-IRIS/CONTOURS-IRIS_3-0__SHP__FRA_2023-01-01/CONTOURS-IRIS_3-0__SHP__FRA_2023-01-01.7z"
         ]
     },
     {
-        "name": "Zoning 2021",
+        "name": "Zoning 2023",
         "urls": [
             "https://www.insee.fr/fr/information/2017499",
-            "https://www.insee.fr/fr/statistiques/fichier/2017499/reference_IRIS_geo2021.zip"
+            "https://www.insee.fr/fr/statistiques/fichier/7708995/reference_IRIS_geo2023.zip"
         ]
     },
     {

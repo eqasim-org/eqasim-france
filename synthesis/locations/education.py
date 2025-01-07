@@ -12,10 +12,9 @@ def configure(context):
         context.stage("data.bpe.cleaned", alias = "location_source")
 
 EDUCATION_WEIGHT_MAP = [
-    ("C101", 100),  # Preschools
-    ("C102", 50),  # Intercommunal preschools
-    ("C104", 145),  # Elemantary schools
-    ("C105", 80),  # Intercommunal elemantary schools
+    ("C107", 100),  # Preschools
+    ("C108", 115),  # Primary schools
+    ("C109", 145),  # Elemantary schools
     ("C301", 700),  # General and technological high schools, multi-purpose high schools
     ("C302", 285),  # Professional high schools
     ("C303", 100),  # Agricultural high schools

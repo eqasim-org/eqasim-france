@@ -8,4 +8,6 @@ data/lyon_2015
 .vscode
 .idea
 
+.sif
+
 config_local_*.yml
