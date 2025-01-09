@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/eqasim-org/ile-de-france/compare/v1.3.0...v1.4.0) (2025-01-09)
+
+
+### Features
+
+* Add docker and apptainer containers ([#274](https://github.com/eqasim-org/ile-de-france/issues/274)) ([e70a297](https://github.com/eqasim-org/ile-de-france/commit/e70a29701ea6da004526dc18cea13c3c5ca8f401))
+
 ## [1.3.0](https://github.com/eqasim-org/ile-de-france/compare/v1.2.0...v1.3.0) (2025-01-06)
 
 
