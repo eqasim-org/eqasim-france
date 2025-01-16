@@ -21,7 +21,26 @@ def configure(context):
 
     context.stage("data.census.filtered", alias = "census")
     context.stage("data.hts.selected", alias = "hts")
+    
+def get_undirected_purpose(x):
+    origin_purpose = x["preceding_purpose"]
+    dest_purpose = x["following_purpose"]
 
+    if origin_purpose == "home" or dest_purpose == "home":  # Home
+        if origin_purpose == "work" or dest_purpose == "work" :
+            return "Home<>Work"
+        elif origin_purpose == "education" or dest_purpose == "education":
+            return "Home<>Education"
+        elif origin_purpose == "shop" or dest_purpose == "shop":
+            return "Home<>Shop"
+        elif origin_purpose == "leisure" or dest_purpose == "leisure":
+            return "Home<>Leisure"
+        else:
+            return "Home<>Other"
+    else:
+        return "Secondary trip (non link to home)"
+
+    return 0
 def execute(context):
 
     # check output folder existence
@@ -55,10 +74,11 @@ def execute(context):
 
     df_eq_travel = pd.merge(df_trip_eq,df_person_eq[["person_id","age_class"]],on=["person_id"])
     df_hts_travel = pd.merge(df_hts_trip,df_hts_person[["person_id","age_class","person_weight"]],on=["person_id"])
+    df_eq_travel["trip_purpose"] = df_eq_travel.apply(get_undirected_purpose, axis=1)
 
     print("Generate tables ...")
     # Age purpose analysis
-    analysis_age_purpose = pd.pivot_table(df_eq_travel,"person_id",index="age_class",columns="following_purpose",aggfunc="count")
+    analysis_age_purpose = pd.pivot_table(df_eq_travel,"person_id",index="age_class",columns="trip_purpose",aggfunc="count")
     analysis_age_purpose = analysis_age_purpose/sampling_rate
     analysis_age_purpose.to_csv(f"{analysis_output_path}/{prefix}age_purpose.csv")
 
@@ -75,6 +95,7 @@ def execute(context):
     analysis_vehicles_class.columns = ["Number of vehicles class","HTS","EQASIM"]
     analysis_vehicles_class["Proportion_HTS"] = analysis_vehicles_class["HTS"] / df_hts_households["household_weight"].sum() 
     analysis_vehicles_class["Proportion_EQASIM"] = analysis_vehicles_class["EQASIM"] / df_person_eq["household_id"].nunique() 
+    analysis_vehicles_class["EQASIM"] = analysis_vehicles_class["EQASIM"]/sampling_rate
     analysis_vehicles_class.to_csv(f"{analysis_output_path}/{prefix}nbr_vehicle.csv")
     
     # Compare license volume 
