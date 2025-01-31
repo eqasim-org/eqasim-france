@@ -23,6 +23,8 @@ ACTIVITY_TYPE_MAP = [
     ("A504", "leisure"),    # Restaurant
     ("B", "shop"),          # Shopping
     ("C", "education"),     # Education
+    ("C701","other"),       # CROUS Residence
+    ("C702","other"),       # CROUS Restaurant
     ("D", "other"),         # Health
     ("E", "other"),         # Transport
     ("F", "leisure"),       # Sports & Culture

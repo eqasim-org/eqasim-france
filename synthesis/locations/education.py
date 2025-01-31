@@ -61,7 +61,7 @@ def execute(context):
 
     required_communes = set(df_zones["commune_id"].unique())  
         
-    if context.config("education_location_source") != 'bpe': # either weighted or addresses
+    if context.config("education_location_source") != 'weighted': 
         for prefix, weight in EDUCATION_WEIGHT_MAP:
             df_locations.loc[df_locations["education_type"]==prefix, "weight"] = (
                 weight
