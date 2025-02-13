@@ -21,7 +21,7 @@ def execute(context):
     with context.progress(label = "Reading BPE ...") as progress:
         with zipfile.ZipFile("{}/{}".format(context.config("data_path"), context.config("bpe_path"))) as archive:
             with archive.open(context.config("bpe_csv")) as f:
-                csv = pd.read_csv(f, usecols = [
+                csv = pd.read_csv(f, usecols = [ "CAPACITE",
                         "DCIRIS", "LAMBERT_X", "LAMBERT_Y",
                         "TYPEQU", "DEPCOM", "DEP"
                     ], sep = ";",

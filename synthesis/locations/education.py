@@ -11,18 +11,6 @@ def configure(context):
     else:
         context.stage("data.bpe.cleaned", alias = "location_source")
 
-EDUCATION_WEIGHT_MAP = [
-    ("C107", 100),  # Preschools
-    ("C108", 115),  # Primary schools
-    ("C109", 145),  # Elemantary schools
-    ("C301", 700),  # General and technological high schools, multi-purpose high schools
-    ("C302", 285),  # Professional high schools
-    ("C303", 100),  # Agricultural high schools
-    ("C304", 30),  # General and technological classes in professional high schools
-    ("C305", 30),  # Professional classes in general and technological high schools
-    ("C403", 1000),  # Business schools
-    ("C501", 2000),  # University
-]
 
 def fake_education(missing_communes, c, df_locations, df_zones):
     # Fake education destinations as the centroid of zones that have no other destinations
@@ -60,12 +48,7 @@ def execute(context):
     df_zones = context.stage("data.spatial.municipalities")
 
     required_communes = set(df_zones["commune_id"].unique())  
-        
-    if context.config("education_location_source") != 'weighted': 
-        for prefix, weight in EDUCATION_WEIGHT_MAP:
-            df_locations.loc[df_locations["education_type"]==prefix, "weight"] = (
-                weight
-            )  
+
     if context.config("education_location_source") != 'bpe' :
 
          

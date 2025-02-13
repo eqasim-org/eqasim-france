@@ -15,6 +15,7 @@ def configure(context):
 
     context.stage("data.spatial.iris")
     context.stage("data.spatial.municipalities")
+    context.config("education_location_source","bpe")
 
     context.config("bpe_random_seed", 0)
 
@@ -61,7 +62,7 @@ def execute(context):
 
     #Add 
     df = df.rename(columns={"TYPEQU":"education_type"})
-    df["weight"] = 500 
+    df["weight"] = df["CAPACITE"].fillna(500) if context.config("education_location_source") != "bpe" else 500
     # Clean coordinates
     df["x"] = df["LAMBERT_X"].astype(str).str.replace(",", ".").astype(float)
     df["y"] = df["LAMBERT_Y"].astype(str).str.replace(",", ".").astype(float)
