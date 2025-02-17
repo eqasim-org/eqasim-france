@@ -7,7 +7,7 @@ from  analysis.marginals import NUMBER_OF_VEHICLES_LABELS
 from shapely import distance
 AGE_CLASS = [0, 10, 14, 17, 24, 49, 64, np.inf]
 NUMBER_OF_VEHICLES= [0,1,2,3,np.inf]
-NAME_AGE_CLASS = ["0-10","11-14","15-17","18-25","26-50","51-65","65+"]
+NAME_AGE_CLASS = ["0-10","11-14","15-17","18-24","25-49","50-64","65+"]
 ANALYSIS_FOLDER = "analysis_population"
 def configure(context):
 
@@ -60,6 +60,8 @@ def execute(context):
     
     df_census = context.stage("census")
     df_hts_households, df_hts_person, df_hts_trip = context.stage("hts")
+    
+    # get weight adjust with INSEE population weights
     df_hts_person["person_weight_insee"] =df_hts_person["person_weight"]*(df_census["weight"].sum()/df_hts_person["person_weight"].sum())
     df_hts_households["household_weight_insee"] = df_hts_households["household_weight"]*(df_census["weight"].sum()/df_hts_households["household_weight"].sum())
     # get age class
