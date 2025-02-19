@@ -392,7 +392,7 @@ config:
   education_location_source: weighted
 ```
 
-For each type of institution, a weight is attributed by default in the pipeline. To realise a matching weighted with known student numbers by educational institution, the pipeline can also work with a list of educational institution from external geojson or geopackage file with `addresses` as parameter value.
+For each educational institution, a weight is attributed in the pipeline based on the numbers of students provided in BPE data. The pipeline can also work with a list of educational institution from external geojson or geopackage file with `addresses` as parameter value.
 This file must include `education_type`, `commune_id`,`weight`and `geometry` as column with `weight` number of student and `education_type` type of educational institution code similar as BPE ones.
 
 ```yaml
