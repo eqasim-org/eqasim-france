@@ -216,6 +216,7 @@ def create(output_path):
     categories = np.array(["A", "B", "C", "D", "E", "F", "G"])
 
     df_selection = df.iloc[random.randint(0, len(df), size = observations)].copy()
+    df_selection["CAPACITE"] = 500
     df_selection["DCIRIS"] = df_selection["iris"]
     df_selection["DEPCOM"] = df_selection["municipality"]
     df_selection["DEP"] = df_selection["department"]
@@ -227,7 +228,7 @@ def create(output_path):
     df_selection.iloc[-10:, df_selection.columns.get_loc("LAMBERT_X")] = np.nan
     df_selection.iloc[-10:, df_selection.columns.get_loc("LAMBERT_Y")] = np.nan
 
-    columns = ["DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"]
+    columns = ["CAPACITE","DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"]
 
     os.mkdir("%s/bpe_2023" % output_path)
 
