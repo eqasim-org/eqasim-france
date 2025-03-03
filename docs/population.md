@@ -364,6 +364,19 @@ To make use of the urban type, the following data is needed:
 
 Then, you should be able to run the pipeline with the configuration explained above.
 
+### Filter household travel survey data
+
+The pipeine filter out by default observations, from household travel survey used, which live or work outside of the area used in the simulation.
+Unfortunately, household travel survey data is not always well distributed at scales other than national or regional and may be incomplete for area used in the simulation.
+The parameter `filter_hts` at false allows to ignore this filtering and keep the same observations distribution as the entire survey used.
+
+```yaml
+config:
+  # [...]
+  filter_hts: false
+```
+To help evaluate observations distribution, a table of population volume by age range and trip purpose can be generate from `analysis.synthesis.population` stage as explained at end of this documentation. 
+
 ### Exclude entreprise with no employee
 
 The pipeline allows to exclude all entreprise without any employee (trancheEffectifsEtablissement is NA, "NN" or "00") indicated in Sirene data for working place distribution. It can be activate via this configuration :
