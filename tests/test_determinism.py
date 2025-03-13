@@ -13,11 +13,19 @@ def hash_sqlite_db(path):
     matter, hashing the dump of the database is more relevant.
     """
     con = sqlite3.connect(path)
-    hash = hashlib.md5()
+
+    data = []
     for line in con.iterdump():
-        encoded = (line + "\n").encode()
-        hash.update(encoded)
+        data.append(line.encode())
+
     con.close()
+
+    data = sorted(data)
+
+    hash = hashlib.md5()
+    for item in data:
+        hash.update(item)
+    
     return hash.hexdigest()
 
 
@@ -77,10 +85,10 @@ def _test_determinism(index, data_path, tmpdir):
     }
 
     REFERENCE_GPKG_HASHES = {
-        "ile_de_france_activities.gpkg":    "afb46f7339fc31eeb41ecebdb140730c",
-        "ile_de_france_commutes.gpkg":      "169812fb3b52a17de055c9237df1d058",
-        "ile_de_france_homes.gpkg":         "43becf96dc1bf9f3c88cbd7f2e689442",
-        "ile_de_france_trips.gpkg":         "4506a3707688437b1eb2cf89dd6cb76a",
+        "ile_de_france_activities.gpkg":    "daf006b4b3295f6669ec8ae3e2825156",
+        "ile_de_france_commutes.gpkg":      "85e0a1efadcf35ad73d71916ece29d31",
+        "ile_de_france_homes.gpkg":         "8d595a0b85fba9c7fc42eeb11015b673",
+        "ile_de_france_trips.gpkg":         "b069a1976b75087608aa4c044ad07549",
     }
 
     generated_csv_hashes = {
