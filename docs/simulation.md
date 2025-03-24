@@ -53,8 +53,8 @@ scenario and run it for a couple of iterations to test it. For that, you need
 to make sure that the following tools are installed on your system (you can just
 try to run the pipeline, it will complain if this is not the case):
 
-- **Java** needs to be installed, with a minimum version of Java 11. In case
-you are not sure, you can download the open [AdoptJDK](https://adoptopenjdk.net/). *Attention:* There are incompatibilities with more recent version (for instance 17), so for the time being we recommend using version 11.
+- **Java** needs to be installed, with a minimum version of Java 17. In case
+you are not sure, you can download the free and open [Adoptium JDK](https://adoptium.net/fr/temurin/releases/?version=17&package=jdk).
 - **Maven** `>= 3.8.7` needs to be installed to build the necessary Java packages for setting
 up the scenario (such as pt2matsim) and running the simulation. Maven can be
 downloaded [here](https://maven.apache.org/) if it does not already exist on
