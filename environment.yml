@@ -4,15 +4,15 @@ channels:
   - conda-forge
 
 dependencies:
-  - matplotlib=3.7.1
-  - pandas=1.5.3
-  - scipy=1.10.1
-  - numpy=1.23.5
-  - geopandas=0.12.2
-  - numba=0.56.4
+  - matplotlib=3.10.1
+  - pandas=2.2.2
+  - scipy=1.15.2
+  - numpy=2.2.4
+  - geopandas=0.14.4
+  - numba=0.61.2
   - palettable=3.3.0
-  - scikit-learn=1.2.2
-  - shapely=2.0.2
+  - scikit-learn=1.6.1
+  - shapely=2.1.0
   - tqdm=4.65.0
   - pytables=3.9.2
   - xlrd=2.0.1
@@ -25,8 +25,8 @@ dependencies:
   - fiona=1.9.2
   - sqlite=3.46.0
   - mock=5.1.0
-  - pyarrow=16.1.0
+  - pyarrow=19.0.1
 
   - pip:
     - synpp==1.5.1
-    - bhepop2==2.0.0
+    - bhepop2==2.0.1
