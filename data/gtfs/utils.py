@@ -141,7 +141,7 @@ def cut_feed(feed, df_area, crs = None):
 
     df_stops = feed["stops"]
 
-    if np.count_nonzero(df_stops["location_type"] == 1) == 0:
+    if "location_type" not in df_stops.columns or np.count_nonzero(df_stops["location_type"] == 1) == 0:
         print("Warning! Location types seem to be malformatted. Keeping all stops.")
         df_stations = df_stops.copy()
     else:
