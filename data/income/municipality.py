@@ -25,9 +25,9 @@ INCOME_DF_COLUMNS = ["commune_id", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8
 def configure(context):
     context.config("data_path")
     context.stage("data.spatial.municipalities")
-    context.config("income_com_path", "filosofi/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip")
-    context.config("income_com_xlsx", "FILO2021_DISP_COM.xlsx")
-    context.config("income_year", 21)
+    context.config("income_com_path", "filosofi_2019/indic-struct-distrib-revenu-2019-COMMUNES.zip")
+    context.config("income_com_xlsx", "FILO2019_DISP_COM.xlsx")
+    context.config("income_year", 19)
 
 
 def _income_distributions_from_filosofi_ensemble_sheet(filsofi_sheets, year, df_municipalities):
@@ -170,7 +170,6 @@ def execute(context):
 
 def validate(context):
     if not os.path.exists("%s/%s" % (context.config("data_path"), context.config("income_com_path"))):
-        # raise RuntimeError("Municipality Filosofi data is not available")
-        raise RuntimeError("%s/%s" % (context.config("data_path"), context.config("income_com_path")))
+        raise RuntimeError("Municipality Filosofi data is not available")
 
     return os.path.getsize("%s/%s" % (context.config("data_path"), context.config("income_com_path")))

@@ -9,7 +9,6 @@ This stage filters out ENTD observations which live or work outside of
 def configure(context):
     context.stage("data.hts.entd.cleaned")
     context.stage("data.spatial.codes")
-    context.config("use_urban_type", False)
 
     context.config("filter_hts",True)
 def execute(context):

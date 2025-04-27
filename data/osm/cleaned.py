@@ -20,7 +20,7 @@ Additionally, the stage cuts the OSM data to the requested region of the pipelin
 
 def configure(context):
     context.config("data_path")
-    context.config("osm_path", "osm")
+    context.config("osm_path", "osm_idf")
 
     context.config("osm_highways", "*")
     context.config("osm_railways", "*")

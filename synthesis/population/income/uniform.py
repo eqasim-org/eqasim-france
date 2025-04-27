@@ -28,11 +28,6 @@ def _sample_income(context, args):
 
     f = df_households["commune_id"] == commune_id
     df_selected = df_households[f]
-    
-    for col in ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"]:
-        df_income[col] = pd.to_numeric(df_income[col],errors="coerce")
-        df_income[col] = df_income[col].fillna(0)
-        df_income[col] = df_income[col].astype(int)
 
     centiles = list(df_income[df_income["commune_id"] == commune_id][["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"]].iloc[0].values / 12)
 

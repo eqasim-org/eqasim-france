@@ -11,7 +11,7 @@ def configure(context):
     context.stage("data.spatial.codes")
 
     context.config("data_path")
-    context.config("ban_path", "ban")
+    context.config("ban_path", "ban_idf")
 
 BAN_DTYPES = {
     "code_insee": str,

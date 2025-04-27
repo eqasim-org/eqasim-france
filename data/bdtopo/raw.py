@@ -12,7 +12,7 @@ This stage loads the raw data from the French building registry (BD-TOPO).
  
 def configure(context):
     context.config("data_path")
-    context.config("bdtopo_path", "bdtopo")
+    context.config("bdtopo_path", "bdtopo_idf")
 
     context.stage("data.spatial.departments")
 
