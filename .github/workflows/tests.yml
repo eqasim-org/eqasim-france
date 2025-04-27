@@ -66,6 +66,11 @@ jobs:
         osmosis -v
         git --version
         python -c "import fiona"
+    - name: Check driver
+      shell: bash -el {0}
+      run: |
+        python -c "import geopandas.io.file; print(geopandas.io.file._check_engine(None, ''))"
+        exit 1
     - name: Show dependencies
       shell: bash -el {0}
       run: conda env export --no-builds
