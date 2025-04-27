@@ -16,7 +16,9 @@ def hash_sqlite_db(path):
 
     data = []
     for line in con.iterdump():
-        data.append(line.encode())
+        if not "rtree" in line: # Fix for compatibilit between Linux and Windows
+            line = line.replace("MEDIUMINT", "INTEGER") # Fix for compatibilit between Linux and Windows
+            data.append(line.encode())
 
     con.close()
 
@@ -85,10 +87,10 @@ def _test_determinism(index, data_path, tmpdir):
     }
 
     REFERENCE_GPKG_HASHES = {
-        "ile_de_france_activities.gpkg":    "daf006b4b3295f6669ec8ae3e2825156",
-        "ile_de_france_commutes.gpkg":      "85e0a1efadcf35ad73d71916ece29d31",
-        "ile_de_france_homes.gpkg":         "8d595a0b85fba9c7fc42eeb11015b673",
-        "ile_de_france_trips.gpkg":         "b069a1976b75087608aa4c044ad07549",
+        "ile_de_france_activities.gpkg":    "f554086e6dcbfebfa5653fd8670096fe",
+        "ile_de_france_commutes.gpkg":      "1452fbd094a9be3d26f249021cc9b7cb",
+        "ile_de_france_homes.gpkg":         "8da4fb16e569dddc063ee72e227adc01",
+        "ile_de_france_trips.gpkg":         "48f3be7064f203fd02784e85b8ff023b",
     }
 
     generated_csv_hashes = {
