@@ -14,6 +14,7 @@ def execute(context):
 
     # Spatial income distribution
     df_income = context.stage("data.income.municipality")
+    df_income = df_income[(df_income["attribute"] == "all") & (df_income["value"] == "all")]
     df_income = pd.merge(df_communes, df_income, how = "inner", on = "commune_id")
     df_income["is_imputed"] = df_income["is_imputed"].astype(int)
     df_income["commune_id"] = df_income["commune_id"].astype(str)

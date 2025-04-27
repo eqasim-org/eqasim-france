@@ -25,6 +25,7 @@ def prepare_locations(context):
     # Load persons and their primary locations
     df_home = context.stage("synthesis.population.spatial.home.locations")
     df_work, df_education = context.stage("synthesis.population.spatial.primary.locations")
+    crs = df_home.crs
 
     df_home = df_home.rename(columns = { "geometry": "home" })
     df_work = df_work.rename(columns = { "geometry": "work" })
@@ -35,7 +36,7 @@ def prepare_locations(context):
     df_locations = pd.merge(df_locations, df_work[["person_id", "work"]], how = "left", on = "person_id")
     df_locations = pd.merge(df_locations, df_education[["person_id", "education"]], how = "left", on = "person_id")
 
-    return df_locations[["person_id", "home", "work", "education"]].sort_values(by = "person_id")
+    return df_locations[["person_id", "home", "work", "education"]].sort_values(by = "person_id"), crs
 
 def prepare_destinations(context):
     df_locations = context.stage("synthesis.locations.secondary")
@@ -77,7 +78,7 @@ def execute(context):
     # Load trips and primary locations
     df_trips = context.stage("synthesis.population.trips").sort_values(by = ["person_id", "trip_index"])
     df_trips["travel_time"] = df_trips["arrival_time"] - df_trips["departure_time"]
-    df_primary = prepare_locations(context)
+    df_primary, crs = prepare_locations(context)
 
     # Prepare data
     distance_distributions = context.stage("synthesis.population.spatial.secondary.distance_distributions")
@@ -105,7 +106,7 @@ def execute(context):
         batches.append((
             df_trips[df_trips["person_id"].isin(unique_person_ids[index])],
             df_primary[df_primary["person_id"].isin(unique_person_ids[index])],
-            random_seeds[index]
+            random_seeds[index], crs
         ))
 
     # Run algorithm in parallel
@@ -128,10 +129,10 @@ def execute(context):
     return df_locations, df_convergence
 
 def process(context, arguments):
-  df_trips, df_primary, random_seed = arguments
+  df_trips, df_primary, random_seed, crs = arguments
 
   # Set up RNG
-  random = np.random.RandomState(context.config("random_seed"))
+  random = np.random.RandomState(random_seed)
   maximum_iterations = context.config("secloc_maximum_iterations")
 
   # Set up discretization solver
@@ -196,7 +197,7 @@ def process(context, arguments):
           context.progress.update()
 
   df_locations = pd.DataFrame.from_records(df_locations, columns = ["person_id", "activity_index", "location_id", "geometry"])
-  df_locations = gpd.GeoDataFrame(df_locations, crs = "EPSG:2154")
+  df_locations = gpd.GeoDataFrame(df_locations, crs = crs)
   assert not df_locations["geometry"].isna().any()
 
   df_convergence = pd.DataFrame.from_records(df_convergence, columns = ["valid", "size"])

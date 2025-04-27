@@ -30,3 +30,4 @@ def test_simulation(tmpdir):
     assert os.path.isfile("%s/ile_de_france_transit_vehicles.xml.gz" % output_path)
     assert os.path.isfile("%s/ile_de_france_households.xml.gz" % output_path)
     assert os.path.isfile("%s/ile_de_france_facilities.xml.gz" % output_path)
+    assert os.path.isfile("%s/ile_de_france_vehicles.xml.gz" % output_path)

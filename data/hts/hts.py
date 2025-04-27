@@ -89,12 +89,13 @@ def fix_trip_times(df_trips):
     print("  of which we're able to shorten %d to make it consistent" % np.count_nonzero(f))
     df_main.loc[f, "arrival_time"] = df_next["departure_time"]
 
-    # Included trips
+    # Included trips (moving the first one to the start of the following trip and setting duration to zero)
     f = ~df_main["is_last_trip"]
     f &= df_main["departure_time"] >= df_next["departure_time"]
     f &= df_main["arrival_time"] <= df_next["arrival_time"]
+    df_main.loc[f, "departure_time"] = df_next["departure_time"]
+    df_main.loc[f, "arrival_time"] = df_next["departure_time"]
     print("Found %d occurences where current trip is included in next trip" % np.count_nonzero(f))
-    df_main = df_main[~f]
 
     return df_main
 

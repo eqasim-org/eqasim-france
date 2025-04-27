@@ -3,13 +3,24 @@ import pandas as pd
 from sklearn.neighbors import KDTree
 import os
 import zipfile
+from bhepop2.tools import read_filosofi_attributes, filosofi_attributes
 
 """
 Loads and prepares income distributions by municipality:
-- Load data with centiles per municipality
-- For those which only provide median: Attach another distribution with most similar median
-- For those which are missing: Attach the distribution of the municiality with the nearest centroid
+- For global distributions
+    - Load data with centiles per municipality
+    - For those which only provide median: Attach another distribution with most similar median
+    - For those which are missing: Attach the distribution of the municiality with the nearest centroid
+- For attribute distributions, read the adequate Filosofi sheet and get the percentiles
 """
+
+
+# for now, only household size and family comp can be inferred from eqasim population
+EQASIM_INCOME_ATTRIBUTES = ["size", "family_comp"]
+
+# final columns of the income DataFrame
+INCOME_DF_COLUMNS = ["commune_id", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "attribute", "value", "is_imputed", "is_missing", "reference_median"]
+
 
 def configure(context):
     context.config("data_path")
@@ -18,22 +29,15 @@ def configure(context):
     context.config("income_com_xlsx", "FILO2021_DISP_COM.xlsx")
     context.config("income_year", 21)
 
-def execute(context):
-    # Load income distribution
-    year = str(context.config("income_year"))
 
-    with zipfile.ZipFile("{}/{}".format(
-        context.config("data_path"), context.config("income_com_path"))) as archive:
-        with archive.open(context.config("income_com_xlsx")) as f:
-            df = pd.read_excel(f,
-                sheet_name = "ENSEMBLE", skiprows = 5
-            )[["CODGEO"] + [("D%d" % q) + year if q != 5 else "Q2" + year for q in range(1, 10)]]
-            df.columns = ["commune_id", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"]
-            df["reference_median"] = df["q5"].values
-
-    # Verify spatial data for education
-    df_municipalities = context.stage("data.spatial.municipalities")
+def _income_distributions_from_filosofi_ensemble_sheet(filsofi_sheets, year, df_municipalities):
     requested_communes = set(df_municipalities["commune_id"].unique())
+
+    df = filsofi_sheets["ENSEMBLE"][["CODGEO"] + [("D%d" % q) + year if q != 5 else "Q2" + year for q in range(1, 10)]]
+    df.columns = ["commune_id", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"]
+    df.loc[:, "reference_median"] = df["q5"].values
+
+    # filter requested communes
     df = df[df["commune_id"].isin(requested_communes)]
 
     # Find communes without data
@@ -86,7 +90,83 @@ def execute(context):
     assert len(df) == len(df["commune_id"].unique())
     assert len(requested_communes - set(df["commune_id"].unique())) == 0
 
-    return df[["commune_id", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "is_imputed", "is_missing", "reference_median"]]
+    # add attribute and value "all" (ie ENSEMBLE)
+    df["attribute"] = "all"
+    df["value"] = "all"
+
+    return df[INCOME_DF_COLUMNS]
+
+
+def _income_distributions_from_filosofi_attribute_sheets(filsofi_sheets, year, df_municipalities, attributes):
+    requested_communes = set(df_municipalities["commune_id"].unique())
+
+    # read attributes
+    df_with_attributes = read_filosofi_attributes(filsofi_sheets, year, attributes, requested_communes)
+
+    df_with_attributes.rename(
+        columns={
+            "modality": "value",
+            "D1": "q1",
+            "D2": "q2",
+            "D3": "q3",
+            "D4": "q4",
+            "D5": "q5",
+            "D6": "q6",
+            "D7": "q7",
+            "D8": "q8",
+            "D9": "q9",
+        },
+        inplace=True,
+    )
+
+    # add eqasim columns, data is not imputed nor missing
+    df_with_attributes["is_imputed"] = False
+    df_with_attributes["is_missing"] = False
+
+    return df_with_attributes[INCOME_DF_COLUMNS]
+
+
+def _read_filosofi_excel(context):
+
+    # browse Filosofi attributes, select those available in Eqasim
+    attributes = []
+    sheet_list = ["ENSEMBLE"]
+    for attr in filosofi_attributes:
+        if attr["name"] in EQASIM_INCOME_ATTRIBUTES:
+            # stored attributes read from Filosofi
+            attributes.append(attr)
+            # build list of sheets to read
+            sheet_list = sheet_list + [x["sheet"] for x in attr["modalities"]]
+
+    # open and read income data file
+    with zipfile.ZipFile("{}/{}".format(
+            context.config("data_path"), context.config("income_com_path"))
+    ) as archive:
+        with archive.open(context.config("income_com_xlsx")) as f:
+            df = pd.read_excel(f, sheet_name=sheet_list, skiprows=5)
+
+    return df, attributes
+
+
+def execute(context):
+    # Verify spatial data for education
+    df_municipalities = context.stage("data.spatial.municipalities")
+
+    # Get year of income data
+    year = str(context.config("income_year"))
+
+    # Load income distribution
+    filosofi_excel, attributes = _read_filosofi_excel(context)
+
+    # Read ENSEMBLE sheet: global distributions, by commune
+    ensemble_distributions = _income_distributions_from_filosofi_ensemble_sheet(filosofi_excel, year, df_municipalities)
+
+    # Read attribute sheets: distributions on individuals with specific attribute values
+    # (ex: sheet TYPMENR_2 corresponds to households with `family_comp`=`Single_wom`)
+    attribute_distributions = _income_distributions_from_filosofi_attribute_sheets(filosofi_excel, year, df_municipalities, attributes)
+
+    return pd.concat([ensemble_distributions, attribute_distributions])
+
 
 def validate(context):
     if not os.path.exists("%s/%s" % (context.config("data_path"), context.config("income_com_path"))):

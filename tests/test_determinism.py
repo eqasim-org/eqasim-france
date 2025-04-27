@@ -13,11 +13,21 @@ def hash_sqlite_db(path):
     matter, hashing the dump of the database is more relevant.
     """
     con = sqlite3.connect(path)
-    hash = hashlib.md5()
+
+    data = []
     for line in con.iterdump():
-        encoded = (line + "\n").encode()
-        hash.update(encoded)
+        if not "rtree" in line: # Fix for compatibilit between Linux and Windows
+            line = line.replace("MEDIUMINT", "INTEGER") # Fix for compatibilit between Linux and Windows
+            data.append(line.encode())
+
     con.close()
+
+    data = sorted(data)
+
+    hash = hashlib.md5()
+    for item in data:
+        hash.update(item)
+    
     return hash.hexdigest()
 
 
@@ -68,17 +78,19 @@ def _test_determinism(index, data_path, tmpdir):
     synpp.run(stages, config, working_directory = cache_path)
 
     REFERENCE_CSV_HASHES = {
-        "ile_de_france_activities.csv":     "e520003e1876a9542ff1a955a6efcfdc",
-        "ile_de_france_households.csv":     "709ce7ded8a2487e6691d4fb3374754b",
+        "ile_de_france_activities.csv":     "53c44fb4026d2037729ee8ff1c8fb93f",
+        "ile_de_france_households.csv":     "ca2a29ef13467326f937638f1ff8be1a",
         "ile_de_france_persons.csv":        "ddbe9b418c915b14e888b54efbdf9b1e",
         "ile_de_france_trips.csv":          "6c5f3427e41e683da768eeb53796a806",
+        "ile_de_france_vehicle_types.csv":  "00bee1ea6d7bc9af43ae6c7101dd75da",
+        "ile_de_france_vehicles.csv":       "3567b0f29e51d521b13d91c82c77cecb",
     }
 
     REFERENCE_GPKG_HASHES = {
-        "ile_de_france_activities.gpkg":    "4ef01c82b09e81e54cc6b7d59145123e",
-        "ile_de_france_commutes.gpkg":      "a03554ee745e9a47a6b1ea4126a13c2a",
-        "ile_de_france_homes.gpkg":         "3533f4756e3ee126618bb17f059033bd",
-        "ile_de_france_trips.gpkg":         "982b83f27e231766d04b3f9351d84daa",
+        "ile_de_france_activities.gpkg":    "f554086e6dcbfebfa5653fd8670096fe",
+        "ile_de_france_commutes.gpkg":      "1452fbd094a9be3d26f249021cc9b7cb",
+        "ile_de_france_homes.gpkg":         "8da4fb16e569dddc063ee72e227adc01",
+        "ile_de_france_trips.gpkg":         "48f3be7064f203fd02784e85b8ff023b",
     }
 
     generated_csv_hashes = {
@@ -133,7 +145,8 @@ def _test_determinism_matsim(index, data_path, tmpdir):
         #"ile_de_france_network.xml.gz":     "5f10ec295b49d2bb768451c812955794",
         "ile_de_france_households.xml.gz":  "64a0c9fab72aad51bc6adb926a1c9d44",
         #"ile_de_france_facilities.xml.gz":  "5ad41afff9ae5c470082510b943e6778",
-        "ile_de_france_config.xml":         "481fac5fb3e7b90810caa38ff460c00a"
+        "ile_de_france_config.xml":         "30871dfbbd2b5bf6922be1dfe20ffe73",
+        "ile_de_france_vehicles.xml.gz":    "d7c8d0dba531a21dc83355b2f82778c2"
     }
 
     # activities.gpkg, trips.gpkg, meta.json,

@@ -8,8 +8,8 @@ This stage loads the raw data from the French service registry.
 
 def configure(context):
     context.config("data_path")
-    context.config("bpe_path", "bpe/bpe21_ensemble_xy_csv.zip")
-    context.config("bpe_csv", "bpe21_ensemble_xy.csv")
+    context.config("bpe_path", "bpe_2023/BPE23.zip")
+    context.config("bpe_csv", "BPE23.csv")
     context.stage("data.spatial.codes")
 
 def execute(context):
@@ -21,7 +21,7 @@ def execute(context):
     with context.progress(label = "Reading BPE ...") as progress:
         with zipfile.ZipFile("{}/{}".format(context.config("data_path"), context.config("bpe_path"))) as archive:
             with archive.open(context.config("bpe_csv")) as f:
-                csv = pd.read_csv(f, usecols = [
+                csv = pd.read_csv(f, usecols = [ "CAPACITE",
                         "DCIRIS", "LAMBERT_X", "LAMBERT_Y",
                         "TYPEQU", "DEPCOM", "DEP"
                     ], sep = ";",

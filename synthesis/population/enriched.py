@@ -16,7 +16,7 @@ This stage fuses census data with HTS data.
 def configure(context):
     context.stage("synthesis.population.matched")
     context.stage("synthesis.population.sampled")
-    context.stage("synthesis.population.income")
+    context.stage("synthesis.population.income.selected")
 
     hts = context.config("hts")
     context.stage("data.hts.selected", alias = "hts")
@@ -53,7 +53,7 @@ def execute(context):
     ]], on = "hts_household_id")
 
     # Attach income
-    df_income = context.stage("synthesis.population.income")
+    df_income = context.stage("synthesis.population.income.selected")
     df_population = pd.merge(df_population, df_income[[
         "household_id", "household_income"
     ]], on = "household_id")
@@ -84,5 +84,12 @@ def execute(context):
     df_population.loc[df_population["number_of_bikes"] < df_population["household_size"], "bike_availability"] = "some"
     df_population.loc[df_population["number_of_bikes"] == 0, "bike_availability"] = "none"
     df_population["bike_availability"] = df_population["bike_availability"].astype("category")
-
+    
+    # Add age range for education
+    df_population["age_range"] = "higher_education"
+    df_population.loc[df_population["age"]<=10,"age_range"] = "primary_school"
+    df_population.loc[df_population["age"].between(11,14),"age_range"] = "middle_school"
+    df_population.loc[df_population["age"].between(15,17),"age_range"] = "high_school"
+    df_population["age_range"] = df_population["age_range"].astype("category")
+    
     return df_population

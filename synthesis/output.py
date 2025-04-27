@@ -6,15 +6,16 @@ import os, datetime, json
 import sqlite3
 import math
 import numpy as np
+from analysis.synthesis.population import ANALYSIS_FOLDER
 
 def configure(context):
+
     context.stage("synthesis.population.enriched")
 
     context.stage("synthesis.population.activities")
     context.stage("synthesis.population.trips")
 
-    if context.config("generate_vehicles_file", False):
-        context.stage("synthesis.vehicles.selected")
+    context.stage("synthesis.vehicles.vehicles")
 
     context.stage("synthesis.population.spatial.locations")
 
@@ -22,6 +23,8 @@ def configure(context):
 
     context.config("output_path")
     context.config("output_prefix", "ile_de_france_")
+    context.config("output_formats", ["csv", "gpkg"])
+    context.config("sampling_rate")
 
     if context.config("mode_choice", False):
         context.stage("matsim.simulation.prepare")
@@ -60,21 +63,7 @@ def clean_gpkg(path):
 def execute(context):
     output_path = context.config("output_path")
     output_prefix = context.config("output_prefix")
-
-    # Prepare households
-    df_households = context.stage("synthesis.population.enriched").rename(
-        columns = { "household_income": "income" }
-    ).drop_duplicates("household_id")
-
-    df_households = df_households[[
-        "household_id",
-        "car_availability", "bike_availability",
-        "number_of_vehicles", "number_of_bikes",
-        "income",
-        "census_household_id"
-    ]]
-
-    df_households.to_csv("%s/%shouseholds.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
+    output_formats = context.config("output_formats")
 
     # Prepare persons
     df_persons = context.stage("synthesis.population.enriched").rename(
@@ -87,8 +76,10 @@ def execute(context):
         "has_driving_license", "has_pt_subscription",
         "census_person_id", "hts_id"
     ]]
-
-    df_persons.to_csv("%s/%spersons.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
+    if "csv" in output_formats:
+        df_persons.to_csv("%s/%spersons.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
+    if "parquet" in output_formats:
+        df_persons.to_parquet("%s/%spersons.parquet" % (output_path, output_prefix))
 
     # Prepare activities
     df_activities = context.stage("synthesis.population.activities").rename(
@@ -101,15 +92,57 @@ def execute(context):
     df_activities["preceding_trip_index"] = df_activities["following_trip_index"].shift(1)
     df_activities.loc[df_activities["is_first"], "preceding_trip_index"] = -1
     df_activities["preceding_trip_index"] = df_activities["preceding_trip_index"].astype(int)
+    # Prepare spatial data sets
+    df_locations = context.stage("synthesis.population.spatial.locations")[[
+        "person_id",  "iris_id", "commune_id","departement_id","region_id","activity_index", "geometry"
+    ]]
 
+    df_activities = pd.merge(df_activities, df_locations[[
+        "person_id", "iris_id", "commune_id","departement_id","region_id","activity_index", "geometry"
+    ]], how = "left", on = ["person_id", "activity_index"])
+
+    # Prepare spatial activities
+    df_spatial = gpd.GeoDataFrame(df_activities[[
+            "person_id", "household_id", "activity_index",
+            "iris_id", "commune_id","departement_id","region_id",
+            "preceding_trip_index", "following_trip_index",
+            "purpose", "start_time", "end_time",
+            "is_first", "is_last", "geometry"
+        ]], crs = df_locations.crs)
+    df_spatial = df_spatial.astype({'purpose': 'str', "departement_id": 'str'})
+
+    # Write activities
     df_activities = df_activities[[
         "person_id", "household_id", "activity_index",
+        "iris_id", "commune_id","departement_id","region_id",
         "preceding_trip_index", "following_trip_index",
         "purpose", "start_time", "end_time",
         "is_first", "is_last"
     ]]
 
-    df_activities.to_csv("%s/%sactivities.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
+    if "csv" in output_formats:
+        df_activities.to_csv("%s/%sactivities.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
+    if "parquet" in output_formats:
+        df_activities.to_parquet("%s/%sactivities.parquet" % (output_path, output_prefix))
+
+    # Prepare households
+    df_households = context.stage("synthesis.population.enriched").rename(
+        columns = { "household_income": "income" }
+    ).drop_duplicates("household_id")
+
+    df_households = pd.merge(df_households,df_activities[df_activities["purpose"] == "home"][["household_id",
+        "iris_id", "commune_id","departement_id","region_id"]].drop_duplicates("household_id"),how="left")
+    df_households = df_households[[
+        "household_id","iris_id", "commune_id", "departement_id","region_id",
+        "car_availability", "bike_availability",
+        "number_of_vehicles", "number_of_bikes",
+        "income",
+        "census_household_id"
+    ]]
+    if "csv" in output_formats:
+        df_households.to_csv("%s/%shouseholds.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
+    if "parquet" in output_formats:
+        df_households.to_parquet("%s/%shouseholds.parquet" % (output_path, output_prefix))
 
     # Prepare trips
     df_trips = context.stage("synthesis.population.trips").rename(
@@ -147,39 +180,43 @@ def execute(context):
 
         assert not np.any(df_trips["mode"].isna())                                 
 
-    df_trips.to_csv("%s/%strips.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
+    if "csv" in output_formats:
+        df_trips.to_csv("%s/%strips.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
+    if "parquet" in output_formats:
+        df_trips.to_parquet("%s/%strips.parquet" % (output_path, output_prefix))
 
-    if context.config("generate_vehicles_file"):
-        # Prepare vehicles
-        df_vehicle_types, df_vehicles = context.stage("synthesis.vehicles.selected")
+    # Prepare vehicles
+    df_vehicle_types, df_vehicles = context.stage("synthesis.vehicles.vehicles")
 
+    if "csv" in output_formats:
         df_vehicle_types.to_csv("%s/%svehicle_types.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
         df_vehicles.to_csv("%s/%svehicles.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
+    if "parquet" in output_formats:
+        df_vehicle_types.to_parquet("%s/%svehicle_types.parquet" % (output_path, output_prefix))
+        df_vehicles.to_parquet("%s/%svehicles.parquet" % (output_path, output_prefix))
 
-    # Prepare spatial data sets
-    df_locations = context.stage("synthesis.population.spatial.locations")[[
-        "person_id", "activity_index", "geometry"
-    ]]
 
-    df_activities = pd.merge(df_activities, df_locations[[
-        "person_id", "activity_index", "geometry"
-    ]], how = "left", on = ["person_id", "activity_index"])
-
-    # Write spatial activities
-    df_spatial = gpd.GeoDataFrame(df_activities, crs = "EPSG:2154")
-    df_spatial["purpose"] = df_spatial["purpose"].astype(str)
-    path = "%s/%sactivities.gpkg" % (output_path, output_prefix)
-    df_spatial.to_file(path, driver = "GPKG")
-    clean_gpkg(path)
+    if "gpkg" in output_formats:
+        path = "%s/%sactivities.gpkg" % (output_path, output_prefix)
+        df_spatial.to_file(path, driver = "GPKG")
+        clean_gpkg(path)
+    if "geoparquet" in output_formats:
+        path = "%s/%sactivities.geoparquet" % (output_path, output_prefix)
+        df_spatial.to_parquet(path)
 
     # Write spatial homes
-    path = "%s/%shomes.gpkg" % (output_path, output_prefix)
-    df_spatial[
+    df_spatial_homes = df_spatial[
         df_spatial["purpose"] == "home"
     ].drop_duplicates("household_id")[[
-        "household_id", "geometry"
-    ]].to_file(path, driver = "GPKG")
-    clean_gpkg(path)
+        "household_id","iris_id", "commune_id","departement_id","region_id", "geometry"
+    ]]
+    if "gpkg" in output_formats:
+        path = "%s/%shomes.gpkg" % (output_path, output_prefix)
+        df_spatial_homes.to_file(path, driver = "GPKG")
+        clean_gpkg(path)
+    if "geoparquet" in output_formats:
+        path = "%s/%shomes.geoparquet" % (output_path, output_prefix)
+        df_spatial_homes.to_parquet(path)
 
     # Write spatial commutes
     df_spatial = pd.merge(
@@ -193,9 +230,13 @@ def execute(context):
     ]
 
     df_spatial = df_spatial.drop(columns = ["home_geometry", "work_geometry"])
-    path = "%s/%scommutes.gpkg" % (output_path, output_prefix)
-    df_spatial.to_file(path, driver = "GPKG")
-    clean_gpkg(path)
+    if "gpkg" in output_formats:
+        path = "%s/%scommutes.gpkg" % (output_path, output_prefix)
+        df_spatial.to_file(path, driver = "GPKG")
+        clean_gpkg(path)
+    if "geoparquet" in output_formats:
+        path = "%s/%scommutes.geoparquet" % (output_path, output_prefix)
+        df_spatial.to_parquet(path)
 
     # Write spatial trips
     df_spatial = pd.merge(df_trips, df_locations[[
@@ -219,13 +260,17 @@ def execute(context):
 
     df_spatial = df_spatial.drop(columns = ["preceding_geometry", "following_geometry"])
 
-    df_spatial = gpd.GeoDataFrame(df_spatial, crs = "EPSG:2154")
+    df_spatial = gpd.GeoDataFrame(df_spatial, crs = df_locations.crs)
     df_spatial["following_purpose"] = df_spatial["following_purpose"].astype(str)
     df_spatial["preceding_purpose"] = df_spatial["preceding_purpose"].astype(str)
 
     if "mode" in df_spatial:
         df_spatial["mode"] = df_spatial["mode"].astype(str)
 
-    path = "%s/%strips.gpkg" % (output_path, output_prefix)
-    df_spatial.to_file(path, driver = "GPKG")
-    clean_gpkg(path)
+    if "gpkg" in output_formats:
+        path = "%s/%strips.gpkg" % (output_path, output_prefix)
+        df_spatial.to_file(path, driver = "GPKG")
+        clean_gpkg(path)
+    if "geoparquet" in output_formats:
+        path = "%s/%strips.geoparquet" % (output_path, output_prefix)
+        df_spatial.to_parquet(path)

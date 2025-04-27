@@ -72,12 +72,6 @@ def execute(context):
     assert(os.path.exists("%s/network.xml.gz" % context.path()))
     assert(os.path.exists("%s/schedule.xml.gz" % context.path()))
 
-    # Run plausibility checks
-    #pt2matsim.run(context, "org.matsim.pt2matsim.run.CheckMappedSchedulePlausibility", [
-    #    "schedule.xml.gz", "network.xml.gz", "EPSG:2154", context.path()
-    #])
-    #assert(os.path.exists("%s/allPlausibilityWarnings.csv" % context.path()))
-
     return dict(
         network_path = "network.xml.gz",
         schedule_path = "schedule.xml.gz",

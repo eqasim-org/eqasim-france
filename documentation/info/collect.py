@@ -66,6 +66,7 @@ def execute(context):
 
     # Income
     df_income_municipality = context.stage("data.income.municipality")
+    df_income_municipality = df_income_municipality[(df_income_municipality["attribute"] == "all") & (df_income_municipality["value"] == "all")]
     df_income_region = context.stage("data.income.region")
 
     info["income"] = {

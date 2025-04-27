@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from synthesis.population.income.utils import income_uniform_sample
 import multiprocessing as mp
 from tqdm import tqdm
 
@@ -18,7 +19,6 @@ def configure(context):
 
     context.config("random_seed")
 
-MAXIMUM_INCOME_FACTOR = 1.2
 
 def _sample_income(context, args):
     commune_id, random_seed = args
@@ -35,12 +35,9 @@ def _sample_income(context, args):
         df_income[col] = df_income[col].astype(int)
 
     centiles = list(df_income[df_income["commune_id"] == commune_id][["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"]].iloc[0].values / 12)
-    centiles = np.array([0] + centiles + [np.max(centiles) * MAXIMUM_INCOME_FACTOR])
 
-    indices = random.randint(10, size = len(df_selected))
-    lower_bounds, upper_bounds = centiles[indices], centiles[indices + 1]
+    incomes = income_uniform_sample(random, centiles, len(df_selected))
 
-    incomes = lower_bounds + random.random_sample(size = len(df_selected)) * (upper_bounds - lower_bounds)
     return f, incomes
 
 def execute(context):
@@ -48,6 +45,7 @@ def execute(context):
 
     # Load data
     df_income = context.stage("data.income.municipality")
+    df_income = df_income[(df_income["attribute"] == "all") & (df_income["value"] == "all")]
 
     df_households = context.stage("synthesis.population.sampled")[[
         "household_id", "consumption_units"

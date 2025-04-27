@@ -31,7 +31,7 @@ def configure(context):
     context.config("matching_attributes", DEFAULT_MATCHING_ATTRIBUTES)
 
     context.stage("synthesis.population.sampled")
-    context.stage("synthesis.population.income")
+    context.stage("synthesis.population.income.selected")
 
     hts = context.config("hts")
     context.stage("data.hts.selected", alias = "hts")
@@ -175,7 +175,7 @@ def execute(context):
     df_target = context.stage("synthesis.population.sampled")
 
     columns = context.config("matching_attributes")
-    
+
     try:
         default_index = columns.index("*default*")
         columns[default_index:default_index + 1] = DEFAULT_MATCHING_ATTRIBUTES
@@ -183,13 +183,13 @@ def execute(context):
 
     # Define matching attributes
     AGE_BOUNDARIES = [14, 29, 44, 59, 74, 1000]
-    
+
     if "age_class" in columns:
         df_target["age_class"] = np.digitize(df_target["age"], AGE_BOUNDARIES, right = True)
         df_source["age_class"] = np.digitize(df_source["age"], AGE_BOUNDARIES, right = True)
 
     if "income_class" in columns:
-        df_income = context.stage("synthesis.population.income")[["household_id", "household_income"]]
+        df_income = context.stage("synthesis.population.income.selected")[["household_id", "household_income"]]
 
         df_target = pd.merge(df_target, df_income)
         df_target["income_class"] = INCOME_CLASS[hts](df_target)
@@ -204,7 +204,7 @@ def execute(context):
     for column in columns:
         if not column in df_source:
             raise RuntimeError("Attribute not available in source (HTS) for matching: {}".format(column))
-        
+
         if not column in df_target:
             raise RuntimeError("Attribute not available in target (census) for matching: {}".format(column))
 

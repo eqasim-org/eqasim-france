@@ -9,6 +9,7 @@ def configure(context):
     context.stage("data.sirene.raw_siren", ephemeral = True)
     context.stage("data.sirene.raw_siret", ephemeral = True)
     context.stage("data.spatial.codes")
+    context.config("exclude_no_employee", False)
 
 def execute(context):
     df_sirene_establishments = context.stage("data.sirene.raw_siret")
@@ -22,6 +23,13 @@ def execute(context):
     df_sirene = df_sirene[
         df_sirene["etatAdministratifEtablissement"] == "A"
     ].copy()
+    
+    if context.config("exclude_no_employee"):
+        # exclude "NN", "00", and NaN
+        df_sirene = df_sirene[
+            df_sirene["trancheEffectifsEtablissement"].notna()
+            & ~(df_sirene["trancheEffectifsEtablissement"].isin(["NN", "00"]))
+        ].copy()
 
     # Define work place weights by person under salary ....
     df_sirene["minimum_employees"] = 1 # Includes "NN", "00", and NaN

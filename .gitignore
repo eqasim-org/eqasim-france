@@ -6,7 +6,8 @@ output
 data/nantes_2015
 data/lyon_2015
 .vscode
+.idea
+
+.sif
 
 config_local_*.yml
-config_bordeaux_no_mode_choice.yml
-bdx*

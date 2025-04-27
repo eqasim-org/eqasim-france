@@ -161,11 +161,11 @@ def create(output_path):
         iris = "CODE_IRIS", municipality = "INSEE_COM"
     ))
 
-    os.mkdir("%s/iris_2021" % output_path)
-    df_iris.to_file("%s/iris_2021/CONTOURS-IRIS.shp" % output_path)
+    os.mkdir("%s/iris_2023" % output_path)
+    df_iris.to_file("%s/iris_2023/CONTOURS-IRIS.shp" % output_path)
 
-    with py7zr.SevenZipFile("%s/iris_2021/iris.7z" % output_path, "w") as archive:
-        for source in glob.glob("%s/iris_2021/CONTOURS-IRIS.*" % output_path):
+    with py7zr.SevenZipFile("%s/iris_2023/iris.7z" % output_path, "w") as archive:
+        for source in glob.glob("%s/iris_2023/CONTOURS-IRIS.*" % output_path):
             archive.write(source, "LAMB93/{}".format(source.split("/")[-1]))
             os.remove(source)
 
@@ -178,17 +178,17 @@ def create(output_path):
         iris = "CODE_IRIS", municipality = "DEPCOM", department = "DEP", region = "REG"
     ))
 
-    os.mkdir("%s/codes_2021" % output_path)
+    os.mkdir("%s/codes_2023" % output_path)
 
-    with zipfile.ZipFile("%s/codes_2021/reference_IRIS_geo2021.zip" % output_path, "w") as archive:
-        with archive.open("reference_IRIS_geo2021.xlsx", "w") as f:
+    with zipfile.ZipFile("%s/codes_2023/reference_IRIS_geo2023.zip" % output_path, "w") as archive:
+        with archive.open("reference_IRIS_geo2023.xlsx", "w") as f:
             df_codes.to_excel(
                 f, sheet_name = "Emboitements_IRIS",
                 startrow = 5, index = False
             )
 
     # Dataset: Aggregate census
-    # Required attributes: IRIS, COM, DEP, REG, P15_POP
+    # Required attributes: IRIS, COM, DEP, REG, P21_POP
     print("Creating aggregate census ...")
 
     df_population = df.copy()
@@ -197,12 +197,12 @@ def create(output_path):
     ))
 
     # Set all population to fixed number
-    df_population["P19_POP"] = 120.0
+    df_population["P21_POP"] = 120.0
 
-    os.mkdir("%s/rp_2019" % output_path)
+    os.mkdir("%s/rp_2021" % output_path)
 
-    with zipfile.ZipFile("%s/rp_2019/base-ic-evol-struct-pop-2019.zip" % output_path, "w") as archive:
-        with archive.open("base-ic-evol-struct-pop-2019.xlsx", "w") as f:
+    with zipfile.ZipFile("%s/rp_2021/base-ic-evol-struct-pop-2021_xlsx.zip" % output_path, "w") as archive:
+        with archive.open("base-ic-evol-struct-pop-2021.xlsx", "w") as f:
             df_population.to_excel(
                 f, sheet_name = "IRIS", startrow = 5, index = False
             )
@@ -216,6 +216,7 @@ def create(output_path):
     categories = np.array(["A", "B", "C", "D", "E", "F", "G"])
 
     df_selection = df.iloc[random.randint(0, len(df), size = observations)].copy()
+    df_selection["CAPACITE"] = 500
     df_selection["DCIRIS"] = df_selection["iris"]
     df_selection["DEPCOM"] = df_selection["municipality"]
     df_selection["DEP"] = df_selection["department"]
@@ -227,12 +228,12 @@ def create(output_path):
     df_selection.iloc[-10:, df_selection.columns.get_loc("LAMBERT_X")] = np.nan
     df_selection.iloc[-10:, df_selection.columns.get_loc("LAMBERT_Y")] = np.nan
 
-    columns = ["DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"]
+    columns = ["CAPACITE","DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"]
 
-    os.mkdir("%s/bpe_2021" % output_path)
+    os.mkdir("%s/bpe_2023" % output_path)
 
-    with zipfile.ZipFile("%s/bpe_2021/bpe21_ensemble_xy_csv.zip" % output_path, "w") as archive:
-        with archive.open("bpe21_ensemble_xy.csv", "w") as f:
+    with zipfile.ZipFile("%s/bpe_2023/BPE23.zip" % output_path, "w") as archive:
+        with archive.open("BPE23.csv", "w") as f:
             df_selection[columns].to_csv(f,
                 sep = ";", index = False)
 
@@ -240,34 +241,86 @@ def create(output_path):
     # Required attributes: CODGEO, D115, ..., D915
     print("Creating FILOSOFI ...")
 
+    # Use the following data, taken from the Nantes municipality from the 2019 data set
+    filosofi_year = "19"
+    income_data = {
+        "househod_size": [
+            {"name": "1_pers", "sheet": "TAILLEM_1", "col_pattern": "TME1", "data": [9820,13380,15730,18140,20060,22050,24710,28120,34150]},
+            {"name": "2_pers", "sheet": "TAILLEM_2", "col_pattern": "TME2", "data": [12950,16840,19920,22660,25390,28500,32080,37030,45910]},
+            {"name": "3_pers", "sheet": "TAILLEM_3", "col_pattern": "TME3", "data": [11440,14850,18070,21040,23960,27190,30930,36130,45680]},
+            {"name": "4_pers", "sheet": "TAILLEM_4", "col_pattern": "TME4", "data": [11920,15720,19130,22440,25540,28750,32400,37520,46870]},
+            {"name": "5_pers_or_more", "sheet": "TAILLEM_5", "col_pattern": "TME5", "data": [9320,11510,13580,16180,19920,24570,29180,35460,46370]},
+        ],
+        "family_comp": [
+            {"name": "Single_man", "sheet": "TYPMENR_1", "col_pattern": "TYM1", "data": [9180,12830,15100,17740,19800,21890,24780,28290,34850]},
+            {"name": "Single_wom", "sheet": "TYPMENR_2", "col_pattern": "TYM2", "data": [10730,13730,16220,18420,20260,22160,24680,27990,33570]},
+            {"name": "Couple_without_child", "sheet": "TYPMENR_3", "col_pattern": "TYM3", "data": [15360,19560,22600,25260,27990,30980,34710,39640,49110]},
+            {"name": "Couple_with_child", "sheet": "TYPMENR_4", "col_pattern": "TYM4", "data": [11790,15540,19240,22670,25850,29180,33090,38570,48700]},
+            {"name": "Single_parent", "sheet": "TYPMENR_5", "col_pattern": "TYM5", "data": [9350,11150,12830,14660,16640,18760,21230,24700,31170]},
+            {"name": "complex_hh", "sheet": "TYPMENR_6", "col_pattern": "TYM6", "data": [9280,11850,14100,16740,19510,22480,26100,30640,38970]},
+        ]
+    }
 
     df_income = df.drop_duplicates("municipality")[["municipality"]].rename(columns = dict(municipality = "CODGEO"))
-    df_income["D119"] = 9122.0
-    df_income["D219"] = 11874.0
-    df_income["D319"] = 14430.0
-    df_income["D419"] = 16907.0
-    df_income["Q219"] = 22240.0
-    df_income["D619"] = 22827.0
-    df_income["D719"] = 25699.0
-    df_income["D819"] = 30094.0
-    df_income["D919"] = 32303.0
+
+    df_income_ensemble = df_income.copy()
+
+    # the following data is not related to the `income_data` datasets
+    df_income_ensemble["D119"] = 9122.0
+    df_income_ensemble["D219"] = 11874.0
+    df_income_ensemble["D319"] = 14430.0
+    df_income_ensemble["D419"] = 16907.0
+    df_income_ensemble["Q219"] = 22240.0
+    df_income_ensemble["D619"] = 22827.0
+    df_income_ensemble["D719"] = 25699.0
+    df_income_ensemble["D819"] = 30094.0
+    df_income_ensemble["D919"] = 32303.0
 
     # Deliberately remove some of them
-    df_income = df_income[~df_income["CODGEO"].isin([
+    df_income_ensemble = df_income_ensemble[~df_income_ensemble["CODGEO"].isin([
         "1A015", "1A016"
     ])]
 
     # Deliberately only provide median for some
-    f = df_income["CODGEO"].isin(["1D002", "1D005"])
-    df_income.loc[f, "D215"] = np.nan
+    f = df_income_ensemble["CODGEO"].isin(["1D002", "1D005"])
+    df_income_ensemble.loc[f, "D215"] = np.nan
+
+    for value in income_data["househod_size"]:
+        value["df"] = df_income.copy()
+        col_pattern = value["col_pattern"]
+        columns = [
+            "%sD%d" % (col_pattern, q) + filosofi_year if q != 5 else col_pattern + "Q2" + filosofi_year
+            for q in range(1, 10)
+        ]
+        for i, column in enumerate(columns):
+            value["df"][column] = value["data"][i]
+        
+    for value in income_data["family_comp"]:
+        value["df"] = df_income.copy()
+        col_pattern = value["col_pattern"]
+        columns = [
+            "%sD%d" % (col_pattern, q) + filosofi_year if q != 5 else col_pattern + "Q2" + filosofi_year
+            for q in range(1, 10)
+        ]
+        for i, column in enumerate(columns):
+            value["df"][column] = value["data"][i]
 
     os.mkdir("%s/filosofi_2019" % output_path)
 
     with zipfile.ZipFile("%s/filosofi_2019/indic-struct-distrib-revenu-2019-COMMUNES.zip" % output_path, "w") as archive:
         with archive.open("FILO2019_DISP_COM.xlsx", "w") as f:
-            df_income.to_excel(
-                f, sheet_name = "ENSEMBLE", startrow = 5, index = False
-            )
+            with pd.ExcelWriter(f) as writer:  
+                df_income_ensemble.to_excel(
+                    writer, sheet_name = "ENSEMBLE", startrow = 5, index = False
+                )
+                for value in income_data["househod_size"]:
+                    value["df"].to_excel(
+                        writer, sheet_name = value["sheet"], startrow = 5, index = False
+                    )
+                for value in income_data["family_comp"]:
+                    value["df"].to_excel(
+                        writer, sheet_name = value["sheet"], startrow = 5, index = False
+                    )
 
     # Data set: ENTD
     print("Creating ENTD ...")
@@ -511,8 +564,8 @@ def create(output_path):
     df_persons = pd.DataFrame.from_records(persons)[columns]
     df_persons.columns = columns
 
-    with zipfile.ZipFile("%s/rp_2019/RP2019_INDCVI_csv.zip" % output_path, "w") as archive:
-        with archive.open("FD_INDCVI_2019.csv", "w") as f:
+    with zipfile.ZipFile("%s/rp_2021/RP2021_indcvi.zip" % output_path, "w") as archive:
+        with archive.open("FD_INDCVI_2021.csv", "w") as f:
             df_persons.to_csv(f, sep = ";")
 
     # Data set: commute flows
@@ -534,8 +587,8 @@ def create(output_path):
     columns = ["COMMUNE", "DCLT", "TRANS", "ARM", "IPONDI"]
     df_work.columns = columns
 
-    with zipfile.ZipFile("%s/rp_2019/RP2019_MOBPRO_csv.zip" % output_path, "w") as archive:
-        with archive.open("FD_MOBPRO_2019.csv", "w") as f:
+    with zipfile.ZipFile("%s/rp_2021/RP2021_mobpro.zip" % output_path, "w") as archive:
+        with archive.open("FD_MOBPRO_2021.csv", "w") as f:
             df_work.to_csv(f, sep = ";")
 
     # ... education
@@ -545,12 +598,13 @@ def create(output_path):
     ))
     df_education["ARM"] = "Z"
     df_education["IPONDI"] = 1.0
+    df_education["AGEREV10"] = 1
 
-    columns = ["COMMUNE", "DCETUF", "ARM", "IPONDI"]
+    columns = ["COMMUNE", "DCETUF", "ARM", "IPONDI","AGEREV10"]
     df_education.columns = columns
 
-    with zipfile.ZipFile("%s/rp_2019/RP2019_MOBSCO_csv.zip" % output_path, "w") as archive:
-        with archive.open("FD_MOBSCO_2019.csv", "w") as f:
+    with zipfile.ZipFile("%s/rp_2021/RP2021_mobsco.zip" % output_path, "w") as archive:
+        with archive.open("FD_MOBSCO_2021.csv", "w") as f:
             df_education.to_csv(f, sep = ";")
 
     # Data set: BD-TOPO
@@ -820,6 +874,64 @@ def create(output_path):
     import data.gtfs.utils
     data.gtfs.utils.write_feed(feed, "%s/gtfs_idf/IDFM-gtfs.zip" % output_path)
 
+    # Dataset: Parc automobile
+    df_vehicles_region = pd.DataFrame(index = pd.MultiIndex.from_product([
+        df["region"].unique(),
+        np.arange(20),
+    ], names = [
+        "Code région", "Age au 01/01/2021"
+    ])).reset_index()
+
+    # to enforce string
+    df_vehicles_region = pd.concat([df_vehicles_region, pd.DataFrame({
+        "Code région": ["AB"],
+        "Age au 01/01/2021": [0],
+    })])
+
+    df_vehicles_region["Code région"] = df_vehicles_region["Code région"].astype(str)
+
+    df_vehicles_region["Parc au 01/01/2021"] = 100
+    df_vehicles_region["Energie"] = "Gazole"
+    df_vehicles_region["Vignette crit'air"] = "Crit'air 1"
+
+    df_vehicles_region["Age au 01/01/2021"] = df_vehicles_region["Age au 01/01/2021"].astype(str)
+    df_vehicles_region["Age au 01/01/2021"] = df_vehicles_region["Age au 01/01/2021"].replace("20", ">20")
+    df_vehicles_region["Age au 01/01/2021"] = df_vehicles_region["Age au 01/01/2021"] + " ans"
+
+    df_vehicles_commune = pd.DataFrame({
+        "municipality": df["municipality"].unique()
+    })
+    df_vehicles_commune["Parc au 01/01/2021"] = 100
+    df_vehicles_commune["Energie"] = "Gazole"
+    df_vehicles_commune["Vignette Crit'air"] = "Crit'air 1"
+
+    df_vehicles_commune = pd.merge(df_vehicles_commune, df[[
+        "municipality", "region", "department"
+    ]], on = "municipality")
+
+    df_vehicles_commune = df_vehicles_commune.rename(columns = {
+        "municipality": "Code commune",
+        "department": "Code départment",
+        "region": "Code région",
+    })
+
+    os.mkdir("%s/vehicles" % output_path)
+    
+    with zipfile.ZipFile("%s/vehicles/parc_vp_regions.zip" % output_path, "w") as archive:
+        with archive.open("Parc_VP_Regions_2021.xlsx", "w") as f:
+            df_vehicles_region.to_excel(f)
+
+    with zipfile.ZipFile("%s/vehicles/parc_vp_communes.zip" % output_path, "w") as archive:
+        with archive.open("Parc_VP_Communes_2021.xlsx", "w") as f:
+            df_vehicles_commune.to_excel(f)
+
 if __name__ == "__main__":
+    import shutil
     import sys
+    import os
+    folder = sys.argv[1]
+    os.makedirs(folder, exist_ok=True)
+
+    for dir in os.listdir(folder):
+        shutil.rmtree(os.path.join(folder,dir))
     create(sys.argv[1])

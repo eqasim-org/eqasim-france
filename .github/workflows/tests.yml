@@ -20,20 +20,18 @@ jobs:
       with:
         distribution: "corretto"
         java-version: "17"
-    - uses: actions/cache@v2
-      env:
-        CACHE_NUMBER: 0
+    - uses: actions/cache@v4
       with:
         path: ~/conda_pkgs_dir
-        key:
-          ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
-          hashFiles('environment.yml') }}
-    - uses: conda-incubator/setup-miniconda@v2
+        key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: "ile-de-france"
         environment-file: environment.yml
         python-version: "3.10"
         channels: conda-forge
+        pkgs-dirs: ~/conda_pkgs_dir
+        conda-remove-defaults: true
     - name: Set up osmosis (Linux)
       if: matrix.os == 'ubuntu-latest'
       shell: bash -el {0}
@@ -65,7 +63,6 @@ jobs:
         python --version
         osmosis -v
         git --version
-        python -c "import fiona"
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |

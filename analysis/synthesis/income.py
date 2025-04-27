@@ -8,7 +8,7 @@ import analysis.marginals as marginals
 
 def configure(context):
     acquisition_sample_size = context.config("acquisition_sample_size")
-    bs.configure(context, "synthesis.population.income", acquisition_sample_size)
+    bs.configure(context, "synthesis.population.income.selected", acquisition_sample_size)
 
 def execute(context):
     acquisition_sample_size = context.config("acquisition_sample_size")
@@ -17,7 +17,7 @@ def execute(context):
     quantiles = []
 
     with context.progress(label = "Processing commute data ...", total = acquisition_sample_size) as progress:
-        for df_income in bs.get_stages(context, "synthesis.population.income", acquisition_sample_size):
+        for df_income in bs.get_stages(context, "synthesis.population.income.selected", acquisition_sample_size):
             income = 12 * df_income["household_income"] / df_income["consumption_units"]
             quantiles.append([income.quantile(p) for p in probabilities])
             progress.update()

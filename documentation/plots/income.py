@@ -19,6 +19,7 @@ def execute(context):
 
     # Income imputation
     df_income = context.stage("data.income.municipality")
+    df_income = df_income[(df_income["attribute"] == "all") & (df_income["value"] == "all")]
     df_imputed = df_income[df_income["is_imputed"]]
 
     plt.figure()

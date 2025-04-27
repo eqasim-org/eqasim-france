@@ -1,5 +1,10 @@
 import pandas as pd
+import numpy as np
+
 import os
+import zipfile
+
+from data.spatial.department_names import DEPARTMENTS
 
 """
 This stage loads and cleans projection data about the French population.
@@ -7,65 +12,60 @@ This stage loads and cleans projection data about the French population.
 
 def configure(context):
     context.config("data_path")
-    context.config("projection_path", "projection_2021")
-    context.config("projection_scenario", "00_central")
+    context.config("projection_path", "projections/donnees_detaillees_departementales.zip")
+    context.config("projection_scenario", None)
     context.config("projection_year", None)
 
+    context.stage("data.spatial.departments")
+
 def execute(context):
-    source_path = "{}/{}/{}.xlsx".format(
+    df_departments = context.stage("data.spatial.departments")
+
+    # Reading data
+    archive_path = "{}/{}".format(
         context.config("data_path"), 
-        context.config("projection_path"), 
-        context.config("projection_scenario"))
+        context.config("projection_path"))
     
     projection_year = int(context.config("projection_year"))
+    projection_scenario = context.config("projection_scenario")
 
-    df_all = pd.read_excel(
-        source_path, sheet_name = "population", skiprows = 1).iloc[:107]
+    with zipfile.ZipFile(archive_path) as archive:
+        with archive.open("donnees_det_{}.xlsx".format(projection_scenario)) as f:
+            df = pd.read_excel(f, sheet_name = "Population", skiprows = 5)
+
+    # Clean sex
+    df["sex"] = df["SEXE"].replace({ 1: "male", 2: "female" })
+
+    # Clean age range
+    df["minimum_age"] = df["TRAGE"].apply(lambda x: float(x.split(";")[0][1:]))
+    df["maximum_age"] = df["TRAGE"].apply(lambda x: np.inf if "+" in x else float(x.split(";")[1][:-1]))
     
-    df_male = pd.read_excel(
-        source_path, sheet_name = "populationH", skiprows = 1).iloc[:107]
+    # Clean department
+    lookup = { name: identifier for identifier, name in DEPARTMENTS.items() }
+    df["department_id"] = df["ZONE"].replace(lookup)
+
+    requested_departments = set(df_departments["departement_id"])
+    available_departments = set(df["department_id"])
     
-    df_female = pd.read_excel(
-        source_path, sheet_name = "populationF", skiprows = 1).iloc[:107]
+    assert len(requested_departments - available_departments) == 0
+    df = df[df["department_id"].isin(df_departments["departement_id"])]
 
-    df_male["sex"] = "male"
-    df_female["sex"] = "female"
+    # Clean weight
+    column = "POP_{}".format(projection_year)
+    if not column in df:
+        raise RuntimeError("Year {} is not available in projection data".format(projection_year))
+    
+    df["weight"] = df[column]
 
-    assert df_all["Âge au 1er janvier"].iloc[-1] == "Total"
-    assert df_male["Âge au 1er janvier"].iloc[-1] == "Total des hommes"
-    assert df_female["Âge au 1er janvier"].iloc[-1] == "Total des femmes"
-
-    df_sex = pd.concat([
-        df_male.iloc[-1:],
-        df_female.iloc[-1:]
-    ]).drop(columns = ["Âge au 1er janvier"])[["sex", projection_year]]
-    df_sex.columns = ["sex", "projection"]
-
-    df_age = df_all[["Âge au 1er janvier", projection_year]].iloc[:-1]
-    df_age.columns = ["age", "projection"]
-
-    df_male = df_male[["Âge au 1er janvier", "sex", projection_year]].iloc[:-1]
-    df_female = df_female[["Âge au 1er janvier", "sex", projection_year]].iloc[:-1]
-
-    df_male.columns = ["age", "sex", "projection"]
-    df_female.columns = ["age","sex", "projection"]
-
-    df_cross = pd.concat([df_male, df_female])
-    df_cross["sex"] = df_cross["sex"].astype("category")
-
-    df_total = df_all.iloc[-1:].drop(columns = ["Âge au 1er janvier"])[[projection_year]]
-    df_total.columns = ["projection"]
-
-    return {
-        "total": df_total, "sex": df_sex, "age": df_age, "cross": df_cross
-    }
+    # Cleanup
+    df = df[["department_id", "sex", "minimum_age", "maximum_age", "weight"]] 
+    return df
 
 def validate(context):
-    if context.config("projection_year") is not None:
-        source_path = "{}/{}/{}.xlsx".format(
+    if context.config("projection_year") is not None or context.config("projection_scenario") is not None:
+        source_path = "{}/{}".format(
             context.config("data_path"), 
-            context.config("projection_path"), 
-            context.config("projection_scenario"))
+            context.config("projection_path"))
 
         if not os.path.exists(source_path):
             raise RuntimeError("Projection data is not available")

@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "eqasim"
+version: 1.5.0
+url: "https://github.com/eqasim-org/ile-de-france/"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Hörl"
+    given-names: "Sebastian"
+    orcid: "https://orcid.org/0000-0002-9018-432X"
+  - family-names: "Balac"
+    given-names: "Milos"
+    orcid: "https://orcid.org/0000-0002-6099-7442"
+  doi: "10.1016/j.trc.2021.103291"
+  journal: "Transportation Research Part C: Emerging Technologies"
+  month: 9
+  start: 103291
+  title: "Synthetic population and travel demand for Paris and Île-de-France based on open and publicly available data"
+  volume: 130
+  year: 2021

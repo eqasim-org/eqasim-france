@@ -9,7 +9,10 @@ home activities.
 
 def configure(context):
     context.stage("data.spatial.iris")
-    context.stage("synthesis.locations.home.addresses")
+    if context.config("home_location_source", "addresses") == "tiles":
+        context.stage("data.tiles.raw", alias = "location_source")
+    else:
+        context.stage("synthesis.locations.home.addresses", alias = "location_source")
 
 def execute(context):
     # Find required IRIS
@@ -17,7 +20,7 @@ def execute(context):
     required_iris = set(df_iris["iris_id"].unique())
     
     # Load all addresses and add IRIS information
-    df_addresses = context.stage("synthesis.locations.home.addresses")
+    df_addresses = context.stage("location_source")
 
     print("Imputing IRIS into addresses ...")
    
@@ -38,7 +41,6 @@ def execute(context):
             len(missing_iris), len(required_iris)))
 
         df_added = []
-
         for iris_id in sorted(missing_iris):
             centroid = df_iris[df_iris["iris_id"] == iris_id]["geometry"].centroid.iloc[0]
 
@@ -46,7 +48,7 @@ def execute(context):
                 "iris_id": iris_id, "geometry": centroid,
                 "commune_id": iris_id[:5],
                 "weight" : 1,
-                "building_id": -1
+                "home_location_id": -1
             })
 
         df_added = gpd.GeoDataFrame(pd.DataFrame.from_records(df_added), crs = df_addresses.crs)

@@ -10,10 +10,8 @@ def configure(context):
     context.stage("data.spatial.codes")
 
     context.config("data_path")
-    context.config("census_path", "rp/RP2020_INDCVI_csv.zip")
-    context.config("census_csv", "FD_INDCVI_2020.csv")
-
-    context.config("projection_year", None)
+    context.config("census_path", "rp_2021/RP2021_indcvi.zip")
+    context.config("census_csv", "FD_INDCVI_2021.csv")
 
 COLUMNS_DTYPES = {
     "CANTVILLE":"str", 
@@ -39,9 +37,6 @@ def execute(context):
 
     requested_departements = df_codes["departement_id"].unique()
 
-    # only pre-filter if we don't need to reweight the census later
-    prefilter_departments = context.config("projection_year") is None
-
     with context.progress(label = "Reading census ...") as progress:
         with zipfile.ZipFile(
             "{}/{}".format(context.config("data_path"), context.config("census_path"))) as archive:
@@ -54,17 +49,15 @@ def execute(context):
                 for df_chunk in csv:
                     progress.update(len(df_chunk))
                     
-                    if prefilter_departments:
-                        df_chunk = df_chunk[df_chunk["DEPT"].isin(requested_departements)]
+                    df_chunk = df_chunk[df_chunk["DEPT"].isin(requested_departements)]
 
                     if len(df_chunk) > 0:
                         df_records.append(df_chunk)
 
     return pd.concat(df_records)
 
-
 def validate(context):
     if not os.path.exists("{}/{}".format(context.config("data_path"), context.config("census_path"))):
-        raise RuntimeError("RP 2019 data is not available")
+        raise RuntimeError("RP 2021 data is not available")
 
     return os.path.getsize("{}/{}".format(context.config("data_path"), context.config("census_path")))

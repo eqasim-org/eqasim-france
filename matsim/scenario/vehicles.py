@@ -6,7 +6,7 @@ import pandas as pd
 import matsim.writers as writers
 
 def configure(context):
-    context.stage("synthesis.vehicles.selected")
+    context.stage("synthesis.vehicles.vehicles")
 
 TYPE_FIELDS = ["type_id", "nb_seats", "length", "width", "pce", "mode"]
 VEHICLE_FIELDS = ["vehicle_id", "type_id", "critair", "technology", "age", "euro"]
@@ -14,7 +14,7 @@ VEHICLE_FIELDS = ["vehicle_id", "type_id", "critair", "technology", "age", "euro
 def execute(context):
     output_path = "%s/vehicles.xml.gz" % context.path()
 
-    df_vehicle_types, df_vehicles = context.stage("synthesis.vehicles.selected")
+    df_vehicle_types, df_vehicles = context.stage("synthesis.vehicles.vehicles")
 
     with gzip.open(output_path, 'wb+') as writer:
         with io.BufferedWriter(writer, buffer_size = 2 * 1024**3) as writer:

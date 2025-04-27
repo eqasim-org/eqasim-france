@@ -58,12 +58,22 @@ def execute(context):
     
     assert not np.any(df_work["commute_mode"].isna())
 
+    # Clean age range for education
+    df_education["age_range"] = np.nan
+    df_education.loc[df_education["AGEREV10"] <= 6, "age_range"] = "primary_school"
+    df_education.loc[df_education["AGEREV10"] == 11, "age_range"] = "middle_school"
+    df_education.loc[df_education["AGEREV10"] == 15, "age_range"] = "high_school"
+    df_education.loc[df_education["AGEREV10"] >= 18, "age_range"] = "higher_education"
+    df_education["age_range"] = df_education["age_range"].astype("category")
+    
+    assert not np.any(df_education["age_range"].isna())
+
     # Aggregate the flows
     print("Aggregating work ...")
     df_work = df_work.groupby(["origin_id", "destination_id", "commute_mode"])["weight"].sum().reset_index()
 
     print("Aggregating education ...")
-    df_education = df_education.groupby(["origin_id", "destination_id"])["weight"].sum().reset_index()
+    df_education = df_education.groupby(["origin_id", "destination_id","age_range"])["weight"].sum().reset_index()
 
     df_work["weight"] = df_work["weight"].fillna(0.0)
     df_education["weight"] = df_education["weight"].fillna(0.0)
