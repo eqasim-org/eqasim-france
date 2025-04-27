@@ -55,11 +55,11 @@ try to run the pipeline, it will complain if this is not the case):
 
 - **Java** needs to be installed, with a minimum version of Java 17. In case
 you are not sure, you can download the free and open [Adoptium JDK](https://adoptium.net/fr/temurin/releases/?version=17&package=jdk).
-- **Maven** `>= 3.8.7` needs to be installed to build the necessary Java packages for setting
+- **Maven** `>= 3.8.8` needs to be installed to build the necessary Java packages for setting
 up the scenario (such as pt2matsim) and running the simulation. Maven can be
 downloaded [here](https://maven.apache.org/) if it does not already exist on
 your system.
-- **Osmosis** needs to be accessible from the command line to convert and filter
+- **Osmosis** `>= 0.48.2` needs to be accessible from the command line to convert and filter
 to convert, filter and merge OSM data sets. Alternatively, you can set the path
 to the binary using the `osmosis_binary` option in the confiuration file. Osmosis
 can be downloaded [here](https://wiki.openstreetmap.org/wiki/Osmosis).
@@ -92,23 +92,21 @@ folder:
 - `ile_de_france_households.xml.gz` containing additional household information
 - `ile_de_france_transit_schedule.xml.gz` and `ile_de_france_transit_vehicles.xml.gz` containing public transport data
 - `ile_de_france_config.xml` containing the MATSim configuration values
-- `ile_de_france-1.0.6.jar` containing a fully packaged version of the simulation code including MATSim and all other dependencies
+- `ile_de_france_run.jar` containing a fully packaged version of the simulation code including MATSim and all other dependencies
 
 If you want to run the simulation again (in the pipeline it is only run for
 two iterations to test that everything works), you can now call the following:
 
 ```bash
-java -Xmx14G -cp ile_de_france-1.0.6.jar org.eqasim.ile_de_france.RunSimulation --config-path ile_de_france_config.xml
+java -Xmx14G -cp ile_de_france_run.jar org.eqasim.ile_de_france.RunSimulation --config-path ile_de_france_config.xml
 ```
 
 This will create a `simulation_output` folder (as defined in the `ile_de_france_config.xml`)
 where all simulation is written.
 
-As of version `1.0.6` of the Île-de-France pipeline, simulations of a 5% population sample use calibrated values for the mode choice model. This means after running for 60 or more iterations, the correct mode shares and network speeds are achieved, compared to the EGT reference data.
-
 For more flexibility and advanced simulations, have a look at the MATSim
 simulation code provided at https://github.com/eqasim-org/eqasim-java. The generated
-`ile-de-france-*.jar` from this pipeline is an automatically compiled version of
+`ile_de_france_run.jar` from this pipeline is an automatically compiled version of
 this code.
 
 ## Mode choice
@@ -165,15 +163,15 @@ config:
 Once have run a full simulation, you'll be able to use some classes defined in `eqasim-java` to analyse and compute emissions based on the MATSim outputs. For example:
 
 ```bash
-java -cp ile_de_france-1.0.6.jar org.eqasim.ile_de_france.emissions.RunComputeEmissionsEvents --config-path config.xml --hbefa-cold-avg ./EFA_ColdStart_Vehcat_2015_Cold_Average.csv --hbefa-hot-avg ./EFA_HOT_Vehcat_2015_Hot_Average.csv --hbefa-cold-detailed ./EFA_ColdStart_Subsegm_2015_Cold_Detailed.csv --hbefa-hot-detailed ./EFA_HOT_Subsegm_2015_Hot_Detailed.csv
+java -cp ile_de_france_run.jar org.eqasim.ile_de_france.emissions.RunComputeEmissionsEvents --config-path config.xml --hbefa-cold-avg ./EFA_ColdStart_Vehcat_2015_Cold_Average.csv --hbefa-hot-avg ./EFA_HOT_Vehcat_2015_Hot_Average.csv --hbefa-cold-detailed ./EFA_ColdStart_Subsegm_2015_Cold_Detailed.csv --hbefa-hot-detailed ./EFA_HOT_Subsegm_2015_Hot_Detailed.csv
 ```
 
 ```bash
-java -cp ile_de_france-1.0.6.jar org.eqasim.ile_de_france.emissions.RunExportEmissionsNetwork --config-path config.xml --time-bin-size 3600
+java -cp ile_de_france_run.jar org.eqasim.ile_de_france.emissions.RunExportEmissionsNetwork --config-path config.xml --time-bin-size 3600
 ```
 
 ```bash
-java -cp ile_de_france-1.0.6.jar org.eqasim.ile_de_france.emissions.RunComputeEmissionsGrid --config-path config.xml --domain-shp-path idf_2154.shp
+java -cp ile_de_france_run.jar org.eqasim.ile_de_france.emissions.RunComputeEmissionsGrid --config-path config.xml --domain-shp-path idf_2154.shp
 ```
 
 Please note that you need a copy of the HBEFA database in order to run those. For further information you can look at [eqasim-java](https://github.com/eqasim-org/eqasim-java) and [matsim-libs/contribs/emissions](https://github.com/matsim-org/matsim-libs/tree/master/contribs/emissions)
