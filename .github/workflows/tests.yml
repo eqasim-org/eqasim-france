@@ -64,7 +64,6 @@ jobs:
         python --version
         osmosis -v
         git --version
-        python -c "import fiona"
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
