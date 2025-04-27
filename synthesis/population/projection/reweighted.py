@@ -9,9 +9,6 @@ def configure(context):
     context.stage("data.census.filtered")
     context.stage("synthesis.population.projection.ipu")
 
-    context.config("output_path")
-    context.config("projection_year")
-
 def execute(context):
     df_census = context.stage("data.census.filtered")
     df_weights = context.stage("synthesis.population.projection.ipu")
