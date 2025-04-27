@@ -139,6 +139,7 @@ config:
   # git_binary: git
   # java_binary: java
   # maven_binary: mvn
+  # maven_local_cache: false
 
   ## Binaries parameters
   # java_memory: 14G
