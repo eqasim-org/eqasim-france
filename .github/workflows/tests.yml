@@ -22,7 +22,7 @@ jobs:
         java-version: "17"
     - uses: actions/cache@v4
       env:
-        CACHE_NUMBER: 2
+        CACHE_NUMBER: 1
       with:
         path: ~/conda_pkgs_dir
         key:
@@ -66,18 +66,6 @@ jobs:
         osmosis -v
         git --version
         python -c "import fiona"
-    - name: Check driver
-      shell: bash -el {0}
-      run: |
-        python -c "import geopandas; print(geopandas.__version__)"
-        python -c "import fiona; print(fiona.__version__)"
-        python -c "import pyogrio; print(pyogrio.__version__)"
-        python -c "import sqlite3; print(sqlite3.version)"
-        python -c "import geopandas.io.file; print(geopandas.io.file._check_engine(None, ''))"
-        exit 1
-    - name: Show dependencies
-      shell: bash -el {0}
-      run: conda env export --no-builds
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
