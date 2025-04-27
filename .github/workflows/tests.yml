@@ -57,7 +57,7 @@ jobs:
         git config --global user.email "you@example.com"
         git config --global user.name "Your Name"
         git config --system core.longpaths true
-    - name: Test versions and output dependencies
+    - name: Test versions
       shell: bash -el {0}
       run: |
         java -version
@@ -68,7 +68,7 @@ jobs:
         python -c "import fiona"
     - name: Show dependencies
       shell: bash -el {0}
-      run: mamba env export --no-builds
+      run: conda env export --no-builds
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
