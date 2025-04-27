@@ -764,7 +764,7 @@ def create(output_path):
                 links.append([node_index, node_index + 1])
 
             if i < lengthx - 1:
-                links.append([node_index, node_index + lengthx])
+                links.append([node_index, node_index + 1])
 
             node_index += 1
 
@@ -772,12 +772,12 @@ def create(output_path):
     df_nodes = df_nodes.to_crs("EPSG:4326")
 
     for row in df_nodes.itertuples():
-        osm.append('<node id="%d" lat="%f" lon="%f" version="3" timestamp="2010-12-05T17:00:00" />' % (
+        osm.append('<node id="%d" lat="%f" lon="%f" version="3" timestamp="2010-12-05T17:00:00Z" />' % (
             row[1], row[2].y, row[2].x
         ))
 
     for index, link in enumerate(links):
-        osm.append('<way id="%d" version="3" timestamp="2010-12-05T17:00:00">' % (index + 1))
+        osm.append('<way id="%d" version="3" timestamp="2010-12-05T17:00:00Z">' % (index + 1))
         osm.append('<nd ref="%d" />' % link[0])
         osm.append('<nd ref="%d" />' % link[1])
         osm.append('<tag k="highway" v="primary" />')
@@ -790,14 +790,10 @@ def create(output_path):
     with gzip.open("%s/osm_idf/ile-de-france-220101.osm.gz" % output_path, "wb+") as f:
         f.write(bytes("\n".join(osm), "utf-8"))
 
-
-    import subprocess
-
-    subprocess.check_call([
-        shutil.which("osmosis"), "--read-xml", "%s/osm_idf/ile-de-france-220101.osm.gz" % output_path,
-        "--write-pbf", "%s/osm_idf/ile-de-france-220101.osm.pbf" % output_path
-    ])
-
+    import osmium
+    with osmium.SimpleWriter("{}/osm_idf/ile-de-france-220101.osm.pbf".format(output_path)) as writer:
+        for item in osmium.FileProcessor("{}/osm_idf/ile-de-france-220101.osm.gz".format(output_path)):
+            writer.add(item)
 
     # Data set: GTFS
     print("Creating GTFS ...")

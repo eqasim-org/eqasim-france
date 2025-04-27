@@ -29,3 +29,4 @@ dependencies:
   - pip:
     - synpp==1.5.1
     - bhepop2==2.0.0
+    - osmium==4.0.2
