@@ -48,7 +48,7 @@ def execute(context):
 
     output_path = "{}/output.osm.gz".format(context.path())
     with osmium.SimpleWriter(output_path) as writer:
-        for items in context.progress(osmium.zip_processors(*processors), desc = "Writing ..."):
+        for items in context.progress(osmium.zip_processors(*processors), label = "Writing ..."):
             for item_index, item in enumerate(items):
                 if item:
                     writer.add(item)
