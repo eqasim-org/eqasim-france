@@ -73,10 +73,9 @@ paper presented at the 30th IEEE Intelligent Vehicles Symposium, Paris, June 201
 
 [comment]: # (x-release-please-start-version)
 
-The current version of the pipeline is `1.2.0`. You can obtain it by cloning
-the `1.2.0` tag of this repository. Alternatively, you can also clone the
-`develop` branch to make use of the latest developments. The version number
-will be kept in the `develop` branch until a new version is officially released.
+The current version of the pipeline can be found in `https://github.com/eqasim-org/ile-de-france/releases`. You can obtain it by cloning
+the respective tag of this repository. Alternatively, you can also clone the
+`develop` branch to make use of the latest developments.
 
 [comment]: # (x-release-please-end)
 
