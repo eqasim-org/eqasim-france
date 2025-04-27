@@ -3,9 +3,6 @@ import os
 
 """
 This stage loads the raw data of the specified HTS (EMC2 Gironde).
-
-Adapted from the first implementation by Valentin Le Besond (IFSTTAR Nantes)
-and second implementation by Sebastian Hoërl
 """
 
 def configure(context):
@@ -34,25 +31,24 @@ TRIP_COLUMNS = {
 def execute(context):
     # Load households
     df_households = pd.read_csv(
-        "%s/emc2/08a_EMC2_Gironde_2022_Men_Fusion_men2021_MQPV_23052023.csv"
+        "%s/emc2_33_2021/08a_EMC2_Gironde_2022_Men_Fusion_men2021_MQPV_23052023.csv"
         % context.config("data_path"),
         usecols = list(HOUSEHOLD_COLUMNS.keys()), dtype = HOUSEHOLD_COLUMNS,sep=";"
     )
 
     # Load persons
     df_persons = pd.read_csv(
-        "%s/emc2/07b_EMC2_Gironde_2022_Pers_Fusion_men2021_P19A_13022023.csv"
+        "%s/emc2_33_2021/07b_EMC2_Gironde_2022_Pers_Fusion_men2021_P19A_13022023.csv"
      % context.config("data_path"),
      usecols = list(PERSON_COLUMNS.keys()), dtype = PERSON_COLUMNS,sep=";"
  )
 
     # Load trips
     df_trips = pd.read_csv(
-        "%s/emc2/07c_EMC2_Gironde_2022_Depl_Fusion_men2021_D11_03022023.csv"
+        "%s/emc2_33_2021/07c_EMC2_Gironde_2022_Depl_Fusion_men2021_D11_03022023.csv"
         % context.config("data_path"),
         usecols = list(TRIP_COLUMNS.keys()), dtype = TRIP_COLUMNS,sep=";"
     )
-
 
     return df_households, df_persons, df_trips
 
@@ -64,10 +60,10 @@ FILES = [
 
 def validate(context):
     for name in FILES:
-        if not os.path.exists("%s/emc2/%s" % (context.config("data_path"), name)):
+        if not os.path.exists("%s/emc2_33_2021/%s" % (context.config("data_path"), name)):
             raise RuntimeError("File missing from EDGT: %s" % name)
 
     return [
-        os.path.getsize("%s/emc2/%s" % (context.config("data_path"), name))
+        os.path.getsize("%s/emc2_33_2021/%s" % (context.config("data_path"), name))
         for name in FILES
     ]

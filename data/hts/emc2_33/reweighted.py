@@ -1,9 +1,9 @@
 
 def configure(context):
-    context.stage("data.hts.emc2.filtered")
+    context.stage("data.hts.emc2_33.filtered")
 
 def execute(context):
-    df_households, df_persons, df_trips = context.stage("data.hts.emc2.filtered")
+    df_households, df_persons, df_trips = context.stage("data.hts.emc2_33.filtered")
 
     # 1) Filter persons for which we don't have trip information
     df_persons = df_persons[df_persons["number_of_trips"] >= 0].copy()

@@ -7,9 +7,9 @@ This stage cleans the Gironde EMC2.
 """
 
 def configure(context):
-    context.stage("data.hts.emc2.raw")
+    context.stage("data.hts.emc2_33.raw")
     if context.config("use_urban_type",False):
-        context.stage("data.hts.emc2.urban_type")
+        context.stage("data.hts.emc2_33.urban_type")
     
     context.config("departments", [])
     
@@ -32,7 +32,7 @@ MODES_MAP = {
 
 
 def execute(context):
-    df_households, df_persons, df_trips = context.stage("data.hts.emc2.raw")
+    df_households, df_persons, df_trips = context.stage("data.hts.emc2_33.raw")
     requested_department = context.config("departments")[0]
 
     # set ids for households, persons, trips
@@ -200,7 +200,7 @@ def execute(context):
     hts.fix_activity_types(df_trips)
     
     if context.config("use_urban_type"):
-        df_urban_type = context.stage("data.hts.emc2.urban_type")
+        df_urban_type = context.stage("data.hts.emc2_33.urban_type")
         number_of_households = len(df_households)
         df_households = df_households.merge(df_urban_type[["zone_id","urban_type"]],on="zone_id",how="left")
         assert len(df_households) == number_of_households

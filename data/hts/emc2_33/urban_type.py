@@ -11,12 +11,12 @@ and second implementation by Sebastian Hoërl
 """
 
 def configure(context):
-    context.stage("data.hts.emc2.spatial")
+    context.stage("data.hts.emc2_33.spatial")
     context.stage("data.spatial.urban_type")
     
        
 def execute(context):
-    df_spatial = context.stage("data.hts.emc2.spatial")
+    df_spatial = context.stage("data.hts.emc2_33.spatial")
     df_urban_types = context.stage("data.spatial.urban_type")
     
     df_spatial = df_spatial.merge(df_urban_types,on="commune_id",how="left")

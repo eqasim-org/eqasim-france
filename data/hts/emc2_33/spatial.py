@@ -12,12 +12,10 @@ and second implementation by Sebastian Hoërl
 def configure(context):
     context.config("data_path")
     
-
-
 def execute(context):
     # Load households
     df_spatial = gpd.read_file(
-        "%s/emc2/spatial/EMC2_Gironde_2022_ZF_160.shp"
+        "%s/emc2_33_2021/spatial/EMC2_Gironde_2022_ZF_160.shp"
         % context.config("data_path"))
 
     df_spatial = df_spatial[["NUM_COM","ZF_160","geometry"]].copy()
@@ -32,10 +30,10 @@ FILES = [
 
 def validate(context):
     for name in FILES:
-        if not os.path.exists("%s/emc2/%s" % (context.config("data_path"), name)):
+        if not os.path.exists("%s/emc2_33_2021/%s" % (context.config("data_path"), name)):
             raise RuntimeError("File missing from EMC2: %s" % name)
 
     return [
-        os.path.getsize("%s/emc2/%s" % (context.config("data_path"), name))
+        os.path.getsize("%s/emc2_33_2021/%s" % (context.config("data_path"), name))
         for name in FILES
     ]
