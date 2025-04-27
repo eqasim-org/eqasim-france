@@ -1,0 +1,222 @@
+## Synthetic population pipeline for Île-de-France
+## based on the synpp package
+
+# This is the path to a directory where the pipeline can store temporary data
+working_directory: cache
+
+# This section defines which parts of the pipeline should be run
+run:
+  - synthesis.output # To create the output population in the output_path (see below)
+  #- matsim.output # Uncomment, if you want to run the full simulation (you'll need Java for that)
+
+# Here the configuraiton of the pipeline starts
+config:
+
+  ##############################
+  # Some general configuration #
+  ##############################
+  
+  ## Number of CPUs to use
+  processes: 4
+
+  ################
+  # Random seeds #
+  ################
+  
+  ## global random seed for the output population
+  random_seed: 1234
+
+  ## bpe specific random seed when impute missing coordinates for known IRIS
+  # bpe_random_seed: 0
+  
+  ##################################################
+  # Define sampling rate for the output population #
+  ##################################################
+  
+  sampling_rate: 0.001
+
+  #################################
+  # household travel survey (HTS) #
+  #################################
+
+  ## Define whether to use ENTD or EGT as the HTS
+  hts: entd # entd, egt, edgt_lyon, edgt_44
+
+  ## Whether to filter people going outside of the area and other filters
+  # filter_hts: true
+
+  ## if selected, chose the source for edgt_lyon
+  # edgt_lyon_source: unchosen # unchosen, adisp, cerema
+
+  ##################
+  # Zone selection #
+  ##################
+
+  ## select regions by region_id
+  # regions: [11]
+  
+  ## select departments by department_id
+  # departments: []
+    
+  #######################
+  #     Output paths    #
+  #######################
+  
+  ## output folder
+  output_path: output
+
+  ## output prefix, appended to file names
+  # output_prefix: ile_de_france_
+
+  ## file formats that should be exported
+  # output_formats: ["csv", "gpkg"] # ["csv", "gpkg", "parquet", "geoparquet"]
+
+  ##############################
+  #  Algorithms configurations #
+  ##############################
+
+  ## Use the bhepop2 package for attributing income
+  # income_assignation_method: bhepop2 # uniform, bhepop2
+
+  ## Activate if you want to run mode choice, will assign a mode to output trips
+  mode_choice: true
+
+  ## Statistical matching configuration
+ 
+  ## Minimum number of observation to sample from
+  # matching_minimum_observations: 20
+
+  ## list of attributes to use for matching
+  # matching_attributes: ["sex", "any_cars", "age_class", "socioprofessional_class", "departement_id"]
+  
+  ## Use INSEE's urban type in statistical matching
+  # use_urban_type: true
+  # urban_type_path: urban_type/UU2020_au_01-01-2023.zip
+  # matching_attributes: ["urban_type", "*default*"]
+  
+  ## Exclude entreprise without any employee (trancheEffectifsEtablissement is NA, "NN" or "00")
+  # exclude_no_employee: true
+
+  ## source for the education locations
+  # education_location_source: bpe # bpe, addresses
+
+  ## max iterations for the secondary location selection algorithm
+  # secloc_maximum_iterations: np.inf
+
+  ## Buffer arround buildings to capture adresses in their vicinity
+  # home_address_buffer: 5.0
+
+  ## How sample homes, using weights or not
+  # home_location_weight: housing # "uniform", "housing"
+  
+  # home_location_source: addresses # "addresses", "buildings", "tiles"
+
+  ## When running matsim
+
+  ## performing one run of the matsim simulation or not
+  # run_matsim: true
+
+  ## creating the far or not
+  # write_jar: true
+
+  ############################
+  #  Analysis configuration  #
+  ############################
+
+  ## Whether to use previously generated files or not
+  # analysis_from_file: false
+
+  ## prefix of the files to compare to
+  # comparison_file_prefix: other_
+
+  ##########################
+  #  Tools configuration   #
+  ##########################
+
+  ## Mostly interesting if you run the simulation, or you activate the `mode_choice` option,
+
+  ## Binaries paths  
+  # git_binary: git
+  # osmosis_binary: osmosis
+  # java_binary: java
+  # maven_binary: mvn
+
+  ## Binaries parameters
+  # java_memory: 14G
+  # maven_skip_tests: false
+  
+  ## eqasim-java parameters
+  # eqasim_version: 1.5.0
+  # eqasim_branch: develop
+  # eqasim_commit: ece4932
+  # eqasim_repository: https://github.com/eqasim-org/eqasim-java.git
+  # eqasim_path: ""
+
+  ## pt2matsim parameters
+  # pt2matsim_version: 22.3
+  # pt2matsim_branch: v22.3
+
+  ## Strategy to use in pt2matsim gtfs processing
+  # gtfs_date: dayWithMostServices
+
+  ## Export the detailed geometry of the network before simplification in pt2matsim
+  # export_detailed_network: true
+
+  #################
+  #  Input paths  #
+  #################
+
+  ## Absolute root path of all input data
+  data_path: /path/to/my/data
+
+  # census_path: rp_2019/RP2019_INDCVI_csv.zip
+  # census_csv: FD_INDCVI_2019.csv
+
+  # ban_path: ban_idf
+
+  # bdtopo_path: bdtopo_idf
+
+  # bpe_path: bpe_2021/bpe21_ensemble_xy_csv.zip
+  # bpe_csv: bpe21_ensemble_xy.csv
+
+  # gtfs_path: gtfs_idf
+
+  # income_com_path: filosofi_2019/indic-struct-distrib-revenu-2019-COMMUNES.zip
+  # income_com_xlsx: FILO2019_DISP_COM.xlsx
+  # income_reg_path: filosofi_2019/indic-struct-distrib-revenu-2019-SUPRA.zip
+  # income_reg_xlsx: FILO2019_DISP_REG.xlsx
+  # income_year: 19
+  
+  # tiles_path: tiles_2019/Filosofi2019_carreaux_200m_gpkg.zip
+  # tiles_file: carreaux_200m_met.gpkg
+
+  # od_pro_path: rp_2019/RP2019_MOBPRO_csv.zip
+  # od_sco_path: rp_2019/RP2019_MOBSCO_csv.zip
+  # od_pro_csv: FD_MOBPRO_2019.csv
+  # od_sco_csv: FD_MOBSCO_2019.csv
+  
+  ## external education locations file
+  # education_file: education/education_addresses.geojson
+
+  # osm_path: osm_idf
+  # osm_highways: "*"
+  # osm_railways: "*"
+
+  # siren_path: sirene/StockUniteLegale_utf8.zip
+  # siret_path: sirene/StockEtablissement_utf8.zip
+  # siret_geo_path: sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.zip
+
+  # iris_path: iris_2021
+
+  # population_path: rp_2019/base-ic-evol-struct-pop-2019.zip
+  # population_xlsx: base-ic-evol-struct-pop-2019.xlsx
+  # population_year: 19
+
+  ## population projections
+  # projection_path: projection_2021
+  # projection_scenario: 00_central
+  # projection_year: 2030
+
+  # vehicles_method: default # fleet_sample, default
+  # vehicles_path: vehicles
+  # vehicles_year: 2021

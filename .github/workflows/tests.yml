@@ -20,20 +20,19 @@ jobs:
       with:
         distribution: "corretto"
         java-version: "17"
-    - uses: actions/cache@v2
-      env:
-        CACHE_NUMBER: 0
+    - uses: actions/cache@v4
       with:
-        path: ~/conda_pkgs_dir
+        path: ${{ runner.os == 'ubuntu-latest' && '~/conda_pkgs_dir' || 'D:\conda_pkgs_dir' }} 
         key:
-          ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
+          ${{ runner.os }}-conda-${{
           hashFiles('environment.yml') }}
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: "ile-de-france"
         environment-file: environment.yml
         python-version: "3.10"
         channels: conda-forge
+        pkgs-dirs: ${{ runner.os == 'ubuntu-latest' && '~/conda_pkgs_dir' || 'D:\conda_pkgs_dir' }} 
     - name: Set up osmosis (Linux)
       if: matrix.os == 'ubuntu-latest'
       shell: bash -el {0}

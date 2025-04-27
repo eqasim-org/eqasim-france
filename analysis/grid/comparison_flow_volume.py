@@ -1,8 +1,9 @@
 import pandas as pd
 import geopandas as gpd
+import os
 
 import plotly.express as px 
-
+ANALYSIS_FOLDER = "compare_flow_volume"
 
 SAMPLING_RATE = 0.05
 
@@ -84,6 +85,12 @@ def execute(context):
     df_grids = stat_grid(df_trips_comp,df_locations_comp,df_persons_comp,df_grid)
     point = df_grid.unary_union.centroid # a changé avec ploy_dep
     print("Printing grids...")
+
+    # check output folder existence
+    analysis_output_path = os.path.join(context.config("output_path"), ANALYSIS_FOLDER)
+    if not os.path.exists(analysis_output_path):
+        os.mkdir(analysis_output_path)    
+
     for prefix, figure in figures.items():
         df_select_age = df_stats[df_stats["age"].between(figure["min_age"],figure["max_age"])]
         df_select_age = df_select_age.dissolve(by=["id_carr_1km","following_purpose"],aggfunc="count").reset_index()
@@ -103,7 +110,7 @@ def execute(context):
                 df_select  = df_select[df_select["count"] != 0]
                 fig = px.choropleth_mapbox(df_select,geojson=df_select.geometry,locations=df_select.index,color="count", opacity= 0.7,color_continuous_scale='reds',
                                         mapbox_style = 'open-street-map',center=dict(lat= point.y,lon=point.x),title=f"Localisation flow distribution for {prefix} group with {purpose} purpose")
-                fig.write_html(f'{context.config("output_path")}/{context.config("output_prefix")}{prefix}_{purpose}.html')
+                fig.write_html(f'{analysis_output_path}/{context.config("output_prefix")}{prefix}_{purpose}.html')
             else :
                 df_grids_select = gpd.sjoin(df_grids_select,df_grid,how='right',predicate="contains").fillna(0)
                 df_select = gpd.sjoin(df_select,df_grids_select.drop(columns=[ 'index_left']),how='right',predicate="contains").rename(columns={"count_left":"volume_studied_simu","count_right":"volume_compared_simu"}).fillna(0)
@@ -111,6 +118,6 @@ def execute(context):
                 df_select  = df_select[(df_select["volume_studied_simu"] != 0 )| (df_select["volume_compared_simu"] != 0)]
                 df_select["pourcentage_vol"] = df_select["volume_difference"] / df_select["volume_compared_simu"]
                 px.choropleth_mapbox(df_select,geojson=df_select.geometry,locations=df_select.index,color="volume_difference", opacity= 0.7,color_continuous_scale="picnic", color_continuous_midpoint= 0,hover_name="id_carr_1km_right", hover_data=["volume_studied_simu", "volume_compared_simu","pourcentage_vol"],
-                                        mapbox_style = 'open-street-map',center=dict(lat= point.y,lon=point.x),title=f"Comparison flow distribution with previous simulation for {prefix} group with {purpose} purpose").write_html(f'{context.config("output_path")}/{context.config("output_prefix")}{prefix}_{purpose}.html')
+                                        mapbox_style = 'open-street-map',center=dict(lat= point.y,lon=point.x),title=f"Comparison flow distribution with previous simulation for {prefix} group with {purpose} purpose").write_html(f'{analysis_output_path}/{context.config("output_prefix")}{prefix}_{purpose}.html')
 
             

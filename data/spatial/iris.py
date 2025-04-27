@@ -10,7 +10,7 @@ Loads the IRIS zoning system.
 
 def configure(context):
     context.config("data_path")
-    context.config("iris_path", "iris_2021")
+    context.config("iris_path", "iris_2023")
     context.stage("data.spatial.codes")
 
 def execute(context):

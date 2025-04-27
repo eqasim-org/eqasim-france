@@ -1,124 +1,56 @@
 # Changelog
 
-**Under development**
+## [1.3.0](https://github.com/eqasim-org/ile-de-france/compare/v1.2.0...v1.3.0) (2025-01-06)
 
-- fix: avoid regenerating OSM when population changes
-- feat: add municipality information to households and activities
-- chore: update to `eqasim-java` commit `ece4932`
-- feat: vehicles and vehicle types are now always generated
-- feat: read vehicles data from zip files
-- feat : option parameter to remove filtering for requesting departements in hts
-- fix: secondary location model used same random seed in every parallel thread
-- feat: add a new method for attributing income to housholds using the bhepop2 package
-- fix: fixed special case in repairing ENTD for completely overlapping trips
-- feat: make it possible to disable the test run of MATSim before writing everything out
-- feat: check availability of open data sources for every PR
-- feat: make statistical matching attribute list configurable
-- feat: add urban type classifiation (unité urbaine)
-- feat: functionality to make use of INSEE population projection data
-- update: don't remove households with people not living/studying in Île-de-France anymore to be more consistent with other use cases
-- fix bug where always one household_id existed twice
-- Fix read order when exploring files using `glob`
-- Modes are only written now to `trips.csv` if `mode_choice` is activated
-- Update to `eqasim-java` commit `7cbe85b`
-- Adding optional `eqasim-java`-based mode choice step using the `mode_choice` configuration option
-- Make use of building information (housing) and addresses that are attached to them for home locatio assignment
-- Make use of National Address Database (BAN)
-- Further simplify handling of BD-TOPO by avoiding matching of very specific file names
-- Fix: Segfault in statistical matching caused by `numba` in recent versions
-- Increase reproducibility for BD-TOPO by requiring user to dump the IGN files in 7z'ed GPKG format into one central folder for `bdtopo22`
-- Fix: Correctly treat non-movers in CEREMA EDGT for Lyon
-- Fix: Properly treat non-movers in EDGT Lyon ADISP data
-- Configure directory for GTFS and then auto-detect contained zip files
-- Added integration tests for Windows
-- Updated conda environment based entirely on *conda-forge*
-- Use national census data to ease creation of scenarios other than IDF
-- Make various inputs with long source names folder-based (OSM, BD-TOPO, IRIS, ...)
-- Read input data directly from ZIP archives instead of requiring the user to unpack the files
-- Update documentation for non-IDF use cases to updated data sets
-- Update: Make use of INSEE RP 2019, BPE 2021, Filosofi 2019, IRIS 2021
-- Make use of BD-TOPO building database for home locations
-- Remove BD-TOPO address database
-- Make use of georeferenced SIRENE provided by INSEE
-- Update documentation for the required versions of Java and Maven
-- Updated Github workflow with more reuse of existing actions
-- Update synpp to `1.5.1`
-- Fix: Handle commas in coordinates in BPE
-- Fix: Make types consistent for mode recognition in ENTD
-- Fix: Properly treat non-movers in EDGT 44
-- Fix: Avoid duplicate persons in same households
-- Add option to export detailed link geometries
-- Fix: Arbitrary order of week days in merged GTFS
-- Use BPE 2021 instead of BPE 2019
-- Update configuration files for Lyon, Nantes, Corsica
-- Add a basic sample based vehicle fleet generation tailored for use with the `emissions` matsim contrib
-- Fixing socioprofessional category for Nantes and Lyon (Cerema)
-- Fix documentation and processing for Nantes GTFS
-- Add law status of the SIRENE enterprises for down-stream freight models (this requires both SIREN and SIRET data as input!)
-- Update handling of invalid values on the nubmer of employees in SIRENE
-- Add alternative source for EDGT Lyon (and set it as default/recommended source)
-- Add euclidean distance to Nantes/Lyon GTFS output
-- Fix GTFS schedules without transfer times
-- Added stage to write out the full merged GTFS feed: `data.gtfs.output`
-- Bugfix: Sometimes bug in converting GTFS coordinates (esp. Lyon / Nantes)
-- Fixing output stages
-- Add output stages for SIRENE and the selected HTS
-- Add output prefix to non-MATSim output files as well
-- Add code and documentation for Nantes use case
-- Bugfix: Generate `meta.json` when code was not cloned but downloaded directly
-- Use `eqasim-java:1.3.1`
-- Make choice of branch and version of pt2matsim more flexible
-- Improve handling of Osmosis on Windows
-- Add stages to process EDGT for Lyon
 
-**1.2.0**
+### Features
 
-- Update code and data to BPE 2019 (verison for 2018 is not available anymore)
-- Add additional spatial standard output: `homes.gpkg` and `commutes.gpkg`
-- Updated documentation for BD-TOPO
-- By default, load SIRENE directly from `zip` file instead of `csv`
-- Bugfix: Make sure df_trips are sorted properly in `synthesis.population.trips`
-- Bugfix: Do not execute "urban" attribute imputation twice
-- Bugfix: Do not consider *inactive* enterprises from SIRENE
-- Update analysis scripts
-- Remove CRS warnings
-- Bugfix: Handle case if very last activity chain in population ends with tail
-- Speed up and improve testing
-- Improve analysis output for ENTD
-- Update to `eqasim-java:1.2.0` to support tails and "free" activity chains
-- Allow for activity chains that do not start and end at home
-- Improve handling of education attribute in ENTD
+* add a full config with all possible entries ([#273](https://github.com/eqasim-org/ile-de-france/issues/273)) ([3034923](https://github.com/eqasim-org/ile-de-france/commit/3034923d88c751133039e55ee0a593915044407a))
+* add mode choice stage ([#195](https://github.com/eqasim-org/ile-de-france/issues/195)) ([24650e9](https://github.com/eqasim-org/ile-de-france/commit/24650e9a3f20779cdadcb1d55e13aabc6c96cf5d))
+* Add more configurable paths for input data. ([#144](https://github.com/eqasim-org/ile-de-france/issues/144)) ([15d8c2b](https://github.com/eqasim-org/ile-de-france/commit/15d8c2b533b2cf5f6f2258929e8eb0102ce656d0))
+* add municipality info ([#258](https://github.com/eqasim-org/ile-de-france/issues/258)) ([e82ae98](https://github.com/eqasim-org/ile-de-france/commit/e82ae98861b85ff93086cc1f4f7c143cf2101589))
+* Add option to export detailed link geometries ([#125](https://github.com/eqasim-org/ile-de-france/issues/125)) ([d9a1519](https://github.com/eqasim-org/ile-de-france/commit/d9a151932c0cbb5f93de3e37067112a36df62065))
+* Add vehicles to households output ([#149](https://github.com/eqasim-org/ile-de-france/issues/149)) ([9e143c2](https://github.com/eqasim-org/ile-de-france/commit/9e143c25f74bf80350f67a1f314a0525a8380e6b))
+* Detect GTFS files in gtfs directory ([#176](https://github.com/eqasim-org/ile-de-france/issues/176)) ([716fe65](https://github.com/eqasim-org/ile-de-france/commit/716fe65bc3436f7def5035fcd55d5c6a6bbc3066))
+* Generating PT legs during mode choice + skipping routing during mode choice + update to Eqasim 1.5.0 (v2) ([#230](https://github.com/eqasim-org/ile-de-france/issues/230)) ([00259df](https://github.com/eqasim-org/ile-de-france/commit/00259df99917adffd2a83b6b09de42198c79a1a4))
+* improve handling of projections ([#236](https://github.com/eqasim-org/ile-de-france/issues/236)) ([a70b2a3](https://github.com/eqasim-org/ile-de-france/commit/a70b2a34fef877a115410f28d4cd28ce0104a19a))
+* improved location of activities and outputs analysis ([#252](https://github.com/eqasim-org/ile-de-france/issues/252)) ([c2224ec](https://github.com/eqasim-org/ile-de-france/commit/c2224ec5c4a197dff39fcce2a035e1fe204a7c4b))
+* integrate vehicles by default ([#233](https://github.com/eqasim-org/ile-de-france/issues/233)) ([66969ab](https://github.com/eqasim-org/ile-de-france/commit/66969ab776998927329b507d6c094c44d6cbf438))
+* Introduce buildings with attached addresses and weights based on available housing ([#184](https://github.com/eqasim-org/ile-de-france/issues/184)) ([3cbf36a](https://github.com/eqasim-org/ile-de-france/commit/3cbf36a7ba44d940f2075fb6b5b26c65d4639d72))
+* Load all input data from zip archives instead of unpacking the files before ([#166](https://github.com/eqasim-org/ile-de-france/issues/166)) ([4abd860](https://github.com/eqasim-org/ile-de-france/commit/4abd8607b96608fc60aad662a7029dabe5fe9c2d))
+* load BD-TOPO by department ([#179](https://github.com/eqasim-org/ile-de-france/issues/179)) ([721fe9e](https://github.com/eqasim-org/ile-de-france/commit/721fe9ed22d85a004c7a0996f4d3083a449d0a29))
+* optionally not run MATSim ([#231](https://github.com/eqasim-org/ile-de-france/issues/231)) ([b953b42](https://github.com/eqasim-org/ile-de-france/commit/b953b42addfbdb78dce0d9fce4ad6d9ec91c0923))
+* **output:** export all outputs in parquet files ([#238](https://github.com/eqasim-org/ile-de-france/issues/238)) ([d90d93e](https://github.com/eqasim-org/ile-de-france/commit/d90d93ec91be8a5d98fbcbb37e141db1d6b25bad))
+* Simplify management of BD-TOPO data ([#186](https://github.com/eqasim-org/ile-de-france/issues/186)) ([62b3245](https://github.com/eqasim-org/ile-de-france/commit/62b3245d9b41fb82e05eae4a8a605f3ec292a5e1))
+* update latest input data ([#289](https://github.com/eqasim-org/ile-de-france/issues/289)) ([d9b1b78](https://github.com/eqasim-org/ile-de-france/commit/d9b1b78b78452deaab6969156f447b71e50f3d57))
+* use bhepop2 package for income assignment ([#243](https://github.com/eqasim-org/ile-de-france/issues/243)) ([f74bd98](https://github.com/eqasim-org/ile-de-france/commit/f74bd98d838be5114d5cac7aa23e73a031a868ee))
+* use future population projections ([#210](https://github.com/eqasim-org/ile-de-france/issues/210)) ([f5f3666](https://github.com/eqasim-org/ile-de-france/commit/f5f36666a2d1350093657f7d46bf41dc0e33dfb5))
+* use urban typology for activity chain matching ([#209](https://github.com/eqasim-org/ile-de-france/issues/209)) ([43af03e](https://github.com/eqasim-org/ile-de-france/commit/43af03e312ef46c887fddc428b62b0063bb9bfd0))
+* verify availability of open data ([#226](https://github.com/eqasim-org/ile-de-france/issues/226)) ([b0c45cc](https://github.com/eqasim-org/ile-de-france/commit/b0c45cc956a80b5679e2f4e16ffa6177d96b86ac))
 
-**1.1.0**
 
-- Update to `synpp:1.3.1`
-- Use addresses for home locations (from BD-TOPO)
-- Use enterprise addresses for work locations (from SIRENE + BD-TOPO)
-- Add SIRENE and BD-TOPO data sets
-- Update to `eqasim-java:1.1.0` and MATSim 12
-- Preparation to use Corisca scenario (see config_corsica.yml) as unit test input in `eqasim-java`
-- Several auto-fixes for malformatted GTFS schedules (mainly Corsica)
-- Make jar output optional and use proper prefix
-- Bugfix: Fixing bug where stop times where discarded in GTFS cutting
-- Add documentation for Lyon and Toulouse
-- Define stage to output HTS reference data
-- Make prefix of MATSim output files configurable
-- Cut GTFS schedules to the scenario area automatically
-- Make possible to merge multiple GTFS files automatically
-- Automatically convert, filter and merge OSM data before using it in pt2matsim. This requires that `osmosis` is available in the run environment.
-- Provide calibrated Île-de-France/Paris eqasim simulation for 5% sample
-- Make use of `isUrban` attribute from eqasim `1.0.6`
-- Update to eqasim `1.0.6`
-- Make GTFS date configurable
-- Use synpp 1.2.2 to fix Windows directory regeneration issue
-- Make pipeline configurable for other departments and regions, add documentation
-- BC: Make use of INSEE zone summary data (`codes_2017`)
-- Add configuration parameters to filter for departments and regions
-- Fixed destinations that have coordinates outside of their municipality
-- Make error message for runtime dependencies more verbose
-- Switch default instructions to Anaconda
+### Bug Fixes
 
-**1.0.0**
-
-- Fixed dependency issue for ENTD scenario
-- Initial public version of the pipeline
+* Arbitrary order of week days in merged GTFS ([#131](https://github.com/eqasim-org/ile-de-france/issues/131)) ([f963e3b](https://github.com/eqasim-org/ile-de-france/commit/f963e3b2eeb06fbabf15ff872610c9df0d3b5535))
+* avoid regenerating OSM when population changes ([#265](https://github.com/eqasim-org/ile-de-france/issues/265)) ([f08437f](https://github.com/eqasim-org/ile-de-france/commit/f08437f5ff2a815ce3890b29faf17c816fa105fc))
+* Behaviour of shutil.which ([#128](https://github.com/eqasim-org/ile-de-france/issues/128)) ([2879603](https://github.com/eqasim-org/ile-de-france/commit/2879603d10dc8e5b178b86e89fe7ce42dfd37d01))
+* compatibility with older git ([#227](https://github.com/eqasim-org/ile-de-france/issues/227)) ([3a4b23b](https://github.com/eqasim-org/ile-de-france/commit/3a4b23b2e27c8b8c565f8014fc2de64854ab1531))
+* conda dependencies ([#214](https://github.com/eqasim-org/ile-de-france/issues/214)) ([ea93307](https://github.com/eqasim-org/ile-de-france/commit/ea93307cdbe14752e9e49df4eae2505eb0d024b6))
+* error when using urban_type and egt 2010 ([#267](https://github.com/eqasim-org/ile-de-france/issues/267)) ([7f73d12](https://github.com/eqasim-org/ile-de-france/commit/7f73d120f862276153c152cddf6bcf162399ceb4))
+* Fix coordinates format (commas vs points) in BPE. ([#142](https://github.com/eqasim-org/ile-de-france/issues/142)) ([8ccc958](https://github.com/eqasim-org/ile-de-france/commit/8ccc95880591dd240b82ce64308e491b8dbb0946))
+* Fix raw mode recognition in ENTD. ([#143](https://github.com/eqasim-org/ile-de-france/issues/143)) ([a597d65](https://github.com/eqasim-org/ile-de-france/commit/a597d6505504d5315a9ef7c652ef1d70ac360c7e))
+* Properly treat non-movers in EDGT 44 ([#133](https://github.com/eqasim-org/ile-de-france/issues/133)) ([09ed87a](https://github.com/eqasim-org/ile-de-france/commit/09ed87ae47703d519fc90ef7080f775358412a73))
+* Properly treat non-movers in EDGT Lyon ADISP data ([#169](https://github.com/eqasim-org/ile-de-france/issues/169)) ([282b857](https://github.com/eqasim-org/ile-de-france/commit/282b8579a0b1500fd281cc049aff0f7ed1895b88))
+* random seeds in secondary location model ([#246](https://github.com/eqasim-org/ile-de-france/issues/246)) ([be43c17](https://github.com/eqasim-org/ile-de-france/commit/be43c17f87ed3339f2ca872e08e0a5c991fe14ee))
+* read order for files discovered using glob ([#203](https://github.com/eqasim-org/ile-de-france/issues/203)) ([a2ba98d](https://github.com/eqasim-org/ile-de-france/commit/a2ba98de31026d3a9696a516949a774bdea4e8d9))
+* Remaining bug when loading BPE 2019 ([#132](https://github.com/eqasim-org/ile-de-france/issues/132)) ([3457a46](https://github.com/eqasim-org/ile-de-france/commit/3457a468443e0cfb0d848ad6bb07f366570081ed))
+* repairing of completely overlapping trips in ENTD ([#247](https://github.com/eqasim-org/ile-de-france/issues/247)) ([5e98fbe](https://github.com/eqasim-org/ile-de-france/commit/5e98fbe224b77e559226ffe9a48f8e3565cc95b4))
+* Resolve segfault in statistical matching ([#183](https://github.com/eqasim-org/ile-de-france/issues/183)) ([3198174](https://github.com/eqasim-org/ile-de-france/commit/319817450cf50b5181dc49025a8f001fd2db6689))
+* shuffling of primary location candidates ([#242](https://github.com/eqasim-org/ile-de-france/issues/242)) ([e892be8](https://github.com/eqasim-org/ile-de-france/commit/e892be8e4d4d81857d1b68c0427d05cecff78ac9))
+* Update documentation to updated data sets ([#160](https://github.com/eqasim-org/ile-de-france/issues/160)) ([1281d93](https://github.com/eqasim-org/ile-de-france/commit/1281d937a0c696ceeec9d35d03989c1d220e3438))
+* Update git commit in meta.json ([#181](https://github.com/eqasim-org/ile-de-france/issues/181)) ([305569c](https://github.com/eqasim-org/ile-de-france/commit/305569c071c87734b87220991cc096668c9d850d))
+* Update Levenshtein dependency ([#134](https://github.com/eqasim-org/ile-de-france/issues/134)) ([1aecebb](https://github.com/eqasim-org/ile-de-france/commit/1aecebb25f1d0dcfd4e332f7f5c8578eb146ff97))
+* Update of outdated data sets to 2019 ([#153](https://github.com/eqasim-org/ile-de-france/issues/153)) ([2daab1d](https://github.com/eqasim-org/ile-de-france/commit/2daab1dfb6d2d5e6c49661f12435857bfbba0cd1))
+* update pyarrow to latest version ([#241](https://github.com/eqasim-org/ile-de-france/issues/241)) ([39281ae](https://github.com/eqasim-org/ile-de-france/commit/39281ae63ca3dd42abaada3512dc8d5a91397f0c))
+* Update to BPE 2021 ([#130](https://github.com/eqasim-org/ile-de-france/issues/130)) ([1d797a6](https://github.com/eqasim-org/ile-de-france/commit/1d797a67ae1743d1b82c6f2620c3da5a4f08a145))
+* version of openpyxl ([#173](https://github.com/eqasim-org/ile-de-france/issues/173)) ([776fcfa](https://github.com/eqasim-org/ile-de-france/commit/776fcfae4ad5b78204fb8dcedbdb22466008f593))

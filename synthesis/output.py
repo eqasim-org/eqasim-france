@@ -6,8 +6,10 @@ import os, datetime, json
 import sqlite3
 import math
 import numpy as np
+from analysis.synthesis.population import ANALYSIS_FOLDER
 
 def configure(context):
+
     context.stage("synthesis.population.enriched")
 
     context.stage("synthesis.population.activities")
@@ -22,7 +24,8 @@ def configure(context):
     context.config("output_path")
     context.config("output_prefix", "ile_de_france_")
     context.config("output_formats", ["csv", "gpkg"])
-    
+    context.config("sampling_rate")
+
     if context.config("mode_choice", False):
         context.stage("matsim.simulation.prepare")
 
@@ -180,7 +183,7 @@ def execute(context):
     if "csv" in output_formats:
         df_trips.to_csv("%s/%strips.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
     if "parquet" in output_formats:
-        df_trips.to_csv("%s/%strips.parquet" % (output_path, output_prefix))
+        df_trips.to_parquet("%s/%strips.parquet" % (output_path, output_prefix))
 
     # Prepare vehicles
     df_vehicle_types, df_vehicles = context.stage("synthesis.vehicles.vehicles")
