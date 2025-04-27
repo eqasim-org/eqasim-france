@@ -59,10 +59,6 @@ you are not sure, you can download the free and open [Adoptium JDK](https://adop
 up the scenario (such as pt2matsim) and running the simulation. Maven can be
 downloaded [here](https://maven.apache.org/) if it does not already exist on
 your system.
-- **Osmosis** needs to be accessible from the command line to convert and filter
-to convert, filter and merge OSM data sets. Alternatively, you can set the path
-to the binary using the `osmosis_binary` option in the confiuration file. Osmosis
-can be downloaded [here](https://wiki.openstreetmap.org/wiki/Osmosis).
 - **git** `=> 2.39.2` is used to clone the repositories containing the simulation code. In
 case you clone the pipeline repository previously, you should be all set.
 

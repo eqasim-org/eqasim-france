@@ -790,14 +790,10 @@ def create(output_path):
     with gzip.open("%s/osm_idf/ile-de-france-220101.osm.gz" % output_path, "wb+") as f:
         f.write(bytes("\n".join(osm), "utf-8"))
 
-
-    import subprocess
-
-    subprocess.check_call([
-        shutil.which("osmosis"), "--read-xml", "%s/osm_idf/ile-de-france-220101.osm.gz" % output_path,
-        "--write-pbf", "%s/osm_idf/ile-de-france-220101.osm.pbf" % output_path
-    ])
-
+    import osmium
+    with osmium.SimpleWriter("{}/osm_idf/ile-de-france-220101.osm.pbf".format(output_path)) as writer:
+        for item in osmium.FileProcessor("{}/osm_idf/ile-de-france-220101.osm.gz".format(output_path)):
+            writer.write(item)
 
     # Data set: GTFS
     print("Creating GTFS ...")
