@@ -307,24 +307,19 @@ Running the pipeline again will add the `mode` colum to the `trips.csv` file and
 
 The pipeline allows to make use of population projections from INSEE up to 2070. The same methodology can also be used to scale down the population. The process takes into account the marginal distribution of sex, age, their combination, and the total number of persons. The census data for the base year (see above) is reweighted according to those marginals using *Iterative Proportional Updating*.
 
-- To make use of the scaling, [download the projection data from INSEE](https://www.insee.fr/fr/statistiques/5894093?sommaire=5760764). There are various scenarios in Excel format that you can choose from. The default is the *Scénario centrale*, the central scenario. 
-- Put the downloaded file into `data/projection_2021`, so you will have the file `data/projection_2021/00_central.xlsx`
+- To make use of the scaling, [download the projection data from INSEE](https://www.insee.fr/fr/statistiques/7747107?sommaire=6652140). Download *Les tableaux en Excel* which contain all projection scenarios in Excel format.  There are various scenarios in Excel format that you can choose from. The default is the *Scénario centrale*, the central scenario. 
+- Put the downloaded file into `data/projections`, so you will have the file `data/projections/donnees_detaillees_departementales.zip`
 
-Then, activate the projection procedure by defining the projection year in the configuration:
+Then, activate the projection procedure by defining the projection scenario and year in the configuration:
 
 ```yaml
 config: 
   # [...]
+  projection_scenario: Central
   projection_year: 2030
 ```
 
-You may choose any year (past or future) that is contained in the projection scenario Excel file. In case you want to use a different scenario, download the corresponding file, put it into the folder mentioned above, and choose the scenario name via configuration:
-
-```yaml
-config: 
-  # [...]
-  projection_scenario: 00_central
-```
+You may choose any year (past or future) that is contained in the Excel files (sheet *Population*) in the downloaded archive. The same is true for the projection scenarios, which are based on the file names and documented in the Excel files' *Documentation* sheet.
 
 ### Urban type
 
