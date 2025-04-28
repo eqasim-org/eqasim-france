@@ -83,11 +83,11 @@ a few are actually relevant for the pipeline. Those are:
   - Données mobilité déplacements locaux (K_deploc.csv)
 - Put the downloaded *csv* files in to the folder `data/entd_2008`.
 
-### 6b) *(Optional)* National persons mobility survey (EMP 2019)
+### 6b) *(Optional)* National Person Mobility Survey (EMP 2019)
 
-The national persons mobility survey is also available from the Ministry of Ecology:
+The National Person Mobility Survey is also available from the Ministry of Ecology:
 
-- [National persons mobility survey](https://www.statistiques.developpement-durable.gouv.fr/resultats-detailles-de-lenquete-mobilite-des-personnes-de-2019)
+- [National Person Mobility Survey](https://www.statistiques.developpement-durable.gouv.fr/resultats-detailles-de-lenquete-mobilite-des-personnes-de-2019)
 - Scroll all the way down the website to the **Télécharger les données individuelles anonymisées et leurs dictionnaires** (a clickable
 pop-down menu).
 - Download the data set in **csv** by clicking on the link **Données individuelles anonymisées (fichiers au format CSV) - EMP 2019**
@@ -203,7 +203,7 @@ Your folder structure should now have at least the following files:
 - `data/ban_idf/adresses-93.csv.gz`
 - `data/ban_idf/adresses-94.csv.gz`
 
-In case you are using the national persons mobility survey or the regional household travel survey (EGT), the following files should also be respectively in place:
+In case you are using the National Person Mobility Survey (EMP) or the Regional household travel survey (EGT), the following files should also be respectively in place:
 - `data/emp_2019/emp_2019_donnees_individuelles_anonymisees_novembre2024.zip`
 or 
 - `data/egt_2010/Menages_semaine.csv`
@@ -366,16 +366,15 @@ Then, you should be able to run the pipeline with the configuration explained ab
 
 ### Filter household travel survey data
 
-The pipeine filter out by default observations, from household travel survey used, which live or work outside of the area used in the simulation.
-Unfortunately, household travel survey data is not always well distributed at scales other than national or regional and may be incomplete for area used in the simulation.
-The parameter `filter_hts` at false allows to ignore this filtering and keep the same observations distribution as the entire survey used.
-
+By default, the pipeline filters out observations from the HTS that correspond to persons living or working outside the configured area (given as departments or regions).
+However, the national HTS (ENTD and EMP) may be very sparse in rural and undersampled areas.
+The parameters `filter_hts` (default `true`) allows disabling the prefiltering such that the whole set of persons and activity chains is used for generating a regional population when set to `false`:
 ```yaml
 config:
   # [...]
   filter_hts: false
 ```
-To help evaluate observations distribution, a table of population volume by age range and trip purpose can be generate from `analysis.synthesis.population` stage as explained at end of this documentation. 
+For validation, a table of person volumes by age range and trip purpose can be generated from the `analysis.synthesis.population` stage, as explained at the end of this documentation. 
 
 ### Exclude entreprise with no employee
 
