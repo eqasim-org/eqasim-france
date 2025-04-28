@@ -67,7 +67,16 @@ a few are actually relevant for the pipeline. Those are:
   - Données mobilité déplacements locaux (K_deploc.csv)
 - Put the downloaded *csv* files in to the folder `data/entd_2008`.
 
-## 6b) *(Optional)* Regional household travel survey (EGT)
+### 6b) *(Optional)* National Person Mobility Survey (EMP 2019)
+
+The National Person Mobility Survey is also available from the Ministry of Ecology:
+
+- [National Person Mobility Survey](https://www.statistiques.developpement-durable.gouv.fr/resultats-detailles-de-lenquete-mobilite-des-personnes-de-2019)
+- Scroll all the way down the website to the **Télécharger les données individuelles anonymisées et leurs dictionnaires** (a clickable pop-down menu).
+- Download the data set in **csv** by clicking on the link **Données individuelles anonymisées (fichiers au format CSV) - EMP 2019**
+- Copy the *zip* file into the folder `data/emp_2019`.
+
+### 6c) *(Optional)* Regional household travel survey (EGT)
 
 Usually, you do not have access to the regional household travel
 survey, which is not available publicly. In case you have access (but we cannot
@@ -177,9 +186,9 @@ Your folder structure should now have at least the following files:
 - `data/ban_idf/adresses-93.csv.gz`
 - `data/ban_idf/adresses-94.csv.gz`
 
-In case you are using the regional household travel survey (EGT), the following
-files should also be in place:
-
+In case you are using the National Person Mobility Survey (EMP) or the Regional household travel survey (EGT), the following files should also be respectively in place:
+- `data/emp_2019/emp_2019_donnees_individuelles_anonymisees_novembre2024.zip`
+or
 - `data/egt_2010/Menages_semaine.csv`
 - `data/egt_2010/Personnes_semaine.csv`
 - `data/egt_2010/Deplacements_semaine.csv`
