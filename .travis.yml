@@ -1,0 +1,33 @@
+language: python
+install:
+  # Anaconda
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda env create -f environment.yml
+  - conda activate ile-de-france
+
+  # Java
+  - wget https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u252-b09/OpenJDK8U-jdk_x64_linux_hotspot_8u252b09.tar.gz -O java.tar.gz
+  - tar xf java.tar.gz
+  - export PATH=$HOME/jdk8u252-b09/bin:$PATH
+
+  # Maven
+  - wget http://mirror.easyname.ch/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz -O maven.tar.gz
+  - tar xf maven.tar.gz
+  - export PATH=$HOME/apache-maven-3.6.3/bin:$PATH
+
+script:
+  - java -version
+  - mvn -version
+  - MKL_CBWR=AUTO pytest tests/
+
+# Note the initial environment variable before running pytest. It makes sure
+# that numpy etc. run in "conditional numerical reproducibility mode". Otherwise
+# generated results will be different on different machines!
+
+cache:
+  directories:
+    - $HOME/.m2
