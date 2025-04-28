@@ -84,8 +84,8 @@ report.register(
 )
 
 report.register(
-    "Service and facility census (BPE 2021)",
-    "https://www.insee.fr/fr/statistiques/fichier/3568638/bpe21_ensemble_xy_csv.zip"
+    "Service and facility census (BPE 2023)",
+    "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE23.zip"
 )
 
 entd_sources = [

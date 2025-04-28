@@ -13,11 +13,21 @@ def hash_sqlite_db(path):
     matter, hashing the dump of the database is more relevant.
     """
     con = sqlite3.connect(path)
-    hash = hashlib.md5()
+
+    data = []
     for line in con.iterdump():
-        encoded = (line + "\n").encode()
-        hash.update(encoded)
+        if not "rtree" in line: # Fix for compatibilit between Linux and Windows
+            line = line.replace("MEDIUMINT", "INTEGER") # Fix for compatibilit between Linux and Windows
+            data.append(line.encode())
+
     con.close()
+
+    data = sorted(data)
+
+    hash = hashlib.md5()
+    for item in data:
+        hash.update(item)
+    
     return hash.hexdigest()
 
 
@@ -77,10 +87,12 @@ def _test_determinism(index, data_path, tmpdir):
     }
 
     REFERENCE_GPKG_HASHES = {
+      
         "ile_de_france_activities.gpkg":    "d14c045ab01df6eabf508ff0a7935195",
         "ile_de_france_commutes.gpkg":      "e9f055b908da728e0d69a8155b9acc95",
         "ile_de_france_homes.gpkg":         "386a6f571dd4254c858e4c5f5e9e351d",
         "ile_de_france_trips.gpkg":         "d838aa649fc6b39c06d81bb3a17e5506",
+
     }
 
     generated_csv_hashes = {
