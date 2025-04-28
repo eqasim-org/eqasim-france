@@ -1,8 +1,21 @@
 # Use an official Ubuntu as a parent image
-FROM ubuntu:24.04
+FROM condaforge/miniforge3
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
+
+LABEL org.opencontainers.image.description="""\
+This image is used to run the EQASIM pipeline. It contains the necessary dependencies to build the project : \
+\
+- Java 17 \
+- Maven \
+- Python 3 & Conda \
+- Osmosis 0.48.3 \
+- Git \
+\
+It also creates a conda environment named 'eqasim' with the dependencies specified in the environment.yml file. \
+The environment.yml file can be specified using the 'env_path' build argument. If not specified, the default environment.yml file from the repository will be used.\
+"""
 
 ARG env_path
 
@@ -17,19 +30,21 @@ RUN apt-get update && apt-get install -y \
     git \
     && apt-get clean
 
-# Install Miniconda
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
-    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
-    rm ~/miniconda.sh
-
 # Set path to conda
-ENV PATH /opt/conda/bin:$PATH
+ENV PATH=/opt/conda/bin:$PATH
+
+# Install Osmosis
+RUN wget --quiet https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.zip -O /tmp/osmosis.zip && \
+    unzip /tmp/osmosis.zip -d /opt/osmosis && \
+    rm /tmp/osmosis.zip && \
+    ln -s /opt/osmosis/bin/osmosis /usr/local/bin/osmosis
 
 # Verify installations
 RUN java -version && \
     mvn -version && \
     python3 --version && \
-    conda --version
+    conda --version && \
+    which osmosis
 
 COPY ./environment.yml /tmp/environment_eqasim.yml
 
