@@ -33,18 +33,11 @@ RUN apt-get update && apt-get install -y \
 # Set path to conda
 ENV PATH=/opt/conda/bin:$PATH
 
-# Install Osmosis
-RUN wget --quiet https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.zip -O /tmp/osmosis.zip && \
-    unzip /tmp/osmosis.zip -d /opt/osmosis && \
-    rm /tmp/osmosis.zip && \
-    ln -s /opt/osmosis/bin/osmosis /usr/local/bin/osmosis
-
 # Verify installations
 RUN java -version && \
     mvn -version && \
     python3 --version && \
-    conda --version && \
-    which osmosis
+    conda --version 
 
 COPY ./environment.yml /tmp/environment_eqasim.yml
 
