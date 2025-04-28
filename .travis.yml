@@ -19,17 +19,9 @@ install:
   - tar xf maven.tar.gz
   - export PATH=$HOME/apache-maven-3.6.3/bin:$PATH
 
-  # Osmosis
-  - wget https://github.com/openstreetmap/osmosis/releases/download/0.48.2/osmosis-0.48.2.tgz -O osmosis.tgz
-  - mkdir $HOME/osmosis
-  - tar xf osmosis.tgz -C $HOME/osmosis
-  - export PATH=$HOME/osmosis/bin:$PATH
-  - osmosis -v
-
 script:
   - java -version
   - mvn -version
-  - osmosis -v
   - MKL_CBWR=AUTO pytest tests/
 
 # Note the initial environment variable before running pytest. It makes sure

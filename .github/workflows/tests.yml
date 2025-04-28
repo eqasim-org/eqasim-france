@@ -21,35 +21,17 @@ jobs:
         distribution: "corretto"
         java-version: "17"
     - uses: actions/cache@v4
-      env:
-        CACHE_NUMBER: 1
       with:
         path: ~/conda_pkgs_dir
-        key:
-          ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
-          hashFiles('environment.yml') }}
-    - uses: conda-incubator/setup-miniconda@v2
+        key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: "ile-de-france"
         environment-file: environment.yml
         python-version: "3.10"
         channels: conda-forge
-    - name: Set up osmosis (Linux)
-      if: matrix.os == 'ubuntu-latest'
-      shell: bash -el {0}
-      run: |
-        wget https://github.com/openstreetmap/osmosis/releases/download/0.48.2/osmosis-0.48.2.tgz -O osmosis.tgz
-        mkdir $HOME/osmosis
-        tar xf osmosis.tgz -C $HOME/osmosis
-        echo $HOME/osmosis/bin >> $GITHUB_PATH
-    - name: Set up osmosis (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: bash -el {0}
-      run: |
-        powershell -command "& { iwr https://github.com/openstreetmap/osmosis/releases/download/0.48.2/osmosis-0.48.2.zip -OutFile osmosis.zip }"
-        mkdir $HOME/osmosis
-        unzip osmosis.zip -d $HOME/osmosis
-        echo $HOME/osmosis/bin >> $GITHUB_PATH
+        pkgs-dirs: ~/conda_pkgs_dir
+        conda-remove-defaults: true
     - name: Prepare git for Windows
       if: matrix.os == 'windows-latest'
       shell: bash -el {0}
@@ -63,9 +45,7 @@ jobs:
         java -version
         mvn -v
         python --version
-        osmosis -v
         git --version
-        python -c "import fiona"
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
