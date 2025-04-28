@@ -188,7 +188,9 @@ Your folder structure should now have at least the following files:
 
 In case you are using the National Person Mobility Survey (EMP) or the Regional household travel survey (EGT), the following files should also be respectively in place:
 - `data/emp_2019/emp_2019_donnees_individuelles_anonymisees_novembre2024.zip`
+
 or
+
 - `data/egt_2010/Menages_semaine.csv`
 - `data/egt_2010/Personnes_semaine.csv`
 - `data/egt_2010/Deplacements_semaine.csv`
