@@ -11,7 +11,7 @@ copyright = '2024, Eqasim contributors'
 author = 'Eqasim contributors'
 
 # fetch version from version file
-with open("../VERSION", "r") as f:
+with open("../version.txt", "r") as f:
     release = version = f.readline()
 
 # -- General configuration ---------------------------------------------------
