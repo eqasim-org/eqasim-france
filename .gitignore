@@ -12,3 +12,6 @@ config_local_*.yml
 
 # sphinx build files
 sphinx_doc/_build
+
+.sif
+

@@ -183,7 +183,7 @@ def execute(context):
     if "csv" in output_formats:
         df_trips.to_csv("%s/%strips.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
     if "parquet" in output_formats:
-        df_trips.to_csv("%s/%strips.parquet" % (output_path, output_prefix))
+        df_trips.to_parquet("%s/%strips.parquet" % (output_path, output_prefix))
 
     # Prepare vehicles
     df_vehicle_types, df_vehicles = context.stage("synthesis.vehicles.vehicles")

@@ -4,6 +4,7 @@ import os, shutil
 def configure(context):
     context.config("maven_binary", "mvn")
     context.config("maven_skip_tests", False)
+    context.config("maven_local_cache", False)
 
 def run(context, arguments = [], cwd = None):
     """
@@ -23,6 +24,15 @@ def run(context, arguments = [], cwd = None):
     vm_arguments = [
         "-Djava.io.tmpdir=%s" % temp_path
     ]
+
+    # Prepare cache folder (optional)
+    use_local_cache = context.config("maven_local_cache")
+    if use_local_cache:
+        cache_path = "%s/__maven_cache" % context.path()
+        if not os.path.exists(cache_path):
+            os.mkdir(cache_path)
+
+        vm_arguments.append("-Dmaven.repo.local={}".format(cache_path))
 
     if context.config("maven_skip_tests"):
         vm_arguments.append("-DskipTests=true")

@@ -13,8 +13,8 @@ def configure(context):
 
     context.config("regions", [11])
     context.config("departments", [])
-    context.config("codes_path", "codes_2021/reference_IRIS_geo2021.zip")
-    context.config("codes_xlsx", "reference_IRIS_geo2021.xlsx")
+    context.config("codes_path", "codes_2023/reference_IRIS_geo2023.zip")
+    context.config("codes_xlsx", "reference_IRIS_geo2023.xlsx")
 
 def execute(context):
     # Load IRIS registry

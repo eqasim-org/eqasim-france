@@ -161,11 +161,11 @@ def create(output_path):
         iris = "CODE_IRIS", municipality = "INSEE_COM"
     ))
 
-    os.mkdir("%s/iris_2021" % output_path)
-    df_iris.to_file("%s/iris_2021/CONTOURS-IRIS.shp" % output_path)
+    os.mkdir("%s/iris_2023" % output_path)
+    df_iris.to_file("%s/iris_2023/CONTOURS-IRIS.shp" % output_path)
 
-    with py7zr.SevenZipFile("%s/iris_2021/iris.7z" % output_path, "w") as archive:
-        for source in glob.glob("%s/iris_2021/CONTOURS-IRIS.*" % output_path):
+    with py7zr.SevenZipFile("%s/iris_2023/iris.7z" % output_path, "w") as archive:
+        for source in glob.glob("%s/iris_2023/CONTOURS-IRIS.*" % output_path):
             archive.write(source, "LAMB93/{}".format(source.split("/")[-1]))
             os.remove(source)
 
@@ -178,17 +178,17 @@ def create(output_path):
         iris = "CODE_IRIS", municipality = "DEPCOM", department = "DEP", region = "REG"
     ))
 
-    os.mkdir("%s/codes_2021" % output_path)
+    os.mkdir("%s/codes_2023" % output_path)
 
-    with zipfile.ZipFile("%s/codes_2021/reference_IRIS_geo2021.zip" % output_path, "w") as archive:
-        with archive.open("reference_IRIS_geo2021.xlsx", "w") as f:
+    with zipfile.ZipFile("%s/codes_2023/reference_IRIS_geo2023.zip" % output_path, "w") as archive:
+        with archive.open("reference_IRIS_geo2023.xlsx", "w") as f:
             df_codes.to_excel(
                 f, sheet_name = "Emboitements_IRIS",
                 startrow = 5, index = False
             )
 
     # Dataset: Aggregate census
-    # Required attributes: IRIS, COM, DEP, REG, P15_POP
+    # Required attributes: IRIS, COM, DEP, REG, P21_POP
     print("Creating aggregate census ...")
 
     df_population = df.copy()
@@ -197,12 +197,12 @@ def create(output_path):
     ))
 
     # Set all population to fixed number
-    df_population["P19_POP"] = 120.0
+    df_population["P21_POP"] = 120.0
 
-    os.mkdir("%s/rp_2019" % output_path)
+    os.mkdir("%s/rp_2021" % output_path)
 
-    with zipfile.ZipFile("%s/rp_2019/base-ic-evol-struct-pop-2019.zip" % output_path, "w") as archive:
-        with archive.open("base-ic-evol-struct-pop-2019.xlsx", "w") as f:
+    with zipfile.ZipFile("%s/rp_2021/base-ic-evol-struct-pop-2021_xlsx.zip" % output_path, "w") as archive:
+        with archive.open("base-ic-evol-struct-pop-2021.xlsx", "w") as f:
             df_population.to_excel(
                 f, sheet_name = "IRIS", startrow = 5, index = False
             )
@@ -216,6 +216,7 @@ def create(output_path):
     categories = np.array(["A", "B", "C", "D", "E", "F", "G"])
 
     df_selection = df.iloc[random.randint(0, len(df), size = observations)].copy()
+    df_selection["CAPACITE"] = 500
     df_selection["DCIRIS"] = df_selection["iris"]
     df_selection["DEPCOM"] = df_selection["municipality"]
     df_selection["DEP"] = df_selection["department"]
@@ -227,12 +228,12 @@ def create(output_path):
     df_selection.iloc[-10:, df_selection.columns.get_loc("LAMBERT_X")] = np.nan
     df_selection.iloc[-10:, df_selection.columns.get_loc("LAMBERT_Y")] = np.nan
 
-    columns = ["DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"]
+    columns = ["CAPACITE","DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"]
 
-    os.mkdir("%s/bpe_2021" % output_path)
+    os.mkdir("%s/bpe_2023" % output_path)
 
-    with zipfile.ZipFile("%s/bpe_2021/bpe21_ensemble_xy_csv.zip" % output_path, "w") as archive:
-        with archive.open("bpe21_ensemble_xy.csv", "w") as f:
+    with zipfile.ZipFile("%s/bpe_2023/BPE23.zip" % output_path, "w") as archive:
+        with archive.open("BPE23.csv", "w") as f:
             df_selection[columns].to_csv(f,
                 sep = ";", index = False)
 
@@ -563,8 +564,8 @@ def create(output_path):
     df_persons = pd.DataFrame.from_records(persons)[columns]
     df_persons.columns = columns
 
-    with zipfile.ZipFile("%s/rp_2019/RP2019_INDCVI_csv.zip" % output_path, "w") as archive:
-        with archive.open("FD_INDCVI_2019.csv", "w") as f:
+    with zipfile.ZipFile("%s/rp_2021/RP2021_indcvi.zip" % output_path, "w") as archive:
+        with archive.open("FD_INDCVI_2021.csv", "w") as f:
             df_persons.to_csv(f, sep = ";")
 
     # Data set: commute flows
@@ -586,8 +587,8 @@ def create(output_path):
     columns = ["COMMUNE", "DCLT", "TRANS", "ARM", "IPONDI"]
     df_work.columns = columns
 
-    with zipfile.ZipFile("%s/rp_2019/RP2019_MOBPRO_csv.zip" % output_path, "w") as archive:
-        with archive.open("FD_MOBPRO_2019.csv", "w") as f:
+    with zipfile.ZipFile("%s/rp_2021/RP2021_mobpro.zip" % output_path, "w") as archive:
+        with archive.open("FD_MOBPRO_2021.csv", "w") as f:
             df_work.to_csv(f, sep = ";")
 
     # ... education
@@ -602,8 +603,8 @@ def create(output_path):
     columns = ["COMMUNE", "DCETUF", "ARM", "IPONDI","AGEREV10"]
     df_education.columns = columns
 
-    with zipfile.ZipFile("%s/rp_2019/RP2019_MOBSCO_csv.zip" % output_path, "w") as archive:
-        with archive.open("FD_MOBSCO_2019.csv", "w") as f:
+    with zipfile.ZipFile("%s/rp_2021/RP2021_mobsco.zip" % output_path, "w") as archive:
+        with archive.open("FD_MOBSCO_2021.csv", "w") as f:
             df_education.to_csv(f, sep = ";")
 
     # Data set: BD-TOPO
@@ -763,7 +764,7 @@ def create(output_path):
                 links.append([node_index, node_index + 1])
 
             if i < lengthx - 1:
-                links.append([node_index, node_index + lengthx])
+                links.append([node_index, node_index + 1])
 
             node_index += 1
 
@@ -771,12 +772,12 @@ def create(output_path):
     df_nodes = df_nodes.to_crs("EPSG:4326")
 
     for row in df_nodes.itertuples():
-        osm.append('<node id="%d" lat="%f" lon="%f" version="3" timestamp="2010-12-05T17:00:00" />' % (
+        osm.append('<node id="%d" lat="%f" lon="%f" version="3" timestamp="2010-12-05T17:00:00Z" />' % (
             row[1], row[2].y, row[2].x
         ))
 
     for index, link in enumerate(links):
-        osm.append('<way id="%d" version="3" timestamp="2010-12-05T17:00:00">' % (index + 1))
+        osm.append('<way id="%d" version="3" timestamp="2010-12-05T17:00:00Z">' % (index + 1))
         osm.append('<nd ref="%d" />' % link[0])
         osm.append('<nd ref="%d" />' % link[1])
         osm.append('<tag k="highway" v="primary" />')
@@ -789,14 +790,10 @@ def create(output_path):
     with gzip.open("%s/osm_idf/ile-de-france-220101.osm.gz" % output_path, "wb+") as f:
         f.write(bytes("\n".join(osm), "utf-8"))
 
-
-    import subprocess
-
-    subprocess.check_call([
-        shutil.which("osmosis"), "--read-xml", "%s/osm_idf/ile-de-france-220101.osm.gz" % output_path,
-        "--write-pbf", "%s/osm_idf/ile-de-france-220101.osm.pbf" % output_path
-    ])
-
+    import osmium
+    with osmium.SimpleWriter("{}/osm_idf/ile-de-france-220101.osm.pbf".format(output_path)) as writer:
+        for item in osmium.FileProcessor("{}/osm_idf/ile-de-france-220101.osm.gz".format(output_path)):
+            writer.add(item)
 
     # Data set: GTFS
     print("Creating GTFS ...")

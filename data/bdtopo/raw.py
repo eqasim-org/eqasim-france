@@ -1,10 +1,8 @@
-import fiona
+import pyogrio
 import pandas as pd
 import os
-import shapely.geometry as geo
 import geopandas as gpd
 import py7zr
-import re
 import glob
 import numpy as np
 
@@ -54,17 +52,8 @@ def execute(context):
                 geometry_path = "{}/{}".format(context.path(), internal_path[0])
 
         if geometry_path is not None:
-            with context.progress(label = "  Reading ...") as progress:
-                data = { "cleabs": [], "nombre_de_logements": [], "geometry": [] }
-                with fiona.open(geometry_path, layer = "batiment") as package:
-                    for item in package:
-                        data["cleabs"].append(item["properties"]["cleabs"])
-                        data["nombre_de_logements"].append(item["properties"]["nombre_de_logements"])
-                        data["geometry"].append(geo.shape(item["geometry"]))
-                        progress.update()
-
-                df_buildings = pd.DataFrame(data)
-                df_buildings = gpd.GeoDataFrame(df_buildings, crs = "EPSG:2154")
+            df_buildings = pyogrio.read_dataframe(geometry_path, layer = "batiment", columns = [
+                "cleabs", "nombre_de_logements"]).to_crs("EPSG:2154")
             
             df_buildings["building_id"] = df_buildings["cleabs"].apply(lambda x: int(x[8:]))
             df_buildings["housing"] = df_buildings["nombre_de_logements"].fillna(0).astype(int)

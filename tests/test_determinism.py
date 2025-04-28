@@ -13,11 +13,21 @@ def hash_sqlite_db(path):
     matter, hashing the dump of the database is more relevant.
     """
     con = sqlite3.connect(path)
-    hash = hashlib.md5()
+
+    data = []
     for line in con.iterdump():
-        encoded = (line + "\n").encode()
-        hash.update(encoded)
+        if not "rtree" in line: # Fix for compatibilit between Linux and Windows
+            line = line.replace("MEDIUMINT", "INTEGER") # Fix for compatibilit between Linux and Windows
+            data.append(line.encode())
+
     con.close()
+
+    data = sorted(data)
+
+    hash = hashlib.md5()
+    for item in data:
+        hash.update(item)
+    
     return hash.hexdigest()
 
 
@@ -77,10 +87,10 @@ def _test_determinism(index, data_path, tmpdir):
     }
 
     REFERENCE_GPKG_HASHES = {
-        "ile_de_france_activities.gpkg":    "884eec1fd0c29904284eb4362ff89be1",
-        "ile_de_france_commutes.gpkg":      "5a4180390a69349cc655c07c5671e8d3",
-        "ile_de_france_homes.gpkg":         "a85e973f0e2f51031cd60170d351845e",
-        "ile_de_france_trips.gpkg":         "d0aec4033cfc184bf1b91ae13a537ef8",
+        "ile_de_france_activities.gpkg":    "f554086e6dcbfebfa5653fd8670096fe",
+        "ile_de_france_commutes.gpkg":      "1452fbd094a9be3d26f249021cc9b7cb",
+        "ile_de_france_homes.gpkg":         "8da4fb16e569dddc063ee72e227adc01",
+        "ile_de_france_trips.gpkg":         "48f3be7064f203fd02784e85b8ff023b",
     }
 
     generated_csv_hashes = {
