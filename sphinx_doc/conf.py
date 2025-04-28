@@ -39,23 +39,23 @@ html_title = "Eqasim"
 html_short_title = "Eqasim documentation"
 
 html_baseurl = "https://eqasim.readthedocs.io/stable/"
-html_theme_options = {
-    "collapse_navigation": True,
-    "navigation_depth": 2,
-    "icon_links": [
-        {"name": "Home Page", "url": html_baseurl, "icon": "fas fa-home"},
-        {
-            "name": "GitHub",
-            "url": "https://github.com/eqasim-org/ile-de-france",
-            "icon": "fab fa-github-square",
-        },
-    ],
-    "navbar_end": ["theme-switcher", "navbar-icon-links"],
-    "secondary_sidebar_items": ["page-toc", "edit-this-page"],
-    "header_links_before_dropdown": 7,
-}
+# html_theme_options = {
+#     "collapse_navigation": True,
+#     "navigation_depth": 2,
+#     "icon_links": [
+#         {"name": "Home Page", "url": html_baseurl, "icon": "fas fa-home"},
+#         {
+#             "name": "GitHub",
+#             "url": "https://github.com/eqasim-org/ile-de-france",
+#             "icon": "fab fa-github-square",
+#         },
+#     ],
+#     "navbar_end": ["theme-switcher", "navbar-icon-links"],
+#     "secondary_sidebar_items": ["page-toc", "edit-this-page"],
+#     "header_links_before_dropdown": 7,
+# }
 
-html_theme = 'pydata_sphinx_theme'
+html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 html_show_sourcelink = False
