@@ -8,13 +8,10 @@ To view the changes corresponding to each version, go see the [Changelog](change
 
 The changes before version 1.3.0 are available [here](old_changelog.md)
 
-You can find a mid/long term roadmap of Eqasim [here](roadmap.md).
-
 ```{toctree}
 :hidden:
 changelog.md
 old_changelog.md
-roadmap.md
 ```
 
 ## Legal information
