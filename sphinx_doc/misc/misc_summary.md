@@ -1,6 +1,6 @@
 # Miscellaneous
 
-This sections is all about the non-technical stuff.
+This section is all about the non-technical stuff
 
 ```{toctree}
 :titlesonly:
