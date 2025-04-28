@@ -79,7 +79,7 @@ def process(context, purpose, random, df_persons, df_od, df_locations,step_name)
     df_persons = df_persons[df_persons["has_%s_trip" % purpose]]
 
     # Sample commute flows based on population
-    df_demand = df_persons.groupby("commune_id").size().reset_index(name = "count")
+    df_demand = df_persons.groupby("commune_id",observed=False).size().reset_index(name = "count")
     df_demand["random_seed"] = random.randint(0, int(1e6), len(df_demand))
     df_demand = df_demand[["commune_id", "count", "random_seed"]]
     df_demand = df_demand[df_demand["count"] > 0]
