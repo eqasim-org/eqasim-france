@@ -11,7 +11,7 @@ data/lyon_2015
 config_local_*.yml
 
 # sphinx build files
-sphinx_doc/_build
+docs/_build
 
 .sif
 
