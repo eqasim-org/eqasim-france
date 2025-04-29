@@ -78,10 +78,3 @@ Publications
 - Hörl, S. (2019) `An agent-based model of Île-de-France: Overview and first results <https://slides.com/sebastianhorl/matsim-paris>`_, presentation at Institut Paris Region, September 2019.
 
 
-.. toctree::
-   :hidden:
-
-   population/population_summary
-   simulation/simulation_summary
-   cases/cases_summary
-   misc/misc_summary
