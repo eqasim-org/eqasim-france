@@ -1,5 +1,5 @@
 (population_summary)=
-# Generating a synthetic population
+# Generating the Île-de-France population
 
 The following sections describe how to generate a synthetic population
 using the pipeline. First all necessary data must be gathered.

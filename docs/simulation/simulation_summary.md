@@ -1,5 +1,5 @@
 (simulation_summary)=
-# Running a MATSim simulation
+# Running the Île-de-France MATSim simulation
 
 In order to run a simulation in MATSIM, you first need
 to obtain or [generate a synthetic population](../population/population_summary.md). Afterwards, the
