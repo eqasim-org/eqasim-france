@@ -1,3 +1,4 @@
+(population_summary)=
 # Generating a synthetic population
 
 The following sections describe how to generate a synthetic population
