@@ -8,8 +8,9 @@ Eqasim documentation
 
     :Release: |version|
     :Date: |today|
+    :Github: https://github.com/eqasim-org/ile-de-france
 
-Eqasim is a project meant for creating open data synthetic populations
+*Eqasim* is a project meant for creating open data synthetic populations
 of the Île-de-France region around in Paris and other regions in France.
 It takes as input several publicly
 available data sources to create a data set that closely represents the
