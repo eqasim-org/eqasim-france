@@ -66,7 +66,7 @@ The census of services and facilities in France is available from INSEE:
 services while the lower data sets only contain observations for specific sectors.
 - Copy the *zip* file into the folder `data/bpe_2023`.
 
-### 6a) National household travel survey (ENTD 2008)
+### 6a)  National household travel survey (ENTD 2008)
 
 The national household travel survey is available from the Ministry of Ecology:
 
@@ -83,7 +83,17 @@ a few are actually relevant for the pipeline. Those are:
   - Données mobilité déplacements locaux (K_deploc.csv)
 - Put the downloaded *csv* files in to the folder `data/entd_2008`.
 
-### 6b) *(Optional)* Regional household travel survey (EGT)
+### 6b) *(Optional)* National Person Mobility Survey (EMP 2019)
+
+The National Person Mobility Survey is also available from the Ministry of Ecology:
+
+- [National Person Mobility Survey](https://www.statistiques.developpement-durable.gouv.fr/resultats-detailles-de-lenquete-mobilite-des-personnes-de-2019)
+- Scroll all the way down the website to the **Télécharger les données individuelles anonymisées et leurs dictionnaires** (a clickable
+pop-down menu).
+- Download the data set in **csv** by clicking on the link **Données individuelles anonymisées (fichiers au format CSV) - EMP 2019**
+- Copy the *zip* file into the folder `data/emp_2019`.
+
+### 6c) *(Optional)* Regional household travel survey (EGT)
 
 Usually, you do not have access to the regional household travel
 survey, which is not available publicly. In case you have access (but we cannot
@@ -193,9 +203,9 @@ Your folder structure should now have at least the following files:
 - `data/ban_idf/adresses-93.csv.gz`
 - `data/ban_idf/adresses-94.csv.gz`
 
-In case you are using the regional household travel survey (EGT), the following
-files should also be in place:
-
+In case you are using the National Person Mobility Survey (EMP) or the Regional household travel survey (EGT), the following files should also be respectively in place:
+- `data/emp_2019/emp_2019_donnees_individuelles_anonymisees_novembre2024.zip`
+or 
 - `data/egt_2010/Menages_semaine.csv`
 - `data/egt_2010/Personnes_semaine.csv`
 - `data/egt_2010/Deplacements_semaine.csv`
@@ -307,24 +317,19 @@ Running the pipeline again will add the `mode` colum to the `trips.csv` file and
 
 The pipeline allows to make use of population projections from INSEE up to 2070. The same methodology can also be used to scale down the population. The process takes into account the marginal distribution of sex, age, their combination, and the total number of persons. The census data for the base year (see above) is reweighted according to those marginals using *Iterative Proportional Updating*.
 
-- To make use of the scaling, [download the projection data from INSEE](https://www.insee.fr/fr/statistiques/5894093?sommaire=5760764). There are various scenarios in Excel format that you can choose from. The default is the *Scénario centrale*, the central scenario. 
-- Put the downloaded file into `data/projection_2021`, so you will have the file `data/projection_2021/00_central.xlsx`
+- To make use of the scaling, [download the projection data from INSEE](https://www.insee.fr/fr/statistiques/7747107?sommaire=6652140). Download *Les tableaux en Excel* which contain all projection scenarios in Excel format.  There are various scenarios in Excel format that you can choose from. The default is the *Scénario centrale*, the central scenario. 
+- Put the downloaded file into `data/projections`, so you will have the file `data/projections/donnees_detaillees_departementales.zip`
 
-Then, activate the projection procedure by defining the projection year in the configuration:
+Then, activate the projection procedure by defining the projection scenario and year in the configuration:
 
 ```yaml
 config: 
   # [...]
+  projection_scenario: Central
   projection_year: 2030
 ```
 
-You may choose any year (past or future) that is contained in the projection scenario Excel file. In case you want to use a different scenario, download the corresponding file, put it into the folder mentioned above, and choose the scenario name via configuration:
-
-```yaml
-config: 
-  # [...]
-  projection_scenario: 00_central
-```
+You may choose any year (past or future) that is contained in the Excel files (sheet *Population*) in the downloaded archive. The same is true for the projection scenarios, which are based on the file names and documented in the Excel files' *Documentation* sheet.
 
 ### Urban type
 
@@ -353,6 +358,18 @@ To make use of the urban type, the following data is needed:
 - Put the downloaded *zip* file into `data/urban_type`, so you will have the file `data/urban_type/UU2020_au_01-01-2023.zip`
 
 Then, you should be able to run the pipeline with the configuration explained above.
+
+### Filter household travel survey data
+
+By default, the pipeline filters out observations from the HTS that correspond to persons living or working outside the configured area (given as departments or regions).
+However, the national HTS (ENTD and EMP) may be very sparse in rural and undersampled areas.
+The parameters `filter_hts` (default `true`) allows disabling the prefiltering such that the whole set of persons and activity chains is used for generating a regional population when set to `false`:
+```yaml
+config:
+  # [...]
+  filter_hts: false
+```
+For validation, a table of person volumes by age range and trip purpose can be generated from the `analysis.synthesis.population` stage, as explained at the end of this documentation. 
 
 ### Exclude entreprise with no employee
 

@@ -137,9 +137,9 @@ config:
 
   ## Binaries paths  
   # git_binary: git
-  # osmosis_binary: osmosis
   # java_binary: java
   # maven_binary: mvn
+  # maven_local_cache: false
 
   ## Binaries parameters
   # java_memory: 14G
@@ -199,8 +199,6 @@ config:
   # education_file: education/education_addresses.geojson
 
   # osm_path: osm_idf
-  # osm_highways: "*"
-  # osm_railways: "*"
 
   # siren_path: sirene/StockUniteLegale_utf8.zip
   # siret_path: sirene/StockEtablissement_utf8.zip
