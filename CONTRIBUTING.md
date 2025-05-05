@@ -3,20 +3,77 @@
 TODO : introduction, any contribution is welcome. Reach out to us if you need any help to share your code,
 we'll figure out a way together.
 
-## Making a Pull Request from a fork of _Eqasim_
+## Making a Pull request
 
-TODO : reproduce slide from Sebastian: fork -> make a branch -> make changes -> make a PR
+The most common way to contribute to an open-source project is to make a Pull request (PR),
+so the project maintainers can review your code and discuss changes if needed.
 
-## Development environment and guidelines
+The following section explains how to make changes in _Eqasim_ and create a PR to merge them into the main repository. 
+It requires having [Git](https://git-scm.com/) installed and being able to perform some actions
+like cloning a repository, creating a branch and doing a commit, using command lines in a terminal.
 
-This section is intended for people with some experience in Python development and GitHub.
-Is it mainly a cheatsheet for maintainers to remember how the various tools used by _Eqasim_ work. 
+If you need any help in this process, please reach out to the code maintainers.
 
-If these guidelines are too complicated and prevent your contribution to _Eqasim_,
-you can post a message along with your Pull Request to ask the maintainers to
-help you with your contribution !
+### Fork the _Eqasim_ repository
 
-### Pull Request title
+First, go to the [_Eqasim_ repository homepage](https://github.com/eqasim-org/ile-de-france) and [fork it](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
+by clicking the `Fork` button. This will create a copy of the repository on your GitHub account.
+
+### Clone your fork
+
+In order to make changes to the codebase, you have to [clone your new repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
+into your local machine. Click the `Code` button on the main page and copy the one of the addresses of the repository,
+then use it with the `git clone` command line:
+
+```bash
+git clone https://github.com/<YourUserName>/<projectname>
+```
+
+This will create a new folder with the repository contents.
+
+### Create a branch
+
+In the root folder of your local repository, [create a new branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging)
+using the following command line:
+
+```bash
+git checkout -b my-branch-name
+```
+
+### Commit changes into the code
+
+You can now implement changes into the main codebase of _Eqasim_. Once you are done, 
+[commit your changes](https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository). 
+This command line will commit all modified files:
+
+```bash
+git commit -a -m "<my commit message>"
+```
+
+### Push your changes
+
+Now that your local branch contains your changes, you can ["push" it online](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes), into the GitHub repository
+you created by forking _Eqasim_. In order to do so, execute this command line:
+
+```bash
+git push origin <my-branch-name>
+```
+
+### Pull request creation
+
+Finally, go to your GitHub repository homepage in order to [create your Pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request). 
+You should be able to click a green `Compare and pull request` button.
+Alternatively, click the `Pull requests` tab and the `New pull request` button.
+
+On top of the page, selectors allow you to choose what is merged into what.
+
+- On the left side, make sure that the `base repository` is set to `eqasim-org/ile-de-france` and `base` is set to `develop`.
+On the 
+- On the right side, `head repository` should be your repository name, and `compare` should be set to your branch name
+
+Click `Create pull request`, give it a title and a description to explain your changes, and you're done !
+
+#### Pull request title
 
 The PR title should comply with [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 This ensures that once the PR contents are squashed and merged in the `develop` branch,
@@ -24,8 +81,21 @@ its history is readable and can be used for things like generating the [Changelo
 
 **Commits of the branch don't have to be conventional commits !**
 
-When a PR is created, a GitHub action checks that the title is compliant.
+When a PR is created, a GitHub action checks that the title is compliant, so don't worry too much about it.
 
+#### Automatic testing
+
+Tests are automatically run upon PR creation and when changes are made to the incoming branch.
+This ensures that your changes don't break _Eqasim_ and that they can be safely merged.
+
+## Development environment and guidelines
+
+This section is intended for people with some experience in Python development and GitHub.
+Is it mainly a cheatsheet for maintainers to remember how the various tools used by _Eqasim_ work. 
+
+If these guidelines are too complicated and prevent your contribution to _Eqasim_,
+you can post a message along with your PR to ask the maintainers to
+help you with your contribution !
 
 ### Versioning and releases
 
