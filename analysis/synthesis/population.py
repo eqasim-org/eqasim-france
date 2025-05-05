@@ -80,12 +80,12 @@ def execute(context):
 
     print("Generate tables ...")
     # Age purpose analysis
-    analysis_age_purpose = pd.pivot_table(df_eq_travel,"person_id",index="age_class",columns="trip_purpose",aggfunc="count")
+    analysis_age_purpose = pd.pivot_table(df_eq_travel,"person_id",index="age_class",columns="trip_purpose",aggfunc="count",observed=False)
     analysis_age_purpose = analysis_age_purpose/sampling_rate
     analysis_age_purpose.to_csv(f"{analysis_output_path}/{prefix}age_purpose.csv")
 
     # Compare age volume
-    analysis_age_class = pd.concat([df_census.groupby("age_class")["weight"].sum(),df_person_eq.groupby("age_class")["person_id"].count()],axis=1).reset_index()
+    analysis_age_class = pd.concat([df_census.groupby("age_class",observed=False)["weight"].sum(),df_person_eq.groupby("age_class",observed=False)["person_id"].count()],axis=1).reset_index()
     analysis_age_class.columns = ["Age class","INSEE","EQASIM"]
     analysis_age_class["Proportion_INSEE"] = analysis_age_class["INSEE"] /df_census["weight"].sum()
     analysis_age_class["Proportion_EQASIM"] = analysis_age_class["EQASIM"] /len(df_person_eq)
@@ -93,7 +93,7 @@ def execute(context):
     analysis_age_class.to_csv(f"{analysis_output_path}/{prefix}age.csv")
 
     # Compare vehicle volume
-    analysis_vehicles_class = pd.concat([df_hts_households.groupby("vehicles_class")["household_weight"].sum(),df_hts_households.groupby("vehicles_class")["household_weight_insee"].sum(),df_person_eq.groupby("vehicles_class")["household_id"].nunique()],axis=1).reset_index()
+    analysis_vehicles_class = pd.concat([df_hts_households.groupby("vehicles_class",observed=False)["household_weight"].sum(),df_hts_households.groupby("vehicles_class",observed=False)["household_weight_insee"].sum(),df_person_eq.groupby("vehicles_class",observed=False)["household_id"].nunique()],axis=1).reset_index()
     analysis_vehicles_class.columns = ["Number of vehicles class","HTS","HTS adjust with INSEE population weights","EQASIM"]
     analysis_vehicles_class["Proportion_HTS"] = analysis_vehicles_class["HTS"] / df_hts_households["household_weight"].sum() 
     analysis_vehicles_class["Proportion_EQASIM"] = analysis_vehicles_class["EQASIM"] / df_person_eq["household_id"].nunique() 
@@ -101,7 +101,7 @@ def execute(context):
     analysis_vehicles_class.to_csv(f"{analysis_output_path}/{prefix}nbr_vehicle.csv")
     
     # Compare license volume 
-    analysis_license_class = pd.concat([df_hts_person.groupby("has_license")["person_weight"].sum(),df_hts_person.groupby("has_license")["person_weight_insee"].sum(),df_person_eq.groupby("has_license")["person_id"].count()],axis=1).reset_index()
+    analysis_license_class = pd.concat([df_hts_person.groupby("has_license",observed=False)["person_weight"].sum(),df_hts_person.groupby("has_license",observed=False)["person_weight_insee"].sum(),df_person_eq.groupby("has_license",observed=False)["person_id"].count()],axis=1).reset_index()
     analysis_license_class.columns = ["Possession of license","HTS","HTS adjust with INSEE population weights","EQASIM"]
     analysis_license_class["Proportion_HTS"] = analysis_license_class["HTS"] /df_hts_person["person_weight"].sum()
     analysis_license_class["Proportion_EQASIM"] = analysis_license_class["EQASIM"] /len(df_person_eq)
@@ -109,7 +109,7 @@ def execute(context):
     analysis_license_class.to_csv(f"{analysis_output_path}/{prefix}license.csv")
 
     # Compare travel volume
-    analysis_travel = pd.concat([df_hts_travel.groupby("age_class")["person_weight"].sum(),df_hts_travel.groupby("age_class")["person_weight_insee"].sum(),df_eq_travel.groupby("age_class")["person_id"].count()],axis=1).reset_index()
+    analysis_travel = pd.concat([df_hts_travel.groupby("age_class",observed=False)["person_weight"].sum(),df_hts_travel.groupby("age_class",observed=False)["person_weight_insee"].sum(),df_eq_travel.groupby("age_class",observed=False)["person_id"].count()],axis=1).reset_index()
     analysis_travel.columns = ["Age class","HTS","HTS adjust with INSEE population weights","EQASIM"]
     analysis_travel["Proportion_HTS"] = analysis_travel["HTS"] /df_hts_travel["person_weight"].sum()
     analysis_travel["Proportion_EQASIM"] = analysis_travel["EQASIM"] /len(df_eq_travel)
@@ -132,7 +132,7 @@ def execute(context):
     df_spatial["distance"] = df_spatial.apply(lambda x:distance( x["preceding_geometry"],x["following_geometry"])/1000,axis=1)
     df_spatial["distance_class"] = pd.cut(df_spatial["distance"],list(np.arange(100))+[np.inf])
 
-    analysis_distance = pd.concat([df_hts_travel.groupby("distance_class")["person_weight"].sum(),df_hts_travel.groupby("distance_class")["person_weight_insee"].sum(),df_spatial.groupby("distance_class")["person_id"].count()],axis=1).reset_index()
+    analysis_distance = pd.concat([df_hts_travel.groupby("distance_class",observed=False)["person_weight"].sum(),df_hts_travel.groupby("distance_class",observed=False)["person_weight_insee"].sum(),df_spatial.groupby("distance_class",observed=False)["person_id"].count()],axis=1).reset_index()
     analysis_distance.columns = ["Distance class","HTS","HTS adjust with INSEE population weights","EQASIM"]
     analysis_distance["Proportion_HTS"] = analysis_distance["HTS"] / analysis_distance["HTS"].sum()
     analysis_distance["Proportion_EQASIM"] = analysis_distance["EQASIM"] / len(df_spatial)

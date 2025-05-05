@@ -47,21 +47,21 @@ def execute(context):
     df_work = df_work[["origin_id", "destination_id", "weight"]].groupby(["origin_id", "destination_id"]).sum().reset_index()
    
     # Compute totals
-    df_total = df_work[["origin_id", "weight"]].groupby("origin_id").sum().reset_index().rename({ "weight" : "total" }, axis = 1)
+    df_total = df_work[["origin_id", "weight"]].groupby("origin_id",observed=False).sum().reset_index().rename({ "weight" : "total" }, axis = 1)
     df_work = pd.merge(df_work, df_total, on = "origin_id")
 
-    df_total = df_education[["origin_id","age_range", "weight"]].groupby(["origin_id","age_range"]).sum().reset_index().rename({ "weight" : "total" }, axis = 1)
+    df_total = df_education[["origin_id","age_range", "weight"]].groupby(["origin_id","age_range"],observed=False).sum().reset_index().rename({ "weight" : "total" }, axis = 1)
     df_education = pd.merge(df_education, df_total, on = ["origin_id","age_range"])
     
     if context.config("education_location_source") == 'bpe':
         # Aggregate education (we do not consider different age range with bpe source)
-        df_education = df_education[["origin_id", "destination_id", "weight","total"]].groupby(["origin_id", "destination_id"]).sum().reset_index()    
+        df_education = df_education[["origin_id", "destination_id", "weight","total"]].groupby(["origin_id", "destination_id"],observed=False).sum().reset_index()    
     # Compute weight
     df_work["weight"] /= df_work["total"]
     df_education["weight"] /= df_education["total"]
 
     del df_work["total"]
     del df_education["total"]
-    df_education = df_education.fillna(0.0)
+    df_education = df_education.fillna({"weight":0.0})
     
     return df_work, df_education
