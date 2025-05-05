@@ -26,6 +26,40 @@ its history is readable and can be used for things like generating the [Changelo
 
 When a PR is created, a GitHub action checks that the title is compliant.
 
+
+### Versioning and releases
+
+#### Release Please
+
+_Eqasim_ uses [Release Please](https://github.com/googleapis/release-please) to manage versions and releases.
+
+> Release Please automates CHANGELOG generation, the creation of GitHub releases, and version bumps
+
+**Release Please will create and update a release PR** (named `chore(develop): release <new-version-number>`) when the `develop` branch receives pushes.
+
+This requires commits **on the `develop` branch** to follow the Conventional commits convention (see #pull-request-title).
+
+#### Version number
+
+The new version number is defined according to the [SemVer](https://semver.org/) convention, based on the commits since the last release:
+    
+- A `fix` commit will increase the PATCH number (0.0.Z)
+- Any `feat` commit will instead increase the MINOR number (0.Y.0)
+- Any breaking commit (`!` marker) will instead increase the MAJOR number (X.0.0)
+
+#### Release action
+
+**When we are ready to release, simply merge the release PR.** 
+Release Please will then do the following:
+
+- Merge the changes contained in the release PR into the `develop` branch, creating a commit with the same name as the branch. These changes include:
+  - Updating the version number in all relevant places of the code
+  - Update the Changelog based on the contents of the commits added since the last release
+- Create a git tag on this commit with the new version number
+- Create a new release
+- This will also trigger the publication of a new version of the documentation
+
+
 ### Sphinx documentation
 
 _Eqasim_ uses [Sphinx](https://www.sphinx-doc.org/en/master/index.html) to generate a documentation website.
@@ -109,37 +143,3 @@ and the equivalent in _reStructuredText_:
 
    my_documentation_file
 ```
-
-
-#### Versioning and releases
-
-##### Release Please
-
-_Eqasim_ uses [Release Please](https://github.com/googleapis/release-please) to manage versions and releases.
-
-> Release Please automates CHANGELOG generation, the creation of GitHub releases, and version bumps
-
-**Release Please will create and update a release PR** (named `chore(develop): release <new-version-number>`) when the `develop` branch receives pushes.
-
-This requires commits **on the `develop` branch** to follow the Conventional commits convention (see #pull-request-title).
-
-##### Version number
-
-The new version number is defined according to the [SemVer](https://semver.org/) convention, based on the commits since the last release:
-    
-- A `fix` commit will increase the PATCH number (0.0.Z)
-- Any `feat` commit will instead increase the MINOR number (0.Y.0)
-- Any breaking commit (`!` marker) will instead increase the MAJOR number (X.0.0)
-
-##### Release action
-
-**When we are ready to release, simply merge the release PR.** 
-Release Please will then do the following:
-
-- Merge the changes contained in the release PR into the `develop` branch, creating a commit with the same name as the branch. These changes include:
-  - Updating the version number in all relevant places of the code
-  - Update the Changelog based on the contents of the commits added since the last release
-- Create a git tag on this commit with the new version number
-- Create a new release
-- This will also trigger the publication of a new version of the documentation
-
