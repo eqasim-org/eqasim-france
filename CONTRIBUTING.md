@@ -1,7 +1,15 @@
 # How to contribute to _Eqasim_
 
-TODO : introduction, any contribution is welcome. Reach out to us if you need any help to share your code,
-we'll figure out a way together.
+Welcome, and thank you for considering contributing to _Eqasim_ !
+
+This document aims to help _Eqasim_ users sharing improvements and new features to the project. 
+_Eqasim_ is highly supported by a community of researchers and developers, so contributions are an important part of its lifecycle.
+
+Every contribution is welcome. If you don't know if your feature is relevant or already implemented, 
+you can use the [issue tracker](https://github.com/eqasim-org/ile-de-france/issues/new) to ask the project maintainers. 
+
+The following sections take a closer look on how to make your contributions available to all, and how to format them. 
+However, if you're not comfortable with our development tools, please reach out to us, we will figure out a way together.
 
 ## Making a Pull request
 
