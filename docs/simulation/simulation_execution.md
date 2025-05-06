@@ -1,52 +1,4 @@
-# Running the Île-de-France MATSim simulation
-
-In order to run a simulation of Île-de-France in MATSIM, you first need
-to obtain or [generate a synthetic population](population.md). Afterwards, the
-pipeline provides additional stages to create and run a full MATSim scenario
-including a digital road and public transport network.
-
-This guide covers the following steps:
-
-- [Gathering additional data](#section-data)
-- [Running the simulation](#section-simulation)
-
-## <a name="section-data"></a>Gathering additional data
-
-In this section we refere to the same data directory structure as described when
-gathering the data for the [synthetic population](population.md).
-
-### I) Road network (OpenStreetMap)
-
-The road network in the pipeline is based on OpenStreetMap data.
-A cut-out for Île-de-France is available from Geofabrik:
-
-- [Île-de-France OSM](https://download.geofabrik.de/europe/france/ile-de-france.html)
-- We recommend to use the fixed snapshot from 01/01/2022: [ile-de-france-220101.osm.pbf](https://download.geofabrik.de/europe/france/ile-de-france-220101.osm.pbf)
-- Download *ile-de-france-220101.osm.pbf* and put it into the folder `data/osm_idf`.
-
-### II) Public transit schedule (GTFS)
-
-A digital public transport schedule for Île-de-France is available from Île-de-France mobilités. Since 2023 you are required to create an account and accept the data license before making use of the data.
-
-- Go to [Île-de-France GTFS](https://prim.iledefrance-mobilites.fr/fr/donnees-statiques/offre-horaires-tc-gtfs-idfm)
-- Create an account "Connexion" on top of the page
-- Once you have created a valid account, go back to the page and click "Exporter la donnée"
-- In the popup window, accept the use conditions and select "CSV" type, then click "Télécharger" to download
-- The resulting file is not the data itself, but only contains a link to them. Open the downloaded CSV and find the URL starting with `https://data.iledefrance-mobilites.fr/api/v2/catalog/datasets/...`
-- Enter the URL in your browser and download the file `IDFM-gtfs.zip`
-- Put `IDFM-gtfs.zip` into the folder `data/gtfs_idf`
-
-Note that this schedule is updated regularly and is only valid for the next three
-weeks.
-
-### Overview
-
-In your directory structure, there should now be the following additional files:
-
-- `data/osm_idf/ile-de-france-latest.osm.pbf`
-- `data/gtfs_idf/IDFM-gtfs.zip`
-
-## <a name="section-simulation">Running the simulation
+# Running the simulation
 
 The pipeline can be used to generate a full runnable [MATSim](https://matsim.org/)
 scenario and run it for a couple of iterations to test it. For that, you need
@@ -62,17 +14,16 @@ your system.
 - **git** `=> 2.39.2` is used to clone the repositories containing the simulation code. In
 case you clone the pipeline repository previously, you should be all set.
 
-> [!WARNING]
-> Windows users :
-> 
-> The cache file paths can get very long and may break the 256 characters limit in the Microsoft Windows OS. In order to avoid any issue make sure the following regitry entry is set to **1** : `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled`
-> 
-> You should also activate long paths in git : `git config --system core.longpaths true`
+:::{warning} Windows users :
 
-> [!WARNING]
-> Ubuntu users :
-> 
-> In recent versions of **Ubuntu** you may need to install the `font-config` package to avoid crashes of MATSim when writing images (`sudo apt install fontconfig`).
+ The cache file paths can get very long and may break the 256 characters limit in the Microsoft Windows OS. In order to avoid any issue make sure the following regitry entry is set to **1** : `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled`
+ You should also activate long paths in git : `git config --system core.longpaths true`
+:::
+
+:::{warning} Ubuntu users :
+
+In recent versions of **Ubuntu** you may need to install the `font-config` package to avoid crashes of MATSim when writing images (`sudo apt install fontconfig`).
+:::
 
 Then, open your `config.yml` and uncomment the `matsim.output` stage in the
 `run` section. If you call `python3 -m synpp` again, the pipeline will know
@@ -116,7 +67,7 @@ config:
   mode_choice: true
 ```
 
-## <a name="section-data"></a>Optionnaly export detailed link geometries
+## Optionnaly export detailed link geometries
 
 When creating the matsim network from the OSM data, the `pt2matsim` project simplifies link geometries.
 You can export a `detailed_network.csv` file containing the detailed geometries of every network link by the following in the`config.yml` file :
@@ -130,7 +81,7 @@ config:
 # ...
 ```
 
-## <a name="section-data"></a>Using MATSim's emissions contrib
+## Using MATSim's emissions contrib
 
 In order to use a detailed emissions analysis, you need to let the pipeline generate a meaningful vehicle fleet. Data on the private vehicle stock across France are available from the Ministry of Ecology:
 

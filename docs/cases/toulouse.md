@@ -1,11 +1,7 @@
+(toulouse)=
 # Toulouse / Occitanie
 
-The pipeline makes it easy to create synthetic populations and simulations
-for other regions than Île-de-France. In any case, we recommend to first
-follow instructions to set up a [synthetic population for Île-de-France](../population.md)
-and (if desired) the [respective simulation](../simulation.md). The following
-describes the steps and additional data sets necessary to create a population and
-simulation for **Toulouse**.
+The following page describes the steps and additional data sets necessary to create a population and simulation for **Toulouse**.
 
 ## Additional data
 
