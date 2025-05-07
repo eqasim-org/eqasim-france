@@ -33,10 +33,10 @@ jobs:
             python-version: '3.13' 
 
       - name: Set up dependencies
-        run: pip install -r $GITHUB_WORKSPACE/docs/doc_requirements.txt
+        run: pip install -r docs/doc_requirements.txt
 
       - name: Build the documentation
-        run: cd $GITHUB_WORKSPACE/docs && make html
+        run: cd docs && make html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -44,7 +44,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: $GITHUB_WORKSPACE/docs/_build/html
+          path: docs/_build/html
       
       - name: Deploy to GitHub Pages
         id: deployment
