@@ -22,7 +22,7 @@ def execute(context: ExecuteContext):
 
     # Check if the geometry column exists and is valid
     if "geometry" not in gdf.columns or gdf["geometry"].is_empty.any():
-        raise ValueError("The shapefile does not contain a valid geometry column.")
+        raise ValueError("The file does not contain a valid geometry column.")
 
     return gdf
 

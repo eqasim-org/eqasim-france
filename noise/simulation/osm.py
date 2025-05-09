@@ -1,36 +1,32 @@
-import os, os.path
+from synpp import ConfigurationContext, ExecuteContext
+
+import os
+import os.path
 import shapely.geometry as sgeo
 import glob
 import osmium
+import geopandas as gpd
 
-"""
-This stage reads OpenStreetMap data in PBF format. The source files are 
-looked up in "{data_path}/{osm_path}/*.osm.pbf". Then, they are processed:
-
-- Only highways and railways are kept in the data.
-- The individual data sources are merged together.
-- They are cut based on requested region or department.
-"""
-
-def configure(context):
+def configure(context: ConfigurationContext):
+    context.stage("data.cutter.geometry")
     context.config("data_path")
     context.config("osm_path", "osm_idf")
 
-    context.stage("data.spatial.municipalities")
 
-def execute(context):
+def execute(context: ExecuteContext):
+
     source_paths = get_source_paths("{}/{}".format(context.config("data_path"), context.config("osm_path")))
     
     # Prepare bounding area
-    df_area = context.stage("data.spatial.municipalities")
-    area = df_area.to_crs("EPSG:4326").union_all()
+    df_area: gpd.GeoDataFrame = context.stage("data.cutter.geometry")
+    area = df_area.to_crs("EPSG:4326")["geometry"].values[0]
 
     # Read identifiers that are relevant
     tracker = osmium.IdTracker()
 
     for source_path in source_paths:
         processor = osmium.FileProcessor(source_path).with_filter(
-            osmium.filter.KeyFilter("highway", "railway")).with_locations().with_filter(
+            osmium.filter.KeyFilter("building")).with_locations().with_filter(
             osmium.filter.GeoInterfaceFilter())
         
         for item in context.progress(processor, label = "Reading {} ...".format(source_path.split("/")[-1])):
@@ -46,7 +42,7 @@ def execute(context):
         for source_path in source_paths
     ]
 
-    output_path = "{}/output.osm.gz".format(context.path())
+    output_path = "{}/output.osm.pbf".format(context.path())
     with osmium.SimpleWriter(output_path) as writer:
         for items in context.progress(osmium.zip_processors(*processors), label = "Writing ..."):
             for item_index, item in enumerate(items):
@@ -54,7 +50,7 @@ def execute(context):
                     writer.add(item)
                     break # already written, skip duplicate
 
-    return "output.osm.gz"
+    return "output.osm.pbf"
 
 def get_source_paths(base_path):
     osm_paths = sorted(list(glob.glob("{}/*.osm.pbf".format(base_path))))
