@@ -74,13 +74,13 @@ report.register(
 )
 
 report.register(
-    "Income tax data (Filosofi 2019), municipalities",
-    "https://www.insee.fr/fr/statistiques/fichier/6036907/indic-struct-distrib-revenu-2019-COMMUNES.zip"
+    "Income tax data (Filosofi 2021), municipalities",
+    "https://www.insee.fr/fr/statistiques/fichier/7756855/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip"
 )
 
 report.register(
-    "Income tax data (Filosofi 2019), administrative",
-    "https://www.insee.fr/fr/statistiques/fichier/6036907/indic-struct-distrib-revenu-2019-SUPRA.zip"
+    "Income tax data (Filosofi 2021), administrative",
+    "https://www.insee.fr/fr/statistiques/fichier/7756855/indic-struct-distrib-revenu-2021-SUPRA_XLSX.zip"
 )
 
 report.register(
