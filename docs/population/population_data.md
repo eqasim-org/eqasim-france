@@ -31,15 +31,15 @@ Origin-destination data is available from INSEE (at two locations):
 - Download the data from the links, both in **csv** format.
 - Copy both *zip* files into the folder `data/rp_2019`.
 
-## 4) Income tax data (Filosofi 2019)
+## 4) Income tax data (Filosofi 2021)
 
 The tax data set is available from INSEE:
 
-- [Income tax data](https://insee.fr/fr/statistiques/6036907)
-- Download the munipality data (first link): *Base niveau communes en 2019* in **xlsx** format
-- Copy the *zip* file into the folder `data/filosofi_2019`
-- Download the administrative level data (second link): *Base niveau administratif en 2019* in **xlsx** format
-- Copy the second *zip* file into `data/filosofi_2019`
+- [Income tax data](https://www.insee.fr/fr/statistiques/7756855)
+- Download the munipality data (first link): *Base niveau communes en 2021* in **xlsx** format
+- Copy the *zip* file into the folder `data/filosofi_2021`
+- Download the administrative level data (second link): *Base niveau administratif en 2021* in **xlsx** format
+- Copy the second *zip* file into `data/filosofi_2021`
 
 ## 5) Service and facility census (BPE 2021)
 
@@ -156,8 +156,8 @@ Your folder structure should now have at least the following files:
 - `data/rp_2019/RP2019_MOBPRO_csv.zip`
 - `data/rp_2019/RP2019_MOBSCO_csv.zip`
 - `data/rp_2019/base-ic-evol-struct-pop-2019.zip`
-- `data/filosofi_2019/indic-struct-distrib-revenu-2019-COMMUNES.zip`
-- `data/filosofi_2019/indic-struct-distrib-revenu-2019-SUPRA.zip`
+- `data/filosofi_2021/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip`
+- `data/filosofi_2021/indic-struct-distrib-revenu-2021-SUPRA_XLSX.zip`
 - `data/bpe_2021/bpe21_ensemble_xy_csv.zip`
 - `data/entd_2008/Q_individu.csv`
 - `data/entd_2008/Q_tcm_individu.csv`
