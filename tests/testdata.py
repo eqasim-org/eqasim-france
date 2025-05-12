@@ -241,8 +241,8 @@ def create(output_path):
     # Required attributes: CODGEO, D115, ..., D915
     print("Creating FILOSOFI ...")
 
-    # Use the following data, taken from the Nantes municipality from the 2019 data set
-    filosofi_year = "19"
+    # Use the following data, taken from the Nantes municipality from the 2021 data set
+    filosofi_year = "21"
     income_data = {
         "househod_size": [
             {"name": "1_pers", "sheet": "TAILLEM_1", "col_pattern": "TME1", "data": [9820,13380,15730,18140,20060,22050,24710,28120,34150]},
@@ -266,15 +266,15 @@ def create(output_path):
     df_income_ensemble = df_income.copy()
 
     # the following data is not related to the `income_data` datasets
-    df_income_ensemble["D119"] = 9122.0
-    df_income_ensemble["D219"] = 11874.0
-    df_income_ensemble["D319"] = 14430.0
-    df_income_ensemble["D419"] = 16907.0
-    df_income_ensemble["Q219"] = 22240.0
-    df_income_ensemble["D619"] = 22827.0
-    df_income_ensemble["D719"] = 25699.0
-    df_income_ensemble["D819"] = 30094.0
-    df_income_ensemble["D919"] = 32303.0
+    df_income_ensemble["D121"] = 9122.0
+    df_income_ensemble["D221"] = 11874.0
+    df_income_ensemble["D321"] = 14430.0
+    df_income_ensemble["D421"] = 16907.0
+    df_income_ensemble["Q221"] = 22240.0
+    df_income_ensemble["D621"] = 22827.0
+    df_income_ensemble["D721"] = 25699.0
+    df_income_ensemble["D821"] = 30094.0
+    df_income_ensemble["D921"] = 32303.0
 
     # Deliberately remove some of them
     df_income_ensemble = df_income_ensemble[~df_income_ensemble["CODGEO"].isin([
@@ -305,10 +305,10 @@ def create(output_path):
         for i, column in enumerate(columns):
             value["df"][column] = value["data"][i]
 
-    os.mkdir("%s/filosofi_2019" % output_path)
+    os.mkdir("%s/filosofi_2021" % output_path)
 
-    with zipfile.ZipFile("%s/filosofi_2019/indic-struct-distrib-revenu-2019-COMMUNES.zip" % output_path, "w") as archive:
-        with archive.open("FILO2019_DISP_COM.xlsx", "w") as f:
+    with zipfile.ZipFile("%s/filosofi_2021/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip" % output_path, "w") as archive:
+        with archive.open("FILO2021_DISP_COM.xlsx", "w") as f:
             with pd.ExcelWriter(f) as writer:  
                 df_income_ensemble.to_excel(
                     writer, sheet_name = "ENSEMBLE", startrow = 5, index = False
