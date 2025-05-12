@@ -57,18 +57,16 @@ def execute(context: ExecuteContext):
     ]
 
     # Save the filtered DataFrame to a CSV file
-    df_detailed_network.to_csv(
-        "%s/%s/%s_detailed_network.csv" % (
-            context.config("output_path"),
-            cutter_name,
-            cutter_name,
-        ),
-        index=False,
-    )
-
-    return "%s_detailed_network.csv" % (
+    csv_path = "%s/%s/%s_detailed_network.csv" % (
+        context.config("output_path"),
+        cutter_name,
         cutter_name,
     )
+
+    df_detailed_network.to_csv(csv_path, index=False)
+
+    return csv_path
+        
 
 def validate(context: ExecuteContext):
     if not context.config("export_detailed_network"):

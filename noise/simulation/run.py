@@ -13,6 +13,7 @@ def execute(context: ExecuteContext):
     noisemodelling.run(context, [
         "-conf", Path(properties_path).as_posix(),
         "-osm",
+        "-c", "maps",
         "--reflOrder", "1",
         "--maxReflDist", "10",
         "--maxSrcDist", "50",

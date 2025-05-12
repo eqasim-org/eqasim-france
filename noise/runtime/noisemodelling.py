@@ -22,10 +22,10 @@ def run(context: ExecuteContext, arguments: list):
 
     commandline = 'gradlew run --args="%s"' % " ".join(arguments)
     
-    print("Running command:\n" % commandline)
+    print("Running command:\n", commandline)
 
     # Run the command with the specified arguments
-    sp.run([commandline], cwd="%s/matsim-noisemodelling" % context.path(), shell=True, check=True)
+    sp.run(commandline, cwd="%s/matsim-noisemodelling" % context.path("noise.runtime.noisemodelling"), shell=True, check=True)
 
 def execute(context: ExecuteContext):
     # Clone repository and checkout version

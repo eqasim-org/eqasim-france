@@ -5,8 +5,11 @@ from pathlib import Path
 
 
 def configure(context: ConfigurationContext):
-    context.stage("noise.simulation.osm")
+    context.stage("matsim.simulation.cutter.full_run")
 
+    context.stage("noise.simulation.detailed_network")
+    context.stage("noise.simulation.osm")
+    
     context.config("output_path")
     context.config("cutter_name", "cutter")
 
@@ -15,10 +18,10 @@ def configure(context: ConfigurationContext):
 def execute(context: ExecuteContext):
     
     sampling_rate = context.config("sampling_rate")
-
-    osm_path = Path("%s/%s" % (context.path("noise.simulation.osm"), context.stage("noise.simulation.osm")))
-
     simulation_path = Path("%s/%s/simulation_output" % (context.config("output_path"), context.config("cutter_name")))
+
+    # Place the osm file in the noisemodelling folder
+    osm_path = Path("%s/%s" % (context.path("noise.simulation.osm"), context.stage("noise.simulation.osm")))
 
     noisemodelling_path = simulation_path / "noisemodelling"
     osm_destination = noisemodelling_path / "map.osm.pbf"
@@ -28,6 +31,16 @@ def execute(context: ExecuteContext):
 
     shutil.copy(osm_path.as_posix(), osm_destination.as_posix())
 
+    # place the detailed network in the simulation folder
+    detailed_network_path = context.stage("noise.simulation.detailed_network")
+    detailed_network_destination = simulation_path / "detailed_network.csv"
+
+    if not detailed_network_destination.parent.exists():
+        os.makedirs(detailed_network_destination.parent)
+
+    shutil.copy(detailed_network_path, detailed_network_destination)
+
+    # setup the rest of the folders
     results_path = noisemodelling_path / "results"
     inputs_path = noisemodelling_path / "inputs"
     db_name = "file:///%s/noisemodelling" % noisemodelling_path.as_posix()
@@ -38,6 +51,8 @@ def execute(context: ExecuteContext):
     if not inputs_path.exists():
         os.makedirs(inputs_path)
 
+
+    # create the noisemodelling config file
     properties_path = noisemodelling_path / "noisemodelling.properties"
 
     with open(properties_path, 'w') as properties_file:
