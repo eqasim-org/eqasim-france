@@ -8,6 +8,10 @@ data/lyon_2015
 .vscode
 .idea
 
+config_local_*.yml
+
+# sphinx build files
+docs/_build
+
 .sif
 
-config_local_*.yml
