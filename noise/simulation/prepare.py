@@ -63,9 +63,5 @@ def execute(context: ExecuteContext):
         properties_file.write(f"RESULTS_DIR={results_path.as_posix()}\n")
         properties_file.write("SRID=2154\n")
         properties_file.write(f"POPULATION_FACTOR={sampling_rate}\n")
-        properties_file.write("DO_IMPORT_OSM=True\n")
-        properties_file.write("DO_RUN_NOISEMODELLING=True\n")
-        properties_file.write("DO_EXPORT_BUILDINGS=True\n")
-        properties_file.write("DO_EXPORT_RESULTS=True\n")
 
     return properties_path
