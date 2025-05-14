@@ -25,9 +25,9 @@ INCOME_DF_COLUMNS = ["commune_id", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8
 def configure(context):
     context.config("data_path")
     context.stage("data.spatial.municipalities")
-    context.config("income_com_path", "filosofi_2019/indic-struct-distrib-revenu-2019-COMMUNES.zip")
-    context.config("income_com_xlsx", "FILO2019_DISP_COM.xlsx")
-    context.config("income_year", 19)
+    context.config("income_com_path", "filosofi_2021/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip")
+    context.config("income_com_xlsx", "FILO2021_DISP_COM.xlsx")
+    context.config("income_year", 21)
 
 
 def _income_distributions_from_filosofi_ensemble_sheet(filsofi_sheets, year, df_municipalities):
@@ -35,6 +35,10 @@ def _income_distributions_from_filosofi_ensemble_sheet(filsofi_sheets, year, df_
 
     df = filsofi_sheets["ENSEMBLE"][["CODGEO"] + [("D%d" % q) + year if q != 5 else "Q2" + year for q in range(1, 10)]]
     df.columns = ["commune_id", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"]
+    # correct data type
+    df.replace("s",np.nan,inplace=True) 
+    df.replace("nd",np.nan,inplace=True)
+    df[["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"]] = df[["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"]].astype(float)
     df.loc[:, "reference_median"] = df["q5"].values
 
     # filter requested communes
@@ -118,7 +122,10 @@ def _income_distributions_from_filosofi_attribute_sheets(filsofi_sheets, year, d
         },
         inplace=True,
     )
-
+    # correct data type
+    df_with_attributes.replace("s",np.nan,inplace=True)
+    df_with_attributes.replace("nd",np.nan,inplace=True)
+    df_with_attributes[["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"]] = df_with_attributes[["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"]].astype(float)
     # add eqasim columns, data is not imputed nor missing
     df_with_attributes["is_imputed"] = False
     df_with_attributes["is_missing"] = False
@@ -143,7 +150,7 @@ def _read_filosofi_excel(context):
             context.config("data_path"), context.config("income_com_path"))
     ) as archive:
         with archive.open(context.config("income_com_xlsx")) as f:
-            df = pd.read_excel(f, sheet_name=sheet_list, skiprows=5)
+            df = pd.read_excel(f, sheet_name=sheet_list, skiprows=5,engine="calamine")
 
     return df, attributes
 
