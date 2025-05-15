@@ -12,7 +12,7 @@ def configure(context: ConfigurationContext):
     context.config("cutter_name", "cutter")
 
     context.config("output_path")
-    context.config("output_prefix")
+    context.config("output_prefix", "ile_de_france_")
 
 
 def execute(context: ExecuteContext):
