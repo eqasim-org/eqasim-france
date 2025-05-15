@@ -2,10 +2,11 @@ import geopandas as gpd
 import pandas as pd
 import shapely.geometry as geo
 import numpy as np
-import os, shutil
-import py7zr, zipfile
+import os
+import shutil
+import py7zr
+import zipfile
 import glob
-import subprocess
 
 def create(output_path):
     """
@@ -49,6 +50,13 @@ def create(output_path):
     few municipalities are covered by IRIS:
     - 1B013, 1B014, 1B018, 1B019
     - 2D007, 2D008, 2D012, 2D013
+
+    The scenario cutter shape is a square of 5km x 5km, which is located in the center
+    of the two regions, containing part (25%) of the following municipalities :
+
+        1B025 | 2A021
+        -------------
+        1D005 | 2C001
     """
 
     BPE_OBSERVATIONS = 500
@@ -68,6 +76,8 @@ def create(output_path):
     DEPARTMENT_LENGTH = 25 * 1e3
     MUNICIPALITY_LENGTH = 5 * 1e3
     IRIS_LENGTH = 500
+
+    CUTTER_LENGTH = 5 * 1e3
 
     anchor_x = 638589
     anchor_y = 6861081
@@ -533,7 +543,8 @@ def create(output_path):
 
         iris = df["iris"].iloc[random.randint(len(df))]
         department = iris[:2]
-        if iris.endswith("0000"): iris = iris[:-4] + "XXXX"
+        if iris.endswith("0000"):
+            iris = iris[:-4] + "XXXX"
 
         if random.random_sample() < 0.1: # For some, commune is not known
             iris = "ZZZZZZZZZ"
@@ -736,10 +747,25 @@ def create(output_path):
         with archive.open("UU2020_au_01-01-2023.xlsx", "w") as f:
             df_urban_type.to_excel(f, startrow = 5, sheet_name = "Composition_communale", index = False)
 
+
+    # set scenario cutter shape
+    print("Creating Cutter shape ...")
+    os.mkdir("%s/cutter" % output_path)
+
+    cutter_minx = anchor_x + REGION_LENGTH - CUTTER_LENGTH / 2
+    cutter_maxx = cutter_minx + CUTTER_LENGTH
+    cutter_miny = anchor_y - REGION_LENGTH / 2 - CUTTER_LENGTH / 2
+    cutter_maxy = cutter_miny + CUTTER_LENGTH
+    gpd.GeoDataFrame(
+        geometry = [geo.box(
+            cutter_minx, cutter_miny, cutter_maxx, cutter_maxy
+        )],
+        crs = "EPSG:2154"
+    ).to_file("%s/cutter/cutter.geojson" % output_path)
+
     # Data set: OSM
     # We add add a road grid of 500m
     print("Creating OSM ...")
-    import itertools
 
     osm = []
     osm.append('<?xml version="1.0" encoding="UTF-8"?>')
@@ -776,12 +802,49 @@ def create(output_path):
             row[1], row[2].y, row[2].x
         ))
 
-    for index, link in enumerate(links):
-        osm.append('<way id="%d" version="3" timestamp="2010-12-05T17:00:00Z">' % (index + 1))
+    for building_index, link in enumerate(links):
+        osm.append('<way id="%d" version="3" timestamp="2010-12-05T17:00:00Z">' % (building_index + 1))
         osm.append('<nd ref="%d" />' % link[0])
         osm.append('<nd ref="%d" />' % link[1])
         osm.append('<tag k="highway" v="primary" />')
         osm.append('</way>')
+
+
+    # Add a small square building around the center of the cutter region
+    # This is to test the noise part
+
+    building_size = 50
+    building_offset_x = 50
+    building_x = building_offset_x + cutter_minx + (cutter_maxx - cutter_minx) / 2 - building_size / 2  # Centered, 10m wide
+    building_y = cutter_miny + (cutter_maxy - cutter_miny) / 2 - building_size / 2  # Centered, 10m high
+
+    building_polygon = geo.Polygon([
+        (building_x, building_y), 
+        (building_x + building_size, building_y), 
+        (building_x + building_size, building_y + building_size), 
+        (building_x, building_y + building_size)
+    ])
+
+    df_building = gpd.GeoSeries([building_polygon], crs="EPSG:2154")
+    df_building.to_file("%s/building.geojson" % output_path)
+    building_polygon = df_building.to_crs("EPSG:4326").iloc[0]
+
+    polygon_nodes_id = []
+    for i, coord in enumerate(building_polygon.exterior.coords[:-1]):
+        node_id = node_index + i
+        osm.append('<node id="%d" lat="%f" lon="%f" version="3" timestamp="2010-12-05T17:00:00Z" />' % (
+            node_id, coord[1], coord[0]
+        ))
+        polygon_nodes_id.append(node_id)
+    polygon_nodes_id.append(polygon_nodes_id[0])  # Close the polygon
+
+    building_index += 1
+    osm.append('<way id="%d" version="3" timestamp="2010-12-05T17:00:00Z">' % (building_index + 1) )
+    for node_id in polygon_nodes_id:
+        osm.append('<nd ref="%d" />' % node_id)
+    osm.append('<tag k="building" v="yes" />')
+    osm.append('</way>')
+    node_index += len(building_polygon.exterior.coords) - 1
 
     osm.append('</osm>')
 
