@@ -6,7 +6,15 @@ def configure(context: ConfigurationContext):
     context.stage("noise.runtime.noisemodelling")
     context.stage("noise.simulation.prepare")
 
-    context.config("noise_computation", "exposure")
+    context.config("noise_compute", "exposure")
+
+    context.config("noise_time_bin_size", 3600)
+    context.config("noise_time_bin_min", 0)
+    context.config("noise_time_bin_max", 86400)
+
+    context.config("noise_refl_order", 1)
+    context.config("noise_max_refl_dist", 50)
+    context.config("noise_max_src_dist", 750)
 
 def execute(context: ExecuteContext):
     
@@ -16,17 +24,17 @@ def execute(context: ExecuteContext):
         "--configFile", Path(properties_path).as_posix(),
         "--importOsmPbf",
         "--runSimulation",
-        "--reflOrder", "1",
-        "--maxReflDist", "10",
-        "--maxSrcDist", "50",
-        "--timeBinMin", "0",
-        "--timeBinMax", "86400",
-        "--timeBinSize", "900",
+        "--reflOrder", str(context.config("noise_refl_order")),
+        "--maxReflDist", str(context.config("noise_max_refl_dist")),
+        "--maxSrcDist", str(context.config("noise_max_src_dist")),
+        "--timeBinMin", str(context.config("noise_time_bin_min")),
+        "--timeBinMax", str(context.config("noise_time_bin_max")),
+        "--timeBinSize", str(context.config("noise_time_bin_size")),
         "--exportBuildings",
         "--exportResults"
     ]
 
-    if context.config("noise_computation") == "maps":
-        args.append("--compute", "maps")
+    if context.config("noise_compute") == "maps":
+        args += ["--compute", "maps"]
 
     noisemodelling.run(context, args)
