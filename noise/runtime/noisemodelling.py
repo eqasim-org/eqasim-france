@@ -51,7 +51,7 @@ def execute(context: ExecuteContext):
 
     # run the gradle build and pipe output to stdout
     sp.run(
-        ["gradlew.bat", "build", "--no-daemon", "-x", "test"],
+        ["gradlew", "build", "--no-daemon", "-x", "test"],
         cwd="%s/matsim-noisemodelling" % context.path(),
         shell=True,
         check=True,
