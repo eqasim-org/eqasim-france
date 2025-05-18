@@ -108,7 +108,7 @@ The pipeline allows to make use of population projections from INSEE up to 2070.
 - To make use of the scaling, [download the projection data from INSEE](https://www.insee.fr/fr/statistiques/7747107?sommaire=6652140). Download *Les tableaux en Excel* which contain all projection scenarios in Excel format. There are various scenarios in Excel format that you can choose from. The default is the *Scénario centrale*, the central scenario. 
 - Put the downloaded file into `data/projections`, so you will have the file `data/projections/donnees_detaillees_departementales.zip`
 
-Then, activate the projection procedure by defining the projection year in the configuration:
+Then, activate the projection procedure by defining the projection scenario and year in the configuration:
 
 ```yaml
 config: 
@@ -201,13 +201,13 @@ config:
   education_location_source: weighted
 ```
 
-For each type of institution, a weight is attributed by default in the pipeline. To realise a matching weighted with known student numbers by educational institution, the pipeline can also work with a list of educational institution from external geojson or geopackage file with `addresses` as parameter value.
-This file must include `TYPEQU`, `commune_id`,`weight`and `geometry` as column with `weight` number of student and `TYPEQU` type of educational institution code similar as BPE ones.
+For each educational institution, a weight is attributed in the pipeline based on the numbers of students provided in BPE data. The pipeline can also work with a list of educational institution from external geojson or geopackage file with `addresses` as parameter value.
+This file must include `education_type`, `commune_id`,`weight`and `geometry` as column with `weight` number of student and `education_type` type of educational institution code similar as BPE ones.
 
 ```yaml
 config:
   # [...]
-  education_location_source: adresses
+  education_location_source: addresses
   education_file: education/education_addresses.geojson
 ```
 
