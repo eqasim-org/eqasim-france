@@ -43,7 +43,9 @@ as well!
 
 ## Documentation
 
-This pipeline fulfils two purposes: First, to create synthetic populations
+- [Full documentation](https://eqasim-org.github.io/ile-de-france)
+
+**Summary**: This pipeline fulfils two purposes: First, to create synthetic populations
 of French regions in *CSV* and *GLPK* format including households, persons
 and their daily localized activities. Second, the pipeline makes use of
 infrastructure data to generate the inputs to agent-based transport simulations.
