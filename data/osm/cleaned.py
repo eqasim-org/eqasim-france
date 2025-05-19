@@ -23,7 +23,7 @@ def execute(context):
     
     # Prepare bounding area
     df_area = context.stage("data.spatial.municipalities")
-    area = df_area.to_crs("EPSG:4326")["geometry"].values[0]
+    area = df_area.to_crs("EPSG:4326").union_all()
 
     # Read identifiers that are relevant
     tracker = osmium.IdTracker()
