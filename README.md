@@ -43,23 +43,25 @@ as well!
 
 ## Documentation
 
-This pipeline fulfils two purposes: First, to create synthetic populations
+- [Full documentation](https://eqasim-org.github.io/ile-de-france)
+
+**Summary**: This pipeline fulfils two purposes: First, to create synthetic populations
 of French regions in *CSV* and *GLPK* format including households, persons
 and their daily localized activities. Second, the pipeline makes use of
 infrastructure data to generate the inputs to agent-based transport simulations.
 These steps are described in the following documents:
 
-- [How to create a synthetic population of Île-de-France](docs/population.md)
-- [How to run a MATSim simulation of Île-de-France](docs/simulation.md)
+- [How to create a synthetic population of Île-de-France](https://eqasim-org.github.io/ile-de-france/population/population_summary.html)
+- [How to run a MATSim simulation of Île-de-France](https://eqasim-org.github.io/ile-de-france/simulation/simulation_summary.html)
 
 Furthermore, we provide documentation on how to make use of the code to create
 popuations and run simulations of other places in France. While these are
 examples, the code can be adapted to any other scenarios as well:
 
-- [Toulouse and Occitanie region](docs/cases/toulouse.md)
-- [Lyon and neighboring departments](docs/cases/lyon.md)
-- [Nantes and Loire Atlantique](docs/cases/nantes.md)
-- [Corsica](docs/cases/corsica.md)
+- [Toulouse and Occitanie region](https://eqasim-org.github.io/ile-de-france/cases/toulouse.html)
+- [Lyon and neighboring departments](https://eqasim-org.github.io/ile-de-france/cases/lyon.html)
+- [Nantes and Loire Atlantique](https://eqasim-org.github.io/ile-de-france/cases/nantes.html)
+- [Corsica](https://eqasim-org.github.io/ile-de-france/cases/corsica.html)
 
 ## Publications
 
