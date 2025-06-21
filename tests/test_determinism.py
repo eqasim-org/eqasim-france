@@ -82,7 +82,7 @@ def _test_determinism(index, data_path, tmpdir):
         "ile_de_france_households.csv":     "e1e805d7f2f5af1c058df7432318e596",
         "ile_de_france_persons.csv":        "14331fd23121c64ba1494a7c1d356702",
         "ile_de_france_trips.csv":          "153a48d6df448af9b32acfe99221fe90",
-        "ile_de_france_vehicle_types.csv":  "00bee1ea6d7bc9af43ae6c7101dd75da",
+        "ile_de_france_vehicle_types.csv":  "af7578c363ed4e7a23163b4ab554a0e1",
         "ile_de_france_vehicles.csv":       "1151d40b07c612b62ec40ff40d3e9272",
     }
 
@@ -148,7 +148,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
         "ile_de_france_households.xml.gz":  "42fee71fe5ad5906d76c6cf87a354a3f",
         #"ile_de_france_facilities.xml.gz":  "5ad41afff9ae5c470082510b943e6778",
         "ile_de_france_config.xml":         "30871dfbbd2b5bf6922be1dfe20ffe73",
-        "ile_de_france_vehicles.xml.gz":    "69185d7e846ed935046ce74635b7ea96"
+        "ile_de_france_vehicles.xml.gz":    "1f3c393ea69b557798ab0915581e33a4"
     }
 
     # activities.gpkg, trips.gpkg, meta.json,
