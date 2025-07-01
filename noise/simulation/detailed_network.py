@@ -9,7 +9,7 @@ def configure(context: ConfigurationContext):
     context.stage("matsim.simulation.cutter.cut")
 
     context.config("export_detailed_network")
-    context.config("cutter_name", "cutter")
+    context.config("cutter.name", "cutter")
 
     context.config("output_path")
     context.config("output_prefix", "ile_de_france_")
@@ -24,7 +24,7 @@ def execute(context: ExecuteContext):
         ),
     )
 
-    cutter_name = context.config("cutter_name")
+    cutter_name = context.config("cutter.name")
 
     network_path = "%s/%s/%s_network.xml.gz" % (
         context.config("output_path"),

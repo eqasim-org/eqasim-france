@@ -6,15 +6,15 @@ from synpp import ConfigurationContext, ExecuteContext, ValidateContext
 
 def configure(context: ConfigurationContext):
     context.config("data_path")
-    context.config("cutter_path", "cutter")
-    context.config("cutter_file", "cutter.geojson")
+    context.config("cutter.path", "cutter")
+    context.config("cutter.file", "cutter.geojson")
 
 
 def execute(context: ExecuteContext):
     cutter_path = "%s/%s/%s" % (
         context.config("data_path"),
-        context.config("cutter_path"),
-        context.config("cutter_file"),
+        context.config("cutter.path"),
+        context.config("cutter.file"),
     )
 
     # Load the shapefile using geopandas
@@ -28,7 +28,7 @@ def execute(context: ExecuteContext):
 
 
 def validate(context: ValidateContext):
-    cutter_path = "%s/%s" % (context.config("data_path"), context.config("cutter_path"))
+    cutter_path = "%s/%s" % (context.config("data_path"), context.config("cutter.path"))
 
     # Check if the cutter path exists
     if not os.path.exists(cutter_path):

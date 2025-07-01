@@ -11,14 +11,14 @@ def configure(context: ConfigurationContext):
     context.stage("noise.simulation.osm")
     
     context.config("output_path")
-    context.config("cutter_name", "cutter")
+    context.config("cutter.name", "cutter")
 
     context.config("sampling_rate")
 
 def execute(context: ExecuteContext):
     
     sampling_rate = context.config("sampling_rate")
-    simulation_path = Path("%s/%s/simulation_output" % (context.config("output_path"), context.config("cutter_name")))
+    simulation_path = Path("%s/%s/simulation_output" % (context.config("output_path"), context.config("cutter.name")))
 
     # Place the osm file in the noisemodelling folder
     osm_path = Path("%s/%s" % (context.path("noise.simulation.osm"), context.stage("noise.simulation.osm")))

@@ -8,36 +8,36 @@ Here, we use the CLI project [matsim-noisemodelling](https://github.com/Symexpo/
 ---
 
 ## Configuration Options
-NoiseModelling is configured through the `config` section of your YAML configuration file. The following options are available:
+NoiseModelling is configured through the `noise` subsection of the `config` section of your YAML configuration file. The following options are available:
 
-- **`noise_compute`**: (default: "exposure")
+- **`compute`**: (default: "exposure")
   - Specifies the type of noise computation to perform.
   - Options: `exposure` (for exposure analysis), `maps` (for noise map generation).
-  - Example: `noise_compute: exposure`
+  - Example: `compute: exposure`
 
-- **`noise_time_bin_size`**: (default: 3600)
+- **`time_bin_size`**: (default: 3600)
   - Size of the time bins for noise computation, in seconds.
-  - Example: `noise_time_bin_size: 3600` (for hourly bins)
+  - Example: `time_bin_size: 3600` (for hourly bins)
 
-- **`noise_time_bin_min`**: (default: 0)
+- **`time_bin_min`**: (default: 0)
   - Start time for noise computation, in seconds from midnight.
-  - Example: `noise_time_bin_min: 0`
+  - Example: `time_bin_min: 0`
 
-- **`noise_time_bin_max`**: (default: 86400)
+- **`time_bin_max`**: (default: 86400)
   - End time for noise computation, in seconds from midnight.
-  - Example: `noise_time_bin_max: 86400` (for 24 hours)
+  - Example: `time_bin_max: 86400` (for 24 hours)
 
-- **`noise_refl_order`**: (default: 1)
+- **`refl_order`**: (default: 1)
   - Maximum order of sound reflections to consider in the simulation.
-  - Example: `noise_refl_order: 1`
+  - Example: `refl_order: 1`
 
-- **`noise_max_src_dist`**: (default: 750)
+- **`max_src_dist`**: (default: 750)
   - Maximum distance (in meters) for considering noise sources.
-  - Example: `noise_max_src_dist: 750`
+  - Example: `max_src_dist: 750`
 
-- **`noise_max_refl_dist`**: (default: 50)
+- **`max_refl_dist`**: (default: 50)
   - Maximum distance (in meters) for considering sound reflections.
-  - Example: `noise_max_refl_dist: 50`
+  - Example: `max_refl_dist: 50`
 
 ---
 
@@ -47,13 +47,14 @@ run:
   - noise.simulation.run
 
 config:
-  noise_compute: exposure
-  noise_time_bin_size: 900
-  noise_time_bin_min: 0
-  noise_time_bin_max: 86400
-  noise_refl_order: 1
-  noise_max_src_dist: 200
-  noise_max_refl_dist: 25
+  noise:
+    compute: exposure
+    time_bin_size: 900
+    time_bin_min: 0
+    time_bin_max: 86400
+    refl_order: 1
+    max_src_dist: 200
+    max_refl_dist: 25
 ```
 
 ---

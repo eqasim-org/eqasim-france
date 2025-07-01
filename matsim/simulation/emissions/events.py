@@ -6,7 +6,7 @@ def configure(context: ConfigurationContext):
     context.stage("data.hbefa.raw")
 
     context.config("output_path")
-    context.config("cutter_name", "cutter")
+    context.config("cutter.name", "cutter")
     
     context.stage("matsim.simulation.cutter.full_run")
 
@@ -15,7 +15,7 @@ def configure(context: ConfigurationContext):
 
 
 def execute(context: ExecuteContext):
-    cutter_name = context.config("cutter_name")
+    cutter_name = context.config("cutter.name")
 
     config_path = "%s/%s/%s_config.xml" % (
         context.config("output_path"),

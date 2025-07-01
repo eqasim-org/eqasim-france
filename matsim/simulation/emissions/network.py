@@ -4,7 +4,7 @@ import matsim.runtime.eqasim as eqasim
 
 def configure(context: ConfigurationContext):
     context.config("output_path")
-    context.config("cutter_name", "cutter")
+    context.config("cutter.name", "cutter")
 
     context.config("emissions_polutants", "PM,CO,NOx")
     context.config("emissions_time_bin_size", 3600)
@@ -16,7 +16,7 @@ def configure(context: ConfigurationContext):
 
 
 def execute(context: ExecuteContext):
-    cutter_name = context.config("cutter_name")
+    cutter_name = context.config("cutter.name")
 
     config_path = "%s/%s/%s_config.xml" % (
         context.config("output_path"),

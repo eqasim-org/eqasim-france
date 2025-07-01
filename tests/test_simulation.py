@@ -22,9 +22,12 @@ def test_simulation(tmpdir):
         random_seed = 1000, processes = 1,
         secloc_maximum_iterations = 10,
         maven_skip_tests = True,
-        cutter_after_full_simulation=False,
         export_detailed_network=True
     )
+
+    config.update({
+        "cutter.after_full_simulation": False,
+    })
 
     stages = [
         dict(descriptor = "matsim.output"),
@@ -52,14 +55,14 @@ def test_simulation(tmpdir):
     if not test_noise:
         return
     
-    config.update(dict(
-        noise_time_bin_size=3600,
-        noise_time_bin_min=8*3600,
-        noise_time_bin_max=10*3600,
-        noise_refl_order=0,
-        noise_max_src_dist=50,
-        noise_max_refl_dist=10,
-    ))
+    config.update({
+        "noise.time_bin_size": 3600,
+        "noise.time_bin_min": 8*3600,
+        "noise.time_bin_max": 10*3600,
+        "noise.refl_order": 0,
+        "noise.max_src_dist": 50,
+        "noise.max_refl_dist": 10,
+    })
     stages = [
         dict(descriptor = "noise.simulation.run"),
     ]

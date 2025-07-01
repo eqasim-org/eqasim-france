@@ -6,7 +6,7 @@ from synpp import ConfigurationContext, ExecuteContext
 def configure(context: ConfigurationContext):
     context.config("output_path")
 
-    context.config("cutter_name", "cutter")
+    context.config("cutter.name", "cutter")
 
     context.stage("matsim.runtime.java")
     context.stage("matsim.runtime.eqasim")
@@ -15,7 +15,7 @@ def configure(context: ConfigurationContext):
 
 def execute(context: ExecuteContext):
 
-    cutter_name = context.config("cutter_name")
+    cutter_name = context.config("cutter.name")
 
     config_path = "%s/%s/%s_config.xml" % (
         context.config("output_path"),

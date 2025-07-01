@@ -7,8 +7,8 @@ def configure(context: ConfigurationContext):
     context.config("output_path")
     context.config("output_prefix", "ile_de_france_")
 
-    context.config("cutter_name", "cutter")
-    context.config("cutter_after_full_simulation", True)
+    context.config("cutter.name", "cutter")
+    context.config("cutter.after_full_simulation", True)
 
     context.stage("data.cutter.geometry")
     context.stage("matsim.runtime.java")
@@ -16,7 +16,7 @@ def configure(context: ConfigurationContext):
 
     context.stage("matsim.output")
 
-    if context.config("cutter_after_full_simulation"):
+    if context.config("cutter.after_full_simulation"):
         context.stage("matsim.simulation.full_run")
 
 
@@ -29,7 +29,7 @@ def execute(context: ExecuteContext):
         context.config("output_prefix"),
     )
 
-    cutter_name = context.config("cutter_name")
+    cutter_name = context.config("cutter.name")
 
     gpd_cutter: gpd.GeoDataFrame = context.stage("data.cutter.geometry")
     
@@ -50,7 +50,7 @@ def execute(context: ExecuteContext):
         "--prefix", cutter_name + "_"
     ]
 
-    if context.config("cutter_after_full_simulation"):
+    if context.config("cutter.after_full_simulation"):
         args += [
             "--config:plans.inputPlansFile", "%s/simulation_output/output_plans.xml.gz" % output_path,
         ]
