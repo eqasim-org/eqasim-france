@@ -119,6 +119,45 @@ config:
   ## creating the far or not
   # write_jar: true
 
+  ## Cutter settings: Used to define a specific area for analysis or simulation
+  # cutter:
+  
+    ## Path to the directory containing the cutter geojson file
+    # path: cutter
+    
+    ## Name of the cutter file (e.g., GeoJSON file defining the area)
+    # file: cutter.geojson
+    
+    ## Name of the cutter (used for output file naming)
+    # name: paris
+    
+    ## Whether to apply the cutter after the full simulation (True/False)
+    # after_full_simulation: True
+
+  ## NoiseModelling settings: Configuration for noise exposure or noise map generation
+  # noise:
+
+    ## Type of noise computation to perform ("exposure" for exposure analysis, "maps" for noise maps)
+    # compute: exposure
+
+    ## Size of the time bins for noise computation, in seconds (e.g., 3600 for hourly bins)
+    # time_bin_size: 3600
+    
+    ## Start time for noise computation, in seconds (e.g., 0 for midnight)
+    # time_bin_min: 0
+    
+    ## End time for noise computation, in seconds (e.g., 86400 for 24 hours)
+    # time_bin_max: 86400
+
+    ## Maximum order of reflections to consider (e.g., 1 for first-order reflections)
+    # refl_order: 1
+
+    ## Maximum distance for considering noise sources, in meters
+    # max_src_dist: 750
+
+    ## Maximum distance for considering reflections, in meters
+    # max_refl_dist: 50
+
   ############################
   #  Analysis configuration  #
   ############################
