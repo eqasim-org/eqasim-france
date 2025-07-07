@@ -41,14 +41,17 @@ folder:
 - `ile_de_france_config.xml` containing the MATSim configuration values
 - `ile_de_france_run.jar` containing a fully packaged version of the simulation code including MATSim and all other dependencies
 
-If you want to run the simulation again (in the pipeline it is only run for
-two iterations to test that everything works), you can now call the following:
+With the `matsim.output` stage, the simulation is only run for two iterations to test that everything works.
+
+If you want to run the full simulation, you can do it by activating the stage `matsim.simulation.full_run`.
+
+Or, independently from the pipeline, you can call the following:
 
 ```bash
 java -Xmx14G -cp ile_de_france_run.jar org.eqasim.ile_de_france.RunSimulation --config-path ile_de_france_config.xml
 ```
 
-This will create a `simulation_output` folder (as defined in the `ile_de_france_config.xml`)
+In both cases, this will create a `simulation_output` folder (as defined in the `ile_de_france_config.xml`)
 where all simulation is written.
 
 For more flexibility and advanced simulations, have a look at the MATSim
