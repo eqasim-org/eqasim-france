@@ -28,6 +28,6 @@ dependencies:
   - pyarrow=19.0.1
 
   - pip:
-    - synpp==1.5.1
+    - synpp==1.6.0
     - bhepop2==2.0.1
     - osmium==4.0.2
