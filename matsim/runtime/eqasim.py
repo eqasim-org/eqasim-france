@@ -7,7 +7,7 @@ import matsim.runtime.maven as maven
 
 DEFAULT_EQASIM_VERSION = "2.0.0"
 DEFAULT_EQASIM_BRANCH = "feat/model-2024"
-DEFAULT_EQASIM_COMMIT = "6803be1"
+DEFAULT_EQASIM_COMMIT = "7630f9a"
 
 def configure(context):
     context.stage("matsim.runtime.git")
