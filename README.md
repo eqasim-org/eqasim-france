@@ -43,23 +43,25 @@ as well!
 
 ## Documentation
 
-This pipeline fulfils two purposes: First, to create synthetic populations
+- [Full documentation](https://eqasim-org.github.io/ile-de-france)
+
+**Summary**: This pipeline fulfils two purposes: First, to create synthetic populations
 of French regions in *CSV* and *GLPK* format including households, persons
 and their daily localized activities. Second, the pipeline makes use of
 infrastructure data to generate the inputs to agent-based transport simulations.
 These steps are described in the following documents:
 
-- [How to create a synthetic population of Île-de-France](docs/population.md)
-- [How to run a MATSim simulation of Île-de-France](docs/simulation.md)
+- [How to create a synthetic population of Île-de-France](https://eqasim-org.github.io/ile-de-france/population/population_summary.html)
+- [How to run a MATSim simulation of Île-de-France](https://eqasim-org.github.io/ile-de-france/simulation/simulation_summary.html)
 
 Furthermore, we provide documentation on how to make use of the code to create
 popuations and run simulations of other places in France. While these are
 examples, the code can be adapted to any other scenarios as well:
 
-- [Toulouse and Occitanie region](docs/cases/toulouse.md)
-- [Lyon and neighboring departments](docs/cases/lyon.md)
-- [Nantes and Loire Atlantique](docs/cases/nantes.md)
-- [Corsica](docs/cases/corsica.md)
+- [Toulouse and Occitanie region](https://eqasim-org.github.io/ile-de-france/cases/toulouse.html)
+- [Lyon and neighboring departments](https://eqasim-org.github.io/ile-de-france/cases/lyon.html)
+- [Nantes and Loire Atlantique](https://eqasim-org.github.io/ile-de-france/cases/nantes.html)
+- [Corsica](https://eqasim-org.github.io/ile-de-france/cases/corsica.html)
 
 ## Publications
 
@@ -71,10 +73,13 @@ paper presented at the 30th IEEE Intelligent Vehicles Symposium, Paris, June 201
 
 ## Versioning
 
-The current version of the pipeline is `v1.2.0`. You can obtain it by cloning
-the `v1.2.0` tag of this repository. Alternatively, you can also clone the
-`develop` branch to make use of the latest developments. The version number
-will be kept in the `develop` branch until a new version is officially released.
+[comment]: # (x-release-please-start-version)
+
+The current version of the pipeline can be found in `https://github.com/eqasim-org/ile-de-france/releases`. You can obtain it by cloning
+the respective tag of this repository. Alternatively, you can also clone the
+`develop` branch to make use of the latest developments.
+
+[comment]: # (x-release-please-end)
 
 Note that whenever you create a population with this pipeline, the `meta.json`
 in the output will let you know the exact `git` commit with which the

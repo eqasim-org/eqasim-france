@@ -6,13 +6,13 @@ def configure(context):
     context.stage("matsim.runtime.java")
     context.stage("matsim.runtime.pt2matsim")
     context.stage("data.osm.cleaned")
-    context.stage("synthesis.population.spatial.home.locations")
+    context.stage("data.spatial.iris")
 
     context.config("export_detailed_network", False)
 
 def execute(context):
     osm_path = "%s/output.osm.gz" % context.path("data.osm.cleaned")
-    crs = context.stage("synthesis.population.spatial.home.locations").crs
+    crs = context.stage("data.spatial.iris").crs
 
     pt2matsim.run(context, "org.matsim.pt2matsim.run.CreateDefaultOsmConfig", 
         arguments=["config_template.xml"]

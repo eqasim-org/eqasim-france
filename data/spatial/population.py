@@ -9,9 +9,9 @@ Loads aggregate population data.
 def configure(context):
     context.config("data_path")
     context.stage("data.spatial.codes")
-    context.config("population_path", "rp_2019/base-ic-evol-struct-pop-2019.zip")
-    context.config("population_xlsx", "base-ic-evol-struct-pop-2019.xlsx")
-    context.config("population_year", 19)
+    context.config("population_path", "rp_2021/base-ic-evol-struct-pop-2021_xlsx.zip")
+    context.config("population_xlsx", "base-ic-evol-struct-pop-2021.xlsx")
+    context.config("population_year", 21)
 
 def execute(context):
     year = str(context.config("population_year"))

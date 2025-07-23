@@ -58,6 +58,7 @@ def execute(context):
     df["couple"] = df["COUPLE"] == "1"
 
     # Clean TRANS
+    df["commute_mode"] = None
     df.loc[df["TRANS"] == "1", "commute_mode"] = np.nan
     df.loc[df["TRANS"] == "2", "commute_mode"] = "walk"
     df.loc[df["TRANS"] == "3", "commute_mode"] = "bicycle"

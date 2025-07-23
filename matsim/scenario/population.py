@@ -46,6 +46,10 @@ def add_person(writer, person, activities, trips, vehicles):
     writer.add_attribute("carAvailability", "java.lang.String", person[PERSON_FIELDS.index("car_availability")])
     writer.add_attribute("bicycleAvailability", "java.lang.String", person[PERSON_FIELDS.index("bicycle_availability")])
 
+    # compatibility with standard MATSim
+    if person[PERSON_FIELDS.index("car_availability")] == "none":
+        writer.add_attribute("carAvail", "java.lang.String", "never")
+
     writer.add_attribute("censusHouseholdId", "java.lang.Long", person[PERSON_FIELDS.index("census_household_id")])
     writer.add_attribute("censusPersonId", "java.lang.Long", person[PERSON_FIELDS.index("census_person_id")])
 

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 import zipfile
 
@@ -8,18 +9,20 @@ Loads the regional aggregated income distribution.
 
 def configure(context):
     context.config("data_path")
-    context.config("income_reg_path", "filosofi_2019/indic-struct-distrib-revenu-2019-SUPRA.zip")
-    context.config("income_reg_xlsx", "FILO2019_DISP_REG.xlsx")
-    context.config("income_year", 19)
+    context.config("income_reg_path", "filosofi_2021/indic-struct-distrib-revenu-2021-SUPRA_XLSX.zip")
+    context.config("income_reg_xlsx", "FILO2021_DISP_REG.xlsx")
+    context.config("income_year", 21)
 
 def execute(context):
     with zipfile.ZipFile("{}/{}".format(
         context.config("data_path"), context.config("income_reg_path"))) as archive:
         with archive.open(context.config("income_reg_xlsx")) as f:
             df = pd.read_excel(f,
-                sheet_name = "ENSEMBLE", skiprows = 5
+                sheet_name = "ENSEMBLE", skiprows = 5,engine="calamine"
             )
-
+            # correct data type
+            df.replace("s",np.nan,inplace=True)
+            df.replace("nd",np.nan,inplace=True)
     values = df[df["CODGEO"] == 11][
         [
             i + str(context.config("income_year"))

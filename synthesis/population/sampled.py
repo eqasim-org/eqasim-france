@@ -36,7 +36,7 @@ def execute(context):
     # create index to replicate all households members by their household weight
     # the order ([0, 1, 0, 1, 2, 2, ...]) is important here as they will be reassigned to new housholds later with that assumption
     expandor = np.split(np.arange(len(df_census)), np.cumsum(household_sizes))
-    expandor = [x for x in expandor if x.size > 0]
+    expandor = np.asarray([x for x in expandor if x.size > 0], dtype="object")
     expandor = np.repeat(expandor, household_multiplicators, axis=0)
     expandor = list(itertools.chain(*expandor))
 

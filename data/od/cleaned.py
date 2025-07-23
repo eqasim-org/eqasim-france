@@ -70,10 +70,10 @@ def execute(context):
 
     # Aggregate the flows
     print("Aggregating work ...")
-    df_work = df_work.groupby(["origin_id", "destination_id", "commute_mode"])["weight"].sum().reset_index()
+    df_work = df_work.groupby(["origin_id", "destination_id", "commute_mode"],observed=False)["weight"].sum().reset_index()
 
     print("Aggregating education ...")
-    df_education = df_education.groupby(["origin_id", "destination_id","age_range"])["weight"].sum().reset_index()
+    df_education = df_education.groupby(["origin_id", "destination_id","age_range"],observed=False)["weight"].sum().reset_index()
 
     df_work["weight"] = df_work["weight"].fillna(0.0)
     df_education["weight"] = df_education["weight"].fillna(0.0)
