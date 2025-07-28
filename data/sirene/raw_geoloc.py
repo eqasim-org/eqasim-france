@@ -28,7 +28,7 @@ def execute(context):
     
     with context.progress(label = "Reading geolocalized SIRET ...") as progress:
          csv = pd.read_csv("%s/%s" % (context.config("data_path"), context.config("siret_geo_path")), 
-                          usecols = COLUMNS_DTYPES.keys(), sep=";",dtype = COLUMNS_DTYPES,chunksize = 10240)
+                          usecols = COLUMNS_DTYPES.keys(), sep=";",dtype = COLUMNS_DTYPES,chunksize = 1024 * 1024)
     
          for df_chunk in csv:
             progress.update(len(df_chunk))

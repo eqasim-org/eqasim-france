@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import polars as pl
 import zipfile
 
 """
@@ -19,22 +20,38 @@ def execute(context):
     with zipfile.ZipFile(
         "{}/{}".format(context.config("data_path"), context.config("population_path"))) as archive:
         with archive.open(context.config("population_xlsx")) as f:
-            df_population = pd.read_excel(
-                f,
-                skiprows = 5, sheet_name = "IRIS", usecols = ["IRIS", "COM", "DEP", "REG", "P%s_POP" % year]
-            ).rename(columns = {
-                "IRIS": "iris_id", "COM": "commune_id", "DEP": "departement_id", "REG": "region_id",
-                "P%s_POP" % year: "population"
+            df_population = pl.read_excel(
+                f.read(),
+                sheet_name="IRIS",
+                columns=["IRIS", "COM", "DEP", "REG", "P%s_POP" % year],
+                read_options={"header_row": 5},
+                schema_overrides={
+                    "IRIS": pl.String,
+                    "COM": pl.String,
+                    "DEP": pl.String,
+                    "REG": pl.Int32,
+                },
+            ).rename({
+                "IRIS": "iris_id",
+                "COM": "commune_id",
+                "DEP": "departement_id",
+                "REG": "region_id",
+                "P%s_POP" % year: "population",
             })
 
-    df_population["iris_id"] = df_population["iris_id"].astype("category")
-    df_population["commune_id"] = df_population["commune_id"].astype("category")
-    df_population["departement_id"] = df_population["departement_id"].astype("category")
-    df_population["region_id"] = df_population["region_id"].astype(int)
+    df_population = df_population.with_columns(
+        pl.col("iris_id").cast(pl.Categorical),
+        pl.col("commune_id").cast(pl.Categorical),
+        pl.col("departement_id").cast(pl.Categorical),
+    )
 
     # Merge into code data and verify integrity
     df_codes = context.stage("data.spatial.codes")
-    df_population = pd.merge(df_population, df_codes, on = ["iris_id", "commune_id", "departement_id", "region_id"])
+    df_population = pd.merge(
+        df_population.to_pandas(),
+        df_codes,
+        on=["iris_id", "commune_id", "departement_id", "region_id"],
+    )
 
     requested_iris = set(df_codes["iris_id"].unique())
     merged_iris = set(df_population["iris_id"].unique())

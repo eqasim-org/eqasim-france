@@ -1,4 +1,4 @@
-import pandas as pd
+import polars as pl
 import os
 import zipfile
 
@@ -16,51 +16,42 @@ def configure(context):
     context.config("projection_year", None)
 
 COLUMNS_DTYPES = {
-    "CANTVILLE":"str", 
-    "NUMMI":"str", 
-    "AGED":"str",
-    "COUPLE":"str", 
-    "CS1":"str",
-    "DEPT":"str", 
-    "ETUD":"str",
-    "IPONDI":"str", 
-    "IRIS":"str",
-    "REGION":"str", 
-    "SEXE":"str",
-    "TACT":"str", 
-    "TRANS":"str",
-    "VOIT":"str", 
-    "DEROU":"str"
+    "CANTVILLE": pl.String,
+    "NUMMI": pl.String,
+    "AGED": pl.String,
+    "COUPLE": pl.String,
+    "CS1": pl.String,
+    "DEPT": pl.String,
+    "ETUD": pl.String,
+    "IPONDI": pl.String,
+    "IRIS": pl.String,
+    "REGION": pl.String,
+    "SEXE": pl.String,
+    "TACT": pl.String,
+    "TRANS": pl.String,
+    "VOIT": pl.String,
+    "DEROU": pl.String,
 }
 
 def execute(context):
-    df_records = []
     df_codes = context.stage("data.spatial.codes")
-
-    requested_departements = df_codes["departement_id"].unique()
 
     # only pre-filter if we don't need to reweight the census later
     prefilter_departments = context.config("projection_year") is None
 
-    with context.progress(label = "Reading census ...") as progress:
-        with zipfile.ZipFile(
-            "{}/{}".format(context.config("data_path"), context.config("census_path"))) as archive:
-            with archive.open(context.config("census_csv")) as f:
-                csv = pd.read_csv(f, 
-                        usecols = COLUMNS_DTYPES.keys(), sep = ";",
-                        dtype = COLUMNS_DTYPES,
-                        chunksize = 10240)
-    
-                for df_chunk in csv:
-                    progress.update(len(df_chunk))
-                    
-                    if prefilter_departments:
-                        df_chunk = df_chunk[df_chunk["DEPT"].isin(requested_departements)]
-
-                    if len(df_chunk) > 0:
-                        df_records.append(df_chunk)
-
-    return pd.concat(df_records)
+    with zipfile.ZipFile(
+        "{}/{}".format(context.config("data_path"), context.config("census_path"))) as archive:
+        with archive.open(context.config("census_csv")) as f:
+            df = pl.read_csv(
+                f.read(), 
+                separator=";",
+                columns=list(COLUMNS_DTYPES.keys()),
+                schema_overrides=COLUMNS_DTYPES,
+            )
+            if prefilter_departments:
+                requested_departements = list(map(str, df_codes["departement_id"].unique()))
+                df = df.filter(pl.col("DEPT").is_in(requested_departements))
+    return df.to_pandas()
 
 
 def validate(context):

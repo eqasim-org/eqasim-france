@@ -31,9 +31,10 @@ def execute(context):
     if len(shp_path) != 1:
         raise RuntimeError("Cannot find IRIS shapes inside the archive, please report this as an error!")
 
-    df_iris = gpd.read_file("{}/{}".format(context.path(), shp_path[0]))[[
-        "CODE_IRIS", "INSEE_COM", "geometry"
-    ]].rename(columns = {
+    df_iris = gpd.read_file(
+        "{}/{}".format(context.path(), shp_path[0]),
+        columns=["CODE_IRIS", "INSEE_COM", "geometry"],
+    ).rename(columns = {
         "CODE_IRIS": "iris_id",
         "INSEE_COM": "commune_id"
     })

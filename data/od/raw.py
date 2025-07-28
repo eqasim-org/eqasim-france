@@ -1,4 +1,5 @@
 import pandas as pd
+import polars as pl
 import os
 import zipfile
 
@@ -16,71 +17,57 @@ def configure(context):
 
 def execute(context):
     df_codes = context.stage("data.spatial.codes")
-    requested_communes = df_codes["commune_id"].unique()
+    requested_communes = list(map(str, df_codes["commune_id"].unique()))
 
     # First, load work
-    with context.progress(label = "Reading work flows ...") as progress:
-        df_records = []
+    COLUMNS_DTYPES = {
+        "COMMUNE": pl.String,
+        "ARM": pl.String,
+        "TRANS": pl.Int64,
+        "IPONDI": pl.Float64,
+        "DCLT": pl.String,
+    }
 
-        COLUMNS_DTYPES = {
-            "COMMUNE":"str", 
-            "ARM":"str", 
-            "TRANS":"int",
-            "IPONDI":"float", 
-            "DCLT":"str"
-        }
-
-        with zipfile.ZipFile(
-            "{}/{}".format(context.config("data_path"), context.config("od_pro_path"))) as archive:
-            with archive.open(context.config("od_pro_csv")) as f:
-                csv = pd.read_csv(f, usecols = COLUMNS_DTYPES.keys(), 
-                                  dtype = COLUMNS_DTYPES, sep = ";",chunksize = 10240)
-
-                for df_chunk in csv:
-                    progress.update(len(df_chunk))
-
-                    f = df_chunk["COMMUNE"].isin(requested_communes)
-                    f |= df_chunk["ARM"].isin(requested_communes)
-                    f &= df_chunk["DCLT"].isin(requested_communes)
-
-                    df_chunk = df_chunk[f]
-
-                    if len(df_chunk) > 0:
-                        df_records.append(df_chunk)
-    work = pd.concat(df_records)
+    with zipfile.ZipFile(
+        os.path.join(context.config("data_path"), context.config("od_pro_path"))
+    ) as archive:
+        with archive.open(context.config("od_pro_csv")) as f:
+            work = pl.read_csv(
+                f.read(),
+                separator=";",
+                columns=list(COLUMNS_DTYPES.keys()),
+                schema_overrides=COLUMNS_DTYPES,
+            )
+    work = work.filter(
+        (pl.col("COMMUNE").is_in(requested_communes) | pl.col("ARM").is_in(requested_communes))
+        & pl.col("DCLT").is_in(requested_communes)
+    )
 
     # Second, load education
-    with context.progress(label = "Reading education flows ...") as progress:
-        df_records = []
+    COLUMNS_DTYPES = {
+        "COMMUNE": pl.String,
+        "ARM": pl.String,
+        "IPONDI": pl.Float64,
+        "DCETUF": pl.String,
+        "AGEREV10": pl.Int64,
+    }
 
-        COLUMNS_DTYPES = {
-            "COMMUNE":"str", 
-            "ARM":"str", 
-            "IPONDI":"float",
-            "DCETUF":"str",
-            "AGEREV10":"int"
-        }
+    with zipfile.ZipFile(
+        os.path.join(context.config("data_path"), context.config("od_sco_path"))
+    ) as archive:
+        with archive.open(context.config("od_sco_csv")) as f:
+            education = pl.read_csv(
+                f.read(),
+                separator=";",
+                columns=list(COLUMNS_DTYPES.keys()),
+                schema_overrides=COLUMNS_DTYPES
+            )
+    education = education.filter(
+        (pl.col("COMMUNE").is_in(requested_communes) | pl.col("ARM").is_in(requested_communes))
+        & pl.col("DCETUF").is_in(requested_communes)
+    )
 
-        with zipfile.ZipFile(
-            "{}/{}".format(context.config("data_path"), context.config("od_sco_path"))) as archive:
-            with archive.open(context.config("od_sco_csv")) as f:
-                csv = pd.read_csv(f, usecols = COLUMNS_DTYPES.keys(), 
-                                  dtype = COLUMNS_DTYPES, sep = ";",chunksize = 10240)
-
-                for df_chunk in csv:
-                    progress.update(len(df_chunk))
-
-                    f = df_chunk["COMMUNE"].isin(requested_communes)
-                    f |= df_chunk["ARM"].isin(requested_communes)
-                    f &= df_chunk["DCETUF"].isin(requested_communes)
-
-                    df_chunk = df_chunk[f]
-
-                    if len(df_chunk) > 0:
-                        df_records.append(df_chunk)
-    education = pd.concat(df_records)
-
-    return work, education
+    return work.to_pandas(), education.to_pandas()
 
 
 def validate(context):
