@@ -16,7 +16,7 @@ def execute(context):
     ]]
 
     df_locations = df_locations[df_locations["activity_type"] == "education"]
-    df_locations = df_locations[["activity_type","education_type", "commune_id", "geometry"]].copy()
+    df_locations = df_locations[["activity_type","education_type", "commune_id","weight", "geometry"]].copy()
     df_locations["fake"] = False    
 
     df_zones = context.stage("data.spatial.municipalities")    

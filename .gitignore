@@ -9,3 +9,9 @@ data/lyon_2015
 .idea
 
 config_local_*.yml
+
+# sphinx build files
+docs/_build
+
+.sif
+

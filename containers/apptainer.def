@@ -1,0 +1,8 @@
+Bootstrap: docker
+From: ghcr.io/eqasim-org/ile-de-france:latest
+
+%environment
+    source /opt/conda/bin/activate eqasim
+
+%runscript
+    exec python -m synpp "$@"

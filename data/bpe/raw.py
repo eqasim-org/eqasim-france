@@ -8,8 +8,8 @@ This stage loads the raw data from the French service registry.
 
 def configure(context):
     context.config("data_path")
-    context.config("bpe_path", "bpe_2021/bpe21_ensemble_xy_csv.zip")
-    context.config("bpe_csv", "bpe21_ensemble_xy.csv")
+    context.config("bpe_path", "bpe_2023/BPE23.zip")
+    context.config("bpe_csv", "BPE23.csv")
     context.stage("data.spatial.codes")
 
 def execute(context):
@@ -23,7 +23,7 @@ def execute(context):
             df = pl.read_csv(
                 f.read(),
                 separator=";",
-                columns=["DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"],
+                columns=["DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP", "CAPACITE"],
                 schema_overrides={"DEPCOM": pl.String, "DEP": pl.String, "DCIRIS": pl.String},
             )
 
