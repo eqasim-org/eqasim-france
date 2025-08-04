@@ -1,3 +1,5 @@
+import os
+
 import mobisurvstd
 
 """
@@ -13,12 +15,11 @@ def execute(context):
     std_survey = mobisurvstd.standardize(
         source=context.config("mobisurvstd.path"), output_directory=None, skip_spatial=True
     )
+    if std_survey is None:
+        raise RuntimeError("The HTS survey could not be imported by MobiSurvStd")
     return std_survey
 
 
 def validate(context):
-    survey_type = mobisurvstd.utils.guess_survey_type(context.config("mobisurvstd.path"))
-    if survey_type is None:
-        raise RuntimeError(
-            "Cannot read HTS survey from: `{}`".format(context.config("mobisurvstd.path"))
-        )
+    path = context.config("mobisurvstd.path")
+    assert os.path.isfile(path) or os.path.isdir(path), f"Cannot read HTS survey from `{path}`"

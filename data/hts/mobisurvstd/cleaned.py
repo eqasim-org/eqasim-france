@@ -4,6 +4,32 @@ import polars as pl
 This stage convert the MobiSurvStd survey to the format expected by eqasim.
 """
 
+# MobiSurvStd mode group -> Eqasim mode
+# "pt" is the default mode
+# Maybe trips with unknown mode or "other" modes (airplane, boat, etc.) should be dropped instead?
+MODE_MAP = {
+    "walking": "walk",
+    "bicycle": "bike",
+    "motorcycle": "car",
+    "car_driver": "car",
+    "car_passenger": "car_passenger",
+    "public_transit": "pt",
+    "other": "pt",
+    None: "pt",
+}
+
+# MobiSurvStd purpose group -> Eqasim purpose
+PURPOSE_MAP = {
+    "home": "home",
+    "work": "work",
+    "education": "education",
+    "shopping": "shop",
+    "task": "other",
+    "leisure": "leisure",
+    "escort": "other",
+    "other": "other",
+}
+
 
 def configure(context):
     context.stage("data.hts.mobisurvstd.raw")
@@ -39,29 +65,32 @@ def execute(context):
         trip_weight="sample_weight_surveyed",
         socioprofessional_class=pl.col("pcs_group_code").fill_null(8),
     )
+    if df_persons["person_weight"].is_null().all():
+        # For EMP 2019, person weight is unknown, we use trip weight instead (this means that weight
+        # will be null for all persons that are not surveyed!).
+        df_persons = df_persons.with_columns(person_weight="trip_weight")
 
-    trip_columns = {
-        "trip_id": "trip_id",
-        "person_id": "person_id",
+    # Only trips on weekdays are considered.
+    df_trips = std_survey.trips.filter(
+        pl.col("trip_weekday").is_in(("saturday", "sunday")).not_()
+    ).select(
+        "trip_id",
+        "person_id",
         # Convert departure / arrival time from minutes to seconds.
-        "departure_time": pl.col("departure_time").cast(pl.UInt32) * 60,
-        "arrival_time": pl.col("arrival_time").cast(pl.UInt32) * 60,
-        "trip_duration": pl.col("travel_time").cast(pl.UInt32) * 60,
-        "activity_duration": pl.col("destination_activity_duration").cast(pl.UInt32) * 60,
-        "preceding_purpose": "origin_purpose_group",
-        "following_purpose": "destination_purpose_group",
-        "is_first_trip": "first_trip",
-        "is_last_trip": "last_trip",
-        "mode": "main_mode_group",
-        "origin_departement_id": "origin_dep",
-        "destination_departement_id": "destination_dep",
-    }
-    # Columns euclidean_distance and routed_distance are only added if they have no NULL values.
-    if std_survey.trips["trip_euclidean_distance_km"].is_not_null().all():
-        trip_columns["euclidean_distance"] = "trip_euclidean_distance_km"
-    if std_survey.trips["trip_travel_distance_km"].is_not_null().all():
-        trip_columns["routed_distance"] = "trip_travel_distance_km"
-    df_trips = std_survey.trips.select(**trip_columns)
+        departure_time=pl.col("departure_time").cast(pl.UInt32) * 60,
+        arrival_time=pl.col("arrival_time").cast(pl.UInt32) * 60,
+        trip_duration=pl.col("travel_time").cast(pl.UInt32) * 60,
+        activity_duration=pl.col("destination_activity_duration").cast(pl.UInt32) * 60,
+        preceding_purpose=pl.col("origin_purpose_group").replace_strict(PURPOSE_MAP),
+        following_purpose=pl.col("destination_purpose_group").replace_strict(PURPOSE_MAP),
+        is_first_trip="first_trip",
+        is_last_trip="last_trip",
+        mode=pl.col("main_mode_group").replace_strict(MODE_MAP),
+        origin_departement_id="origin_dep",
+        destination_departement_id="destination_dep",
+        euclidean_distance="trip_euclidean_distance_km",
+        routed_distance="trip_travel_distance_km",
+    )
 
     # Add households consumption units (1 for 1st person, +0.5 for any other person 14+, +0.3 for
     # any other person below 14.
@@ -103,7 +132,7 @@ def execute(context):
             how="left",
         )
         # Add urban_type to persons.
-        df_persons = df_persons.join(df_urban_type, on="commune_id", how="left")
+        df_persons = df_persons.join(pl.from_pandas(df_urban_type), on="commune_id", how="left")
         df_persons = df_persons.with_columns(pl.col("urban_type").fill_null(pl.lit("none"))).drop(
             "commune_id"
         )

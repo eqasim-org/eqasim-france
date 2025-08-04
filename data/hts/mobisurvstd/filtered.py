@@ -44,22 +44,57 @@ def execute(context):
         df_codes = context.stage("data.spatial.codes")
         # Filter for non-residents
         requested_departments = df_codes["departement_id"].astype(str).unique()
-        df_persons = df_persons.filter(pl.col("departement_id").is_in(requested_departments))
-
-        # Filter trips outside the area.
         remove_ids |= set(
-            df_trips.filter(
-                pl.col("origin_departement_id").is_in(requested_departments).not_()
-                | pl.col("destination_departement_id").is_in(requested_departments).not_()
+            df_persons.filter(
+                pl.col("departement_id").is_in(requested_departments, nulls_equal=True).not_()
             )["person_id"]
         )
 
-    print("Nb persons: {}".format(len(df_persons)))
-    # Keep only persons with all their trips and households with at least one remaining person.
-    df_persons = df_persons.filter(pl.col("person_id").is_in(remove_ids).not_())
-    df_trips = df_trips.filter(pl.col("person_id").is_in(remove_ids).not_())
-    df_households = df_households.join(df_persons, on="household_id", how="semi")
-    print("Nb persons: {}".format(len(df_persons)))
+        # Filter trips outside the area.
+        if (
+            df_trips["origin_departement_id"].is_not_null().any()
+            and df_trips["destination_departement_id"].is_not_null().any()
+        ):
+            remove_ids |= set(
+                df_trips.filter(
+                    pl.col("origin_departement_id")
+                    .is_in(requested_departments, nulls_equal=True)
+                    .not_()
+                    | pl.col("destination_departement_id")
+                    .is_in(requested_departments, nulls_equal=True)
+                    .not_()
+                )["person_id"]
+            )
+        else:
+            # For EMP 2019, the origin / destination départements are unknown so we do not apply the
+            # filter otherwise all trips would be removed.
+            print(
+                "Warning. The HTS does not specificy origin / destination departements so the "
+                "trips are not filtered for origin / destination inside the requested "
+                "departements. Set `filter_hts` to false to silent this warning."
+            )
+
+    if remove_ids:
+        print(
+            (
+                "Warning. Dropping {:,} / {:,} persons "
+                "(invalid timing, invalid purposes, or invalid origin / destination"
+            ).format(len(remove_ids), len(df_persons))
+        )
+        # Keep only persons with all their trips and households with at least one remaining person.
+        df_persons = df_persons.filter(pl.col("person_id").is_in(remove_ids).not_())
+        df_trips = df_trips.filter(pl.col("person_id").is_in(remove_ids).not_())
+        df_households = df_households.join(df_persons, on="household_id", how="semi")
+
+        assert len(df_persons), "All persons have been removed from the HTS!"
+        assert len(df_trips), "All trips have been removed from the HTS!"
+
+    # Drop column `euclidean_distance` and `routed_distance` if they have NULL values.
+    # Note that if both columns are dropped, eqasim will complain.
+    if df_trips["euclidean_distance"].null_count() > 0:
+        df_trips = df_trips.drop("euclidean_distance")
+    if df_trips["routed_distance"].null_count() > 0:
+        df_trips = df_trips.drop("routed_distance")
 
     df_households_pd = df_households.to_pandas()
     df_persons_pd = df_persons.to_pandas()

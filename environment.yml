@@ -32,4 +32,4 @@ dependencies:
     - synpp==1.6.0
     - bhepop2==2.0.1
     - osmium==4.0.2
-    - mobisurvstd==0.5.0
+    - mobisurvstd==0.6.0
