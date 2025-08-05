@@ -24,7 +24,7 @@ def execute(context):
     filename = os.path.join(context.config("data_path"), context.config("siret_geo_path"))
     lf = pl.scan_parquet(filename)
     # The departement code can be read from the 2 first characters of the INSEE commune code, or
-    # from the 3 first characters for oversea departements (e.g., Fort-de-France: 972).
+    # from the 3 first characters for oversea departements (e.g., Fort-de-France: 97209).
     deps2 = {dep for dep in requested_departements if len(dep) == 2}
     deps3 = {dep for dep in requested_departements if len(dep) == 3}
     assert len(deps2) + len(deps3) == len(requested_departements)
