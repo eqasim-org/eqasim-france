@@ -1,14 +1,18 @@
 import os
-import pandas as pd
+import polars as pl
 
 """
 This stage loads the geolocalization data for the French enterprise registry.
 """
 
+
 def configure(context):
     context.config("data_path")
-    context.config("siret_geo_path", "sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.zip")
-    
+    context.config(
+        "siret_geo_path",
+        "sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet",
+    )
+
     context.stage("data.spatial.codes")
 
 
@@ -16,37 +20,25 @@ def execute(context):
     # Filter by departement
     df_codes = context.stage("data.spatial.codes")
     requested_departements = set(df_codes["departement_id"].unique())
-    
-    COLUMNS_DTYPES = {
-        "siret":"int64", 
-        "x":"float", 
-        "y":"float",
-        "plg_code_commune":"str",
-    }
 
-    df_siret_geoloc = pd.DataFrame(columns=["siret","x","y"])
-    
-    with context.progress(label = "Reading geolocalized SIRET ...") as progress:
-         csv = pd.read_csv("%s/%s" % (context.config("data_path"), context.config("siret_geo_path")), 
-                          usecols = COLUMNS_DTYPES.keys(), sep=";",dtype = COLUMNS_DTYPES,chunksize = 10240)
-    
-         for df_chunk in csv:
-            progress.update(len(df_chunk))
-            
-            f = df_chunk["siret"].isna() # Just to get a mask
-            
-            for departement in requested_departements:
+    filename = os.path.join(context.config("data_path"), context.config("siret_geo_path"))
+    lf = pl.scan_parquet(filename)
+    # The departement code can be read from the 2 first characters of the INSEE commune code, or
+    # from the 3 first characters for oversea departements (e.g., Fort-de-France: 972).
+    deps2 = {dep for dep in requested_departements if len(dep) == 2}
+    deps3 = {dep for dep in requested_departements if len(dep) == 3}
+    assert len(deps2) + len(deps3) == len(requested_departements)
+    if deps2:
+        lf = lf.filter(pl.col("plg_code_commune").str.slice(0, 2).is_in(deps2))
+    if deps3:
+        lf = lf.filter(pl.col("plg_code_commune").str.slice(0, 3).is_in(deps3))
+    df_siret_geoloc = lf.select("siret", "x", "y").collect()
+    return df_siret_geoloc.to_pandas()
 
-                f |= df_chunk["plg_code_commune"].str.startswith(departement)
-
-            df_siret_geoloc = pd.concat([df_siret_geoloc, df_chunk[f]],ignore_index=True)
-
-    return df_siret_geoloc
-
- 
 
 def validate(context):
-    if not os.path.exists("%s/%s" % (context.config("data_path"), context.config("siret_geo_path"))):
+    filename = os.path.join(context.config("data_path"), context.config("siret_geo_path"))
+    if not os.path.isfile(filename):
         raise RuntimeError("SIRENE: geolocaized SIRET data is not available")
 
-    return os.path.getsize("%s/%s" % (context.config("data_path"), context.config("siret_geo_path")))
+    return os.path.getsize(filename)
