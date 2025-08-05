@@ -41,14 +41,13 @@ The tax data set is available from INSEE:
 - Download the administrative level data (second link): *Base niveau administratif en 2021* in **xlsx** format
 - Copy the second *zip* file into `data/filosofi_2021`
 
-## 5) Service and facility census (BPE 2023)
+## 5) Service and facility census (BPE 2024)
 
 The census of services and facilities in France is available from INSEE:
 
 - [Service and facility census](https://www.insee.fr/fr/statistiques/8217525)
-- Download the uppermost data set in **csv** format. It contains all available
-services while the lower data sets only contain observations for specific sectors.
-- Copy the *zip* file into the folder `data/bpe_2023`.
+- Download the data set in **csv** format.
+- Copy the *zip* file into the folder `data/bpe_2024`.
 
 ## 6a) National household travel survey (ENTD 2008)
 
