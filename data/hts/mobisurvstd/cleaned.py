@@ -89,8 +89,9 @@ def execute(context):
         mode=pl.col("main_mode_group").replace_strict(MODE_MAP),
         origin_departement_id="origin_dep",
         destination_departement_id="destination_dep",
-        euclidean_distance="trip_euclidean_distance_km",
-        routed_distance="trip_travel_distance_km",
+        # Distance is converted from km to meters.
+        euclidean_distance=pl.col("trip_euclidean_distance_km") * 1000.0,
+        routed_distance=pl.col("trip_travel_distance_km") * 1000.0,
     )
 
     # Add households consumption units (1 for 1st person, +0.5 for any other person 14+, +0.3 for
