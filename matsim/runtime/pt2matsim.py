@@ -41,3 +41,4 @@ def execute(context):
     ], jar_path)
 
     assert os.path.exists("%s/test_config.xml" % context.path())
+    return jar_path
