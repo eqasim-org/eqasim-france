@@ -14,14 +14,9 @@ def configure(context):
     context.config("pt2matsim_branch", "v22.3")
 
 def run(context, command, arguments, vm_arguments=[]):
-    version = context.config("pt2matsim_version")
-
     # Make sure there is a dependency
-    context.stage("matsim.runtime.pt2matsim")
-
-    jar_path = "%s/pt2matsim/target/pt2matsim-%s-shaded.jar" % (
-        context.path("matsim.runtime.pt2matsim"), version
-    )
+    jar_path = context.stage("matsim.runtime.pt2matsim")
+    jar_path = "{}/{}".format(context.path("matsim.runtime.pt2matsim"), jar_path)
     java.run(context, command, arguments, jar_path, vm_arguments)
 
 def execute(context):
