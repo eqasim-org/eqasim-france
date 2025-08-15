@@ -33,10 +33,10 @@ def execute(context):
 
     # Build pt2matsim
     maven.run(context, ["package", "-DskipTests=true"], cwd = "%s/pt2matsim" % context.path())
-    jar_path = "%s/pt2matsim/target/pt2matsim-%s-shaded.jar" % (context.path(), version)
+    jar_path = "pt2matsim/target/pt2matsim-{}-shaded.jar".format(version)
 
     # Test pt2matsim
-    java.run(context, "org.matsim.pt2matsim.run.CreateDefaultOsmConfig", [
+    java.run(context, "{}/org.matsim.pt2matsim.run.CreateDefaultOsmConfig".format(context.path()), [
         "test_config.xml"
     ], jar_path)
 
