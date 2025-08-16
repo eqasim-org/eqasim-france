@@ -38,7 +38,7 @@ def execute(context):
     # Test pt2matsim
     java.run(context, "org.matsim.pt2matsim.run.CreateDefaultOsmConfig", [
         "test_config.xml"
-    ], "{}/jar_path".format(context.path()))
+    ], "{}/{}".format(context.path(), jar_path))
 
     assert os.path.exists("%s/test_config.xml" % context.path())
     return jar_path
