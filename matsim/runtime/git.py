@@ -9,13 +9,13 @@ def run(context, arguments = [], cwd = None, catch_output = False):
         This function calls git.
     """
     # Make sure there is a dependency
-    context.stage("matsim.runtime.git")
+    settings = context.stage("matsim.runtime.git")
 
     if cwd is None:
         cwd = context.path()
 
     command_line = [
-        shutil.which(context.config("git_binary"))
+        shutil.which(settings["binary"])
     ] + arguments
 
     if catch_output:
@@ -38,4 +38,6 @@ def validate(context):
         print("WARNING! Git of at least version 2.x.x is recommended!")
 
 def execute(context):
-    pass
+    return {
+        "binary": context.config("git_binary")
+    }
