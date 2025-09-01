@@ -240,10 +240,10 @@ def create(output_path):
 
     columns = ["CAPACITE","DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"]
 
-    os.mkdir("%s/bpe_2023" % output_path)
+    os.mkdir("%s/bpe_2024" % output_path)
 
-    with zipfile.ZipFile("%s/bpe_2023/BPE23.zip" % output_path, "w") as archive:
-        with archive.open("BPE23.csv", "w") as f:
+    with zipfile.ZipFile("%s/bpe_2024/BPE24.zip" % output_path, "w") as archive:
+        with archive.open("BPE24.csv", "w") as f:
             df_selection[columns].to_csv(f,
                 sep = ";", index = False)
 
