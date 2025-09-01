@@ -13,7 +13,7 @@ def run(context, entry_point, arguments = [], class_path = None, vm_arguments = 
         - raise (default): Raises an exception if the return code is not zero
     """
     # Make sure there is a dependency
-    context.stage("matsim.runtime.java")
+    settings = context.stage("matsim.runtime.java")
 
     # Prepare temp folder
     temp_path = "%s/__java_temp" % context.path()
@@ -21,7 +21,7 @@ def run(context, entry_point, arguments = [], class_path = None, vm_arguments = 
         os.mkdir(temp_path)
 
     # Prepare arguments
-    memory = context.config("java_memory") if memory is None else memory
+    memory = settings["memory"] if memory is None else memory
     vm_arguments = [
         "-Xmx" + memory,
         "-Djava.io.tmpdir=%s" % temp_path,
@@ -38,7 +38,7 @@ def run(context, entry_point, arguments = [], class_path = None, vm_arguments = 
 
     # Prepare command line
     command_line = [
-        shutil.which(context.config("java_binary")),
+        shutil.which(settings["binary"]),
         "-cp", class_path
     ] + vm_arguments + [
         entry_point
@@ -75,4 +75,7 @@ def validate(context):
         raise RuntimeError("A Java JDK of at least version 17 is needed. A Java SDK with version %s was found" % version_number)  
 
 def execute(context):
-    pass
+    return {
+        "binary": context.config("java_binary"),
+        "memory": context.config("java_memory")
+    }

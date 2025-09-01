@@ -11,7 +11,7 @@ def run(context, arguments = [], cwd = None):
         This function calls Maven.
     """
     # Make sure there is a dependency
-    context.stage("matsim.runtime.maven")
+    settings = context.stage("matsim.runtime.maven")
 
     if cwd is None:
         cwd = context.path()
@@ -26,7 +26,7 @@ def run(context, arguments = [], cwd = None):
     ]
 
     # Prepare cache folder (optional)
-    use_local_cache = context.config("maven_local_cache")
+    use_local_cache = settings["local_cache"]
     if use_local_cache:
         cache_path = "%s/__maven_cache" % context.path()
         if not os.path.exists(cache_path):
@@ -34,11 +34,11 @@ def run(context, arguments = [], cwd = None):
 
         vm_arguments.append("-Dmaven.repo.local={}".format(cache_path))
 
-    if context.config("maven_skip_tests"):
+    if settings["skip_tests"]:
         vm_arguments.append("-DskipTests=true")
 
     command_line = [
-        shutil.which(context.config("maven_binary"))
+        shutil.which(settings["binary"])
     ] + vm_arguments + arguments
 
     return_code = sp.check_call(command_line, cwd = cwd)
@@ -57,4 +57,8 @@ def validate(context):
         print("WARNING! Maven of at least version 3.x.x is recommended!")
 
 def execute(context):
-    pass
+    return {
+        "binary": context.config("maven_binary"),
+        "skip_tests": context.config("maven_skip_tests"),
+        "local_cache": context.config("maven_local_cache"),
+    }
