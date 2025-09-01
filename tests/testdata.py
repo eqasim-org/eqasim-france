@@ -705,13 +705,13 @@ def create(output_path):
 
 
     os.mkdir("%s/sirene" % output_path)
-    df_sirene.to_csv(output_path + "/sirene/StockEtablissement_utf8.zip", index = False, compression={'method': 'zip', 'archive_name': 'StockEtablissement_utf8.csv'})
+    df_sirene.to_parquet(output_path + "/sirene/StockEtablissement_utf8.parquet", index = False)
 
 
     df_sirene = df_sirene[["siren"]].copy()
     df_sirene["categorieJuridiqueUniteLegale"] = "1000"
 
-    df_sirene.to_csv(output_path + "/sirene/StockUniteLegale_utf8.zip", index = False, compression={'method': 'zip', 'archive_name': 'StockUniteLegale_utf8.csv'})
+    df_sirene.to_parquet(output_path + "/sirene/StockUniteLegale_utf8.parquet", index = False)
 
     # Data set: SIRENE GEOLOCATION
     print("Creating SIRENE GEOLOCATION...")
@@ -729,7 +729,7 @@ def create(output_path):
         "plg_code_commune":codes_com,
     })
     
-    df_sirene_geoloc.to_csv("%s/sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.zip" % output_path, index = False, sep=";", compression={'method': 'zip', 'archive_name': 'GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.csv'})
+    df_sirene_geoloc.to_parquet("%s/sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet" % output_path, index = False)
 
     # Data set: Urban type
     print("Creating urban type ...")

@@ -107,19 +107,22 @@ The enterprise census of France is available on data.gouv.fr:
 
 - [Enterprise census](https://www.data.gouv.fr/fr/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/)
 - Scroll down and click on the blue download button on the right for the two following data sets:
-  - **Sirene : Fichier StockUniteLegale** (followed by a date), the database of enterprises
-  - **Sirene : Fichier StockEtablissement** (followed by a date), the database of enterprise facilities
+  - **Sirene : Fichier StockUniteLegale du dd mm yyyy (format parquet)** (where "dd mm yyyy" is the
+    date), the database of enterprises
+  - **Sirene : Fichier StockEtablissement du dd mm yyy (format parquet)** (where "dd mm yyyy" is the
+    date), the database of enterprise facilities
 - The files are updated monthly and are rather large. After downloading, you should have two files:
-  - `StockEtablissement_utf8.zip`
-  - `StockUniteLegale_utf8.zip`
-- Move both *zip* files into `data/sirene`.
+  - `StockEtablissement_utf8.parquet`
+  - `StockUniteLegale_utf8.parquet`
+- Move both *parquet* files into `data/sirene`.
 
 The geolocated enterprise census is available on data.gouv.fr:
 
 - [Geolocated enterprise census](https://www.data.gouv.fr/fr/datasets/geolocalisation-des-etablissements-du-repertoire-sirene-pour-les-etudes-statistiques/)
 - Scroll down and click on the blue download button on the right for the following data set:
-    - **Sirene : Fichier GeolocalisationEtablissement_Sirene_pour_etudes_statistiques** (followed by a date), 
-- Put the downloaded *zip* file into `data/sirene`
+    - **Sirene : Fichier GeolocalisationEtablissement_Sirene_pour_etudes_statistiques du dd mm yyyy
+      (format parquet)** (where "dd mm yyyy" is the date)
+- Put the downloaded *parquet* file into `data/sirene`
 
 ## 10) Buildings database (BD TOPO)
 
