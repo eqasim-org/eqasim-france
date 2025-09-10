@@ -11,7 +11,7 @@ dependencies:
   - geopandas=1.0.1
   - numba=0.61.2
   - palettable=3.3.0
-  - scikit-learn=1.6.1
+  - scikit-learn=1.7.2
   - shapely=2.1.1
   - tqdm=4.65.0
   - pytables=3.10.1
