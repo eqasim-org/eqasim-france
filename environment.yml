@@ -13,7 +13,7 @@ dependencies:
   - palettable=3.3.0
   - scikit-learn=1.7.2
   - shapely=2.1.1
-  - tqdm=4.65.0
+  - tqdm=4.67.1
   - pytables=3.10.1
   - xlrd=2.0.2
   - openpyxl=3.1.5
