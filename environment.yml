@@ -10,7 +10,7 @@ dependencies:
   - numpy=2.2.4
   - geopandas=1.1.1
   - numba=0.61.2
-  - palettable=3.3.0
+  - palettable=3.3.3
   - scikit-learn=1.7.2
   - shapely=2.1.1
   - tqdm=4.67.1
