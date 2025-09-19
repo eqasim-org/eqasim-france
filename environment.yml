@@ -9,7 +9,7 @@ dependencies:
   - scipy=1.16.2
   - numpy=2.2.6
   - geopandas=1.1.1
-  - numba=0.61.2
+  - numba=0.62.0
   - palettable=3.3.3
   - scikit-learn=1.7.2
   - shapely=2.1.1
