@@ -15,8 +15,8 @@ jobs:
         os: [ "ubuntu-latest", "windows-latest" ]
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v4
+    - uses: actions/checkout@v5
+    - uses: actions/setup-java@v5
       with:
         distribution: "corretto"
         java-version: "17"
@@ -28,7 +28,7 @@ jobs:
       with:
         activate-environment: "ile-de-france"
         environment-file: environment.yml
-        python-version: "3.10"
+        python-version: "3.11"
         channels: conda-forge
         pkgs-dirs: ~/conda_pkgs_dir
         conda-remove-defaults: true

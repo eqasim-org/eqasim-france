@@ -4,32 +4,32 @@ channels:
   - conda-forge
 
 dependencies:
-  - matplotlib=3.10.1
-  - pandas=2.2.3
-  - scipy=1.15.2
-  - numpy=2.2.4
-  - geopandas=1.0.1
+  - matplotlib=3.10.6
+  - pandas=2.3.2
+  - scipy=1.16.2
+  - numpy=2.2.6
+  - geopandas=1.1.1
   - numba=0.61.2
-  - palettable=3.3.0
-  - scikit-learn=1.6.1
-  - shapely=2.1.0
-  - tqdm=4.65.0
-  - pytables=3.10.1
-  - xlrd=2.0.1
-  - openpyxl=3.1.0
+  - palettable=3.3.3
+  - scikit-learn=1.7.2
+  - shapely=2.1.1
+  - tqdm=4.67.1
+  - pytables=3.10.2
+  - xlrd=2.0.2
+  - openpyxl=3.1.5
   - pip=23.0.1
-  - python=3.10.16
-  - python-calamine=0.3.1
-  - py7zr=0.22.0
-  - pytest=7.2.2
+  - python=3.11.13
+  - python-calamine=0.5.3
+  - py7zr=0.20.8
+  - pytest=8.4.2
   - xlwt=1.3.0
-  - sqlite=3.49.1
-  - mock=5.1.0
-  - pyarrow=19.0.1
-  - polars=1.31.0
+  - sqlite=3.50.4
+  - mock=5.2.0
+  - pyarrow=21.0.0
+  - polars=1.33.1
 
   - pip:
-    - synpp==1.6.0
+    - synpp==1.6.1
     - bhepop2==2.0.1
-    - osmium==4.0.2
-    - mobisurvstd==0.6.0
+    - mobisurvstd==0.7.0
+    - osmium==4.1.1

@@ -88,10 +88,10 @@ def _test_determinism(index, data_path, tmpdir):
 
     REFERENCE_GPKG_HASHES = {
       
-        "ile_de_france_activities.gpkg":    "97f1fab92105dc2e67a7b3b9ac56ea0f",
-        "ile_de_france_commutes.gpkg":      "ba92179202c40e6754d47351eb640786",
-        "ile_de_france_homes.gpkg":         "8da4fb16e569dddc063ee72e227adc01",
-        "ile_de_france_trips.gpkg":         "d23697c9ea2906a5c9debb7fcf5ad250",
+        "ile_de_france_activities.gpkg":    "aa86e232f1497a25d6855d47fa5c040a",
+        "ile_de_france_commutes.gpkg":      "a9b648f5083f2fbe7b304b076bc00afa",
+        "ile_de_france_homes.gpkg":         "930ce972f0f5a6f4307bc741f4cbcc80",
+        "ile_de_france_trips.gpkg":         "511693fa5d6970b43800ead2b4aa2982",
 
     }
 
