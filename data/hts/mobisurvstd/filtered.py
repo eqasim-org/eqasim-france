@@ -78,7 +78,7 @@ def execute(context):
         print(
             (
                 "Warning. Dropping {:,} / {:,} persons "
-                "(invalid timing, invalid purposes, or invalid origin / destination"
+                "(invalid timing, invalid purposes, or invalid origin / destination)"
             ).format(len(remove_ids), len(df_persons))
         )
         # Keep only persons with all their trips and households with at least one remaining person.

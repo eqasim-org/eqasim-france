@@ -50,7 +50,7 @@ def execute(context):
         departement_id="home_dep",
     )
 
-    df_persons = std_survey.persons.select(
+    df_persons = std_survey.persons.filter("is_surveyed").select(
         "person_id",
         "household_id",
         "age",
@@ -63,11 +63,10 @@ def execute(context):
         number_of_trips="nb_trips",
         person_weight="sample_weight_all",
         trip_weight="sample_weight_surveyed",
-        socioprofessional_class=pl.col("pcs_group_code").fill_null(8),
+        socioprofessional_class="pcs_group_code",
     )
     if df_persons["person_weight"].is_null().all():
-        # For EMP 2019, person weight is unknown, we use trip weight instead (this means that weight
-        # will be null for all persons that are not surveyed!).
+        # For EMP 2019, person weight is unknown, we use trip weight instead.
         df_persons = df_persons.with_columns(person_weight="trip_weight")
 
     # Only trips on weekdays are considered.
@@ -126,16 +125,19 @@ def execute(context):
     if context.config("use_urban_type"):
         df_urban_type = context.stage("data.spatial.urban_type")[["commune_id", "urban_type"]]
 
-        # Add commune_id to persons.
-        df_persons = df_persons.join(
+        # Note that for EMP2019, this will only add null values (home_insee is unknown).
+        # Add commune_id to households.
+        df_households = df_households.join(
             std_survey.households.select("household_id", commune_id="home_insee"),
             on="household_id",
             how="left",
         )
-        # Add urban_type to persons.
-        df_persons = df_persons.join(pl.from_pandas(df_urban_type), on="commune_id", how="left")
-        df_persons = df_persons.with_columns(pl.col("urban_type").fill_null(pl.lit("none"))).drop(
-            "commune_id"
+        # Add urban_type to households.
+        df_households = df_households.join(
+            pl.from_pandas(df_urban_type), on="commune_id", how="left"
         )
+        df_households = df_households.with_columns(
+            pl.col("urban_type").fill_null(pl.lit("none"))
+        ).drop("commune_id")
 
     return df_households, df_persons, df_trips
