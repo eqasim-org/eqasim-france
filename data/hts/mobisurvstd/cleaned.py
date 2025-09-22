@@ -53,10 +53,12 @@ def execute(context):
 
     if df_households["trips_weekday"].is_not_null().mean() > 0.95:
         # The weekday at which the trips took place is known (for almost all households).
-        # We select only the households for which the weekdays trips where surveyed.
-        # (This will drop the NULL values for `trips_weekday`.)
+        # We select only the households for which the trips were surveyed for a weekday.
+        # We also keep the NULL values for `trips_weekday` (for EMP 2019, `trips_weekday`
+        # is NULL for persons who did not traveled at all).
         df_households = df_households.filter(
-            pl.col("trips_weekday").is_in(("saturday", "sunday")).not_()
+            pl.col("trips_weekday").is_null()
+            | pl.col("trips_weekday").is_in(("saturday", "sunday")).not_()
         )
 
     df_persons = std_survey.persons.select(

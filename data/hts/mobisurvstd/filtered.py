@@ -16,6 +16,9 @@ def configure(context):
 def execute(context):
     df_households, df_persons, df_trips = context.stage("data.hts.mobisurvstd.cleaned")
 
+    # Keep only persons which where surveyed for trips (even if they did not traveled).
+    df_persons = df_persons.filter("is_surveyed")
+
     remove_ids = set()
 
     # Remove persons for which at least 1 trip has NULL euclidean_distance.
