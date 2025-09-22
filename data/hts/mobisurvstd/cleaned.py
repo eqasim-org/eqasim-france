@@ -43,6 +43,7 @@ def execute(context):
 
     df_households = std_survey.households.select(
         "household_id",
+        "trips_weekday",
         household_weight="sample_weight",
         household_size="nb_persons",
         number_of_vehicles=pl.col("nb_cars") + pl.col("nb_motorcycles"),
@@ -50,15 +51,37 @@ def execute(context):
         departement_id="home_dep",
     )
 
-    df_persons = std_survey.persons.filter("is_surveyed").select(
+    if df_households["trips_weekday"].is_not_null().mean() > 0.95:
+        # The weekday at which the trips took place is known (for almost all households).
+        # We select only the households for which the weekdays trips where surveyed.
+        # (This will drop the NULL values for `trips_weekday`.)
+        df_households = df_households.filter(
+            pl.col("trips_weekday").is_in(("saturday", "sunday")).not_()
+        )
+
+    df_persons = std_survey.persons.select(
         "person_id",
         "household_id",
+        "is_surveyed",
         "age",
+        "age_class",
         sex=pl.when("woman").then(pl.lit("female")).otherwise(pl.lit("male")).cast(pl.Categorical),
         employed=pl.col("professional_occupation") == "worker",
         studies=pl.col("professional_occupation") == "student",
-        has_license=pl.col("has_driving_license").eq("yes")
-        | pl.col("has_motorcycle_driving_license").eq("yes"),
+        # A bit complex expression to do that:
+        # driving_license = True, motorcycle_license = True -> True
+        # driving_license = True, motorcycle_license = False -> True
+        # driving_license = False, motorcycle_license = True -> True
+        # driving_license = False, motorcycle_license = False -> False
+        # driving_license = True, motorcycle_license = NULL -> True
+        # driving_license = False, motorcycle_license = NULL -> False
+        # driving_license = NULL, motorcycle_license = True -> True
+        # driving_license = NULL, motorcycle_license = False -> NULL
+        # driving_license = NULL, motorcycle_license = NULL -> NULL
+        has_license=(
+            pl.col("has_driving_license").eq("yes")
+            | pl.col("has_motorcycle_driving_license").eq_missing("yes")
+        ).fill_null(pl.when(pl.col("has_motorcycle_driving_license").eq("yes")).then(True)),
         has_pt_subscription="has_public_transit_subscription",
         number_of_trips="nb_trips",
         person_weight="sample_weight_all",
@@ -69,12 +92,11 @@ def execute(context):
         # For EMP 2019, person weight is unknown, we use trip weight instead.
         df_persons = df_persons.with_columns(person_weight="trip_weight")
 
-    # Only trips on weekdays are considered.
-    df_trips = std_survey.trips.filter(
-        pl.col("trip_weekday").is_in(("saturday", "sunday")).not_()
-    ).select(
+    df_trips = std_survey.trips.select(
         "trip_id",
         "person_id",
+        "household_id",
+        "trip_weekday",
         # Convert departure / arrival time from minutes to seconds.
         departure_time=pl.col("departure_time").cast(pl.UInt32) * 60,
         arrival_time=pl.col("arrival_time").cast(pl.UInt32) * 60,
@@ -89,22 +111,25 @@ def execute(context):
         destination_departement_id="destination_dep",
         # Distance is converted from km to meters.
         euclidean_distance=pl.col("trip_euclidean_distance_km") * 1000.0,
-        routed_distance=pl.col("trip_travel_distance_km") * 1000.0,
     )
 
     # Add households consumption units (1 for 1st person, +0.5 for any other person 14+, +0.3 for
     # any other person below 14.
-    # When age is NULL, it is assumed to be over 14.
+    # When age is NULL but age_class is known, then all minors are considered to be below 14.
+    # When both age and age_class are NULL, then all persons are considered to be over 14.
     cons_units = (
-        df_persons.with_columns(over_14=pl.col("age").ge(14).fill_null(True))
+        df_persons.with_columns(
+            over_14=pl.col("age").ge(14).fill_null(pl.col("age_class") != "17-").fill_null(False)
+        )
         .group_by("household_id")
         .agg(
             consumption_units=1.0
-            + pl.max_horizontal(0, pl.col("over_14").sum() - 1) * 0.5
+            + pl.max_horizontal(0, pl.col("over_14").sum().cast(pl.Int16) - 1) * 0.5
             + pl.col("over_14").not_().sum() * 0.3
         )
     )
     df_households = df_households.join(cons_units, on="household_id", how="left")
+    df_persons = df_persons.drop("age_class")
 
     # Add home département to persons.
     df_persons = df_persons.join(
@@ -120,6 +145,10 @@ def execute(context):
     df_trips = df_trips.join(
         df_persons.select("person_id", "trip_weight"), on="person_id", how="left"
     )
+
+    # Drop the persons / trips from households that were dropped earlier.
+    df_persons = df_persons.join(df_households, on="household_id", how="semi")
+    df_trips = df_trips.join(df_households, on="household_id", how="semi")
 
     # Impute urban type.
     if context.config("use_urban_type"):
