@@ -34,9 +34,7 @@ PURPOSE_MAP = {
 
 def configure(context):
     context.stage("data.hts.mobisurvstd.raw")
-
-    if context.config("use_urban_type", False):
-        context.stage("data.spatial.urban_type")
+    context.config("use_urban_type", False)
 
 
 def execute(context):
@@ -45,6 +43,7 @@ def execute(context):
     df_households = std_survey.households.select(
         "household_id",
         "trips_weekday",
+        "home_insee_density",
         household_weight="sample_weight",
         household_size="nb_persons",
         number_of_vehicles=pl.col("nb_cars") + pl.col("nb_motorcycles"),
@@ -165,21 +164,20 @@ def execute(context):
 
     # Impute urban type.
     if context.config("use_urban_type"):
-        df_urban_type = context.stage("data.spatial.urban_type")[["commune_id", "urban_type"]]
-
-        # Note that for EMP2019, this will only add null values (home_insee is unknown).
-        # Add commune_id to households.
-        df_households = df_households.join(
-            std_survey.households.select("household_id", commune_id="home_insee"),
-            on="household_id",
-            how="left",
-        )
-        # Add urban_type to households.
-        df_households = df_households.join(
-            pl.from_pandas(df_urban_type), on="commune_id", how="left"
-        )
         df_households = df_households.with_columns(
-            pl.col("urban_type").fill_null(pl.lit("none"))
-        ).drop("commune_id")
-
+            # Read `urban_type` (3 levels) from `home_insee_density` (7 levels).
+            urban_type=pl.col("home_insee_density").replace_strict(
+                {
+                    1: "central_city",
+                    2: "suburb",
+                    3: "suburb",
+                    4: "suburb",
+                    5: "isolated_city",
+                    6: "isolated_city",
+                    7: "isolated_city",
+                },
+                default="none",
+            )
+        )
+    df_households = df_households.drop("home_insee_density")
     return df_households, df_persons, df_trips
