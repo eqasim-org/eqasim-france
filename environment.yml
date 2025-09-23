@@ -31,5 +31,5 @@ dependencies:
   - pip:
     - synpp==1.6.1
     - bhepop2==2.0.1
-    - mobisurvstd==0.8.0
+    - mobisurvstd==0.8.1
     - osmium==4.1.1

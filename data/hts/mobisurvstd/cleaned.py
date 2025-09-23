@@ -59,7 +59,7 @@ def execute(context):
         df_households = df_households.filter(
             pl.col("trips_weekday").is_null()
             | pl.col("trips_weekday").is_in(("saturday", "sunday")).not_()
-        )
+        ).drop("trips_weekday")
 
     df_persons = std_survey.persons.select(
         "person_id",
@@ -88,7 +88,17 @@ def execute(context):
         number_of_trips="nb_trips",
         person_weight="sample_weight_all",
         trip_weight="sample_weight_surveyed",
-        socioprofessional_class="pcs_group_code",
+        # In MobiSurvStd, variable `pcs_group_code` represents the code of the socioprofessional
+        # class (from 1 to 8) but with some differences compared to eqasim:
+        # - retired / unemployed can be assigned the code of their former job
+        # - students have a NULL value (unless they have a student job or apprenticeship)
+        socioprofessional_class=pl.when(
+            pl.col("detailed_professional_occupation") == "other:retired"
+        )
+        .then(7)
+        .when(pl.col("professional_occupation") != "worker")
+        .then(8)
+        .otherwise("pcs_group_code"),
     )
     if df_persons["person_weight"].is_null().all():
         # For EMP 2019, person weight is unknown, we use trip weight instead.
@@ -98,7 +108,6 @@ def execute(context):
         "trip_id",
         "person_id",
         "household_id",
-        "trip_weekday",
         # Convert departure / arrival time from minutes to seconds.
         departure_time=pl.col("departure_time").cast(pl.UInt32) * 60,
         arrival_time=pl.col("arrival_time").cast(pl.UInt32) * 60,
