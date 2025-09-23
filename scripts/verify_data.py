@@ -84,8 +84,8 @@ report.register(
 )
 
 report.register(
-    "Service and facility census (BPE 2023)",
-    "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE23.zip"
+    "Service and facility census (BPE 2024)",
+    "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE24.zip"
 )
 
 entd_sources = [
@@ -115,17 +115,17 @@ report.register(
 
 report.register(
     "Enterprise census (SIRENE), Etablissement",
-    "https://files.data.gouv.fr/insee-sirene/StockEtablissement_utf8.zip"
+    "https://object.files.data.gouv.fr/data-pipeline-open/siren/stock/StockEtablissement_utf8.parquet"
 )
 
 report.register(
     "Enterprise census (SIRENE), Unité Legale",
-    "https://files.data.gouv.fr/insee-sirene/StockUniteLegale_utf8.zip"
+    "https://object.files.data.gouv.fr/data-pipeline-open/siren/stock/StockUniteLegale_utf8.parquet"
 )
 
 report.register(
     "Enterprise census (SIRENE), Géolocalisé",
-    "https://files.data.gouv.fr/insee-sirene-geo/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.zip"
+    "https://object.files.data.gouv.fr/data-pipeline-open/siren/geoloc/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet"
 )
 
 for department in (75, 77, 78, 91, 92, 93, 94, 95):

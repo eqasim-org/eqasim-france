@@ -16,7 +16,15 @@ def configure(context):
 def execute(context):
     df_households, df_persons, df_trips = context.stage("data.hts.mobisurvstd.cleaned")
 
+    # Keep only persons which where surveyed for trips (even if they did not traveled).
+    df_persons = df_persons.filter("is_surveyed")
+
     remove_ids = set()
+
+    # Remove persons for which at least 1 trip has NULL euclidean_distance.
+    # Usually, the trips with NULL euclidean_distance are trips that go outside of the survey
+    # area and represent only a very small share of the trips.
+    remove_ids |= set(df_trips.filter(pl.col("euclidean_distance").is_null())["person_id"])
 
     # Remove persons for which at least 1 trip has NULL departure or arrival time.
     remove_ids |= set(
@@ -78,7 +86,7 @@ def execute(context):
         print(
             (
                 "Warning. Dropping {:,} / {:,} persons "
-                "(invalid timing, invalid purposes, or invalid origin / destination"
+                "(invalid timing, invalid purposes, or invalid origin / destination)"
             ).format(len(remove_ids), len(df_persons))
         )
         # Keep only persons with all their trips and households with at least one remaining person.
@@ -88,13 +96,6 @@ def execute(context):
 
         assert len(df_persons), "All persons have been removed from the HTS!"
         assert len(df_trips), "All trips have been removed from the HTS!"
-
-    # Drop column `euclidean_distance` and `routed_distance` if they have NULL values.
-    # Note that if both columns are dropped, eqasim will complain.
-    if df_trips["euclidean_distance"].null_count() > 0:
-        df_trips = df_trips.drop("euclidean_distance")
-    if df_trips["routed_distance"].null_count() > 0:
-        df_trips = df_trips.drop("routed_distance")
 
     df_households_pd = df_households.to_pandas()
     df_persons_pd = df_persons.to_pandas()
