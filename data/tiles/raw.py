@@ -29,7 +29,7 @@ def execute(context):
                 re.split(r"[/.]", context.config("tiles_path"))[1] + ".7z"
             ) as f:
                 with py7zr.SevenZipFile(f) as archive:
-                    archive.extract(context.path(), context.config("tiles_file"))
+                    archive.extract(context.path(), [context.config("tiles_file")])
                     df_tiles = gpd.read_file(
                         f'{context.path()}/{context.config("tiles_file")}',
                         mask=poly_dep,

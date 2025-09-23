@@ -8,8 +8,8 @@ This stage loads the raw data from the French service registry.
 
 def configure(context):
     context.config("data_path")
-    context.config("bpe_path", "bpe_2023/BPE23.zip")
-    context.config("bpe_csv", "BPE23.csv")
+    context.config("bpe_path", "bpe_2024/BPE24.zip")
+    context.config("bpe_csv", "BPE24.csv")
     context.stage("data.spatial.codes")
 
 def execute(context):
