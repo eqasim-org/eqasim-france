@@ -35,6 +35,7 @@ PURPOSE_MAP = {
 def configure(context):
     context.stage("data.hts.mobisurvstd.raw")
     context.config("use_urban_type", False)
+    context.config("extra_enriched_attributes", [])
 
 
 def execute(context):
@@ -61,12 +62,20 @@ def execute(context):
             | pl.col("trips_weekday").is_in(("saturday", "sunday")).not_()
         ).drop("trips_weekday")
 
+    extra_cols = context.config("extra_enriched_attributes")
+    assert isinstance(extra_cols, list), "`extra_enriched_attributes` parameter must be a list"
+    for col in extra_cols:
+        assert (
+            col in std_survey.persons.columns
+        ), f"Column {col} is not a valid column name for MobiSurvStd persons"
+
     df_persons = std_survey.persons.select(
         "person_id",
         "household_id",
         "is_surveyed",
         "age",
         "age_class",
+        *extra_cols,
         sex=pl.when("woman").then(pl.lit("female")).otherwise(pl.lit("male")).cast(pl.Categorical),
         # Assume that all persons below 5 have studies = True and employed = False (some surveys
         # have NULL values for `professional_occupation`).
