@@ -30,6 +30,6 @@ dependencies:
   - pip:
     - synpp==1.6.1
     - bhepop2==2.0.1
-    - mobisurvstd==0.8.1
+    - mobisurvstd==0.8.3
     - osmium==4.1.1
     - py7zr==1.0.0

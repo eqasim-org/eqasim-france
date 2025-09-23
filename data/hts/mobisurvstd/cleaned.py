@@ -69,23 +69,23 @@ def execute(context):
         "age",
         "age_class",
         sex=pl.when("woman").then(pl.lit("female")).otherwise(pl.lit("male")).cast(pl.Categorical),
-        employed=pl.col("professional_occupation") == "worker",
-        studies=pl.col("professional_occupation") == "student",
-        # A bit complex expression to do that:
-        # driving_license = True, motorcycle_license = True -> True
-        # driving_license = True, motorcycle_license = False -> True
-        # driving_license = False, motorcycle_license = True -> True
-        # driving_license = False, motorcycle_license = False -> False
-        # driving_license = True, motorcycle_license = NULL -> True
-        # driving_license = False, motorcycle_license = NULL -> False
-        # driving_license = NULL, motorcycle_license = True -> True
-        # driving_license = NULL, motorcycle_license = False -> NULL
-        # driving_license = NULL, motorcycle_license = NULL -> NULL
+        # Assume that all persons below 5 have studies = True and employed = False (some surveys
+        # have NULL values for `professional_occupation`).
+        employed=pl.when(pl.col("age") < 5)
+        .then(False)
+        .otherwise(pl.col("professional_occupation") == "worker")
+        # If `professional_occupation` is NULL but a `pcs_group_code` is defined, then assume
+        # that the person is working.
+        .fill_null(pl.col("pcs_group_code") <= 6).fill_null(False),
+        studies=pl.when(pl.col("age") < 5)
+        .then(True)
+        .otherwise(pl.col("professional_occupation") == "student")
+        .fill_null(False),
         has_license=(
-            pl.col("has_driving_license").eq("yes")
+            pl.col("has_driving_license").eq_missing("yes")
             | pl.col("has_motorcycle_driving_license").eq_missing("yes")
-        ).fill_null(pl.when(pl.col("has_motorcycle_driving_license").eq("yes")).then(True)),
-        has_pt_subscription="has_public_transit_subscription",
+        ),
+        has_pt_subscription=pl.col("has_public_transit_subscription").fill_null(False),
         number_of_trips="nb_trips",
         person_weight="sample_weight_all",
         trip_weight="sample_weight_surveyed",
@@ -99,7 +99,8 @@ def execute(context):
         .then(7)
         .when(pl.col("professional_occupation") != "worker")
         .then(8)
-        .otherwise("pcs_group_code"),
+        .otherwise("pcs_group_code")
+        .fill_null(8),
     )
     if df_persons["person_weight"].is_null().all():
         # For EMP 2019, person weight is unknown, we use trip weight instead.
