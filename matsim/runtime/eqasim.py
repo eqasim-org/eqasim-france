@@ -19,6 +19,7 @@ def configure(context):
     context.config("eqasim_commit", DEFAULT_EQASIM_COMMIT)
     context.config("eqasim_repository", "https://github.com/eqasim-org/eqasim-java.git")
     context.config("eqasim_path", "")
+    context.config("eqasim_tag", None)
 
 def run(context, command, arguments, cwd = None):
     # Make sure there is a dependency
@@ -56,8 +57,10 @@ def execute(context):
     # creating input to unit tests of the eqasim-java package.
     else:
         os.makedirs("%s/eqasim-java/ile_de_france/target" % context.path())
-        shutil.copy(context.config("eqasim_path"),
-            "%s/eqasim-java/ile_de_france/target/ile_de_france-%s.jar" % (context.path(), version))
+        shutil.copy(
+            "%s/ile_de_france/target/ile_de_france-%s.jar" % (context.config("eqasim_path"), version),
+            "%s/eqasim-java/ile_de_france/target/ile_de_france-%s.jar" % (context.path(), version)
+        )
 
     return "eqasim-java/ile_de_france/target/ile_de_france-%s.jar" % version
 

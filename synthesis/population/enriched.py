@@ -27,7 +27,8 @@ def execute(context):
         "person_id", "household_id",
         "census_person_id", "census_household_id",
         "age", "sex", "employed", "studies",
-        "number_of_vehicles", "household_size", "consumption_units",
+        "number_of_cars", "number_of_motorcycles", "number_of_vehicles",
+        "household_size", "consumption_units",
         "socioprofessional_class"
     ]]
 
@@ -78,6 +79,18 @@ def execute(context):
     df_car_availability["car_availability"] = df_car_availability["car_availability"].astype("category")
 
     df_population = pd.merge(df_population, df_car_availability[["household_id", "car_availability"]])
+
+
+    # Add motorcycle availability
+    df_number_of_motorcycles = df_population[["household_id", "number_of_motorcycles"]].drop_duplicates("household_id")
+    df_motorcycle_availability = pd.merge(df_number_of_motorcycles, df_number_of_licenses)
+
+    df_motorcycle_availability["motorcycle_availability"] = "all"
+    df_motorcycle_availability.loc[df_motorcycle_availability["number_of_motorcycles"] < df_motorcycle_availability["number_of_licenses"], "motorcycle_availability"] = "some"
+    df_motorcycle_availability.loc[df_motorcycle_availability["number_of_motorcycles"] == 0, "motorcycle_availability"] = "none"
+    df_motorcycle_availability["motorcycle_availability"] = df_motorcycle_availability["motorcycle_availability"].astype("category")
+
+    df_population = pd.merge(df_population, df_motorcycle_availability[["household_id", "motorcycle_availability"]])
 
     # Add bike availability
     df_population["bike_availability"] = "all"

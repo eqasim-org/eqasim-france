@@ -27,6 +27,7 @@ def execute(context):
                         type["type_id"],
                         length=type["length"],
                         width=type["width"],
+                        mode=type["mode"],
                         engine_attributes = {
                             "HbefaVehicleCategory": type["hbefa_cat"],
                             "HbefaTechnology": type["hbefa_tech"],

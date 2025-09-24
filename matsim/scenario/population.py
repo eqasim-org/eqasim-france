@@ -50,6 +50,9 @@ def add_person(writer, person, activities, trips, vehicles):
     if person[PERSON_FIELDS.index("car_availability")] == "none":
         writer.add_attribute("carAvail", "java.lang.String", "never")
 
+    if getattr(person, "motorcycle_availability", -1) != -1:
+        writer.add_attribute("motorcycleAvailability", "java.lang.String", person.motorcycle_availability)
+
     writer.add_attribute("censusHouseholdId", "java.lang.Long", person[PERSON_FIELDS.index("census_household_id")])
     writer.add_attribute("censusPersonId", "java.lang.Long", person[PERSON_FIELDS.index("census_person_id")])
 
@@ -110,7 +113,14 @@ def execute(context):
 
     df_persons = context.stage("synthesis.population.enriched")
     df_persons = df_persons.sort_values(by = ["household_id", "person_id"])
-    df_persons = df_persons[PERSON_FIELDS]
+
+    person_fields = PERSON_FIELDS
+    
+    if "motorcycle_availability" in df_persons:
+        person_fields = person_fields + ["motorcycle_availability"]
+
+    df_persons = df_persons[person_fields]
+
 
     df_activities = context.stage("synthesis.population.activities").sort_values(by = ["person_id", "activity_index"])
     df_locations = context.stage("synthesis.population.spatial.locations")[[
@@ -121,6 +131,12 @@ def execute(context):
 
     df_trips = context.stage("synthesis.population.trips")
     df_trips["travel_time"] = df_trips["arrival_time"] - df_trips["departure_time"]
+
+    if "motorcycle_availability" in df_persons:
+        df_trips["mode"] = df_trips["mode"].cat.add_categories("motorcycle")
+        df_trips.loc[df_trips["person_id"].isin(
+            df_persons[df_persons["motorcycle_availability"] != "none"]["person_id"].unique()
+        ), "mode"] = "motorcycle"
 
     df_vehicles = context.stage("synthesis.vehicles.vehicles")[1]
     df_vehicles = df_vehicles.sort_values(by = ["owner_id"])
