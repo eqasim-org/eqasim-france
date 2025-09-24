@@ -40,13 +40,18 @@ config:
   #################################
 
   ## Define whether to use ENTD or EGT as the HTS
-  hts: entd # entd, egt, edgt_lyon, edgt_44
+  hts: entd # entd, egt, edgt_lyon, edgt_44, mobisurvstd
 
   ## Whether to filter people going outside of the area and other filters
   # filter_hts: true
 
   ## if selected, chose the source for edgt_lyon
   # edgt_lyon_source: unchosen # unchosen, adisp, cerema
+
+  ## path to the zipfile / directory where the HTS to be read by MobiSurvStd is located
+  ## path is relative to `data_path`
+  # mobisurvstd:
+  #   path: my_survey.zip
 
   ##################
   # Zone selection #
