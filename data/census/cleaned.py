@@ -94,6 +94,10 @@ def execute(context):
     df["number_of_motorcycles"] += ((df["number_of_motorcycles"] == 0) & (df["commute_mode"] == "motorcycle")).astype(int)
     df["number_of_vehicles"] = df["number_of_cars"] + df["number_of_motorcycles"]
 
+    # Force the use of motorcycle if commute by motorcycle
+    df["use_motorcycle"] = False
+    df.loc[(df["commute_mode"] == "motorcycle"), "use_motorcycle"] = True
+
     # Household size
     df_size = df[["household_id"]].groupby("household_id").size().reset_index(name = "household_size")
     df = pd.merge(df, df_size)
@@ -109,7 +113,7 @@ def execute(context):
         "iris_id", "commune_id", "departement_id",
         "age", "sex", "couple",
         "commute_mode", "employed", "studies",
-        "number_of_cars", "number_of_motorcycles", "number_of_vehicles",
+        "number_of_cars", "number_of_motorcycles", "number_of_vehicles", "use_motorcycle",
         "household_size", "consumption_units", "socioprofessional_class"
     ]]
 

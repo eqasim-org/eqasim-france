@@ -27,7 +27,7 @@ def execute(context):
         "person_id", "household_id",
         "census_person_id", "census_household_id",
         "age", "sex", "employed", "studies",
-        "number_of_cars", "number_of_motorcycles", "number_of_vehicles",
+        "number_of_cars", "number_of_motorcycles", "number_of_vehicles", "use_motorcycle",
         "household_size", "consumption_units",
         "socioprofessional_class"
     ]]
@@ -69,19 +69,19 @@ def execute(context):
     assert initial_household_ids == final_household_ids
 
     # Add car availability
-    df_number_of_cars = df_population[["household_id", "number_of_vehicles"]].drop_duplicates("household_id")
+    df_number_of_cars = df_population[["household_id", "number_of_cars"]].drop_duplicates("household_id")
     df_number_of_licenses = df_population[["household_id", "has_license"]].groupby("household_id").sum().reset_index().rename(columns = { "has_license": "number_of_licenses" })
     df_car_availability = pd.merge(df_number_of_cars, df_number_of_licenses)
 
     df_car_availability["car_availability"] = "all"
-    df_car_availability.loc[df_car_availability["number_of_vehicles"] < df_car_availability["number_of_licenses"], "car_availability"] = "some"
-    df_car_availability.loc[df_car_availability["number_of_vehicles"] == 0, "car_availability"] = "none"
+    df_car_availability.loc[df_car_availability["number_of_cars"] < df_car_availability["number_of_licenses"], "car_availability"] = "some"
+    df_car_availability.loc[df_car_availability["number_of_cars"] == 0, "car_availability"] = "none"
     df_car_availability["car_availability"] = df_car_availability["car_availability"].astype("category")
 
     df_population = pd.merge(df_population, df_car_availability[["household_id", "car_availability"]])
 
-
-    # Add motorcycle availability
+    # Add motorcycle availabilityl.
+    # it is not used with the current model, we use the "use_motorcycle" field instead to force the (initial) use of motorcycle
     df_number_of_motorcycles = df_population[["household_id", "number_of_motorcycles"]].drop_duplicates("household_id")
     df_motorcycle_availability = pd.merge(df_number_of_motorcycles, df_number_of_licenses)
 

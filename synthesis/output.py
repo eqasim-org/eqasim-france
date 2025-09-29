@@ -134,7 +134,7 @@ def execute(context):
         "iris_id", "commune_id","departement_id","region_id"]].drop_duplicates("household_id"),how="left")
     df_households = df_households[[
         "household_id","iris_id", "commune_id", "departement_id","region_id",
-        "car_availability", "bike_availability", "motorcycle_availability",
+        "car_availability", "bike_availability", "motorcycle_availability", "use_motorcycle",
         "number_of_vehicles", "number_of_bikes",
         "income",
         "census_household_id"
