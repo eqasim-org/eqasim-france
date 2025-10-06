@@ -974,13 +974,13 @@ def create(output_path):
         "region": "Code région",
     })
 
-    os.mkdir("%s/vehicles" % output_path)
+    os.mkdir("%s/critair" % output_path)
     
-    with zipfile.ZipFile("%s/vehicles/parc_vp_regions.zip" % output_path, "w") as archive:
+    with zipfile.ZipFile("%s/critair/parc_vp_regions.zip" % output_path, "w") as archive:
         with archive.open("Parc_VP_Regions_2021.xlsx", "w") as f:
             df_vehicles_region.to_excel(f)
 
-    with zipfile.ZipFile("%s/vehicles/parc_vp_communes.zip" % output_path, "w") as archive:
+    with zipfile.ZipFile("%s/critair/parc_vp_communes.zip" % output_path, "w") as archive:
         with archive.open("Parc_VP_Communes_2021.xlsx", "w") as f:
             df_vehicles_commune.to_excel(f)
 
