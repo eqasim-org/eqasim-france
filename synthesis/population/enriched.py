@@ -14,6 +14,8 @@ This stage fuses census data with HTS data.
 """
 
 def configure(context):
+    context.config("with_motorcycles", False)
+
     context.stage("synthesis.population.matched")
     context.stage("synthesis.population.sampled")
     context.stage("synthesis.population.income.selected")
@@ -80,17 +82,9 @@ def execute(context):
 
     df_population = pd.merge(df_population, df_car_availability[["household_id", "car_availability"]])
 
-    # Add motorcycle availabilityl.
-    # it is not used with the current model, we use the "use_motorcycle" field instead to force the (initial) use of motorcycle
-    df_number_of_motorcycles = df_population[["household_id", "number_of_motorcycles"]].drop_duplicates("household_id")
-    df_motorcycle_availability = pd.merge(df_number_of_motorcycles, df_number_of_licenses)
-
-    df_motorcycle_availability["motorcycle_availability"] = "all"
-    df_motorcycle_availability.loc[df_motorcycle_availability["number_of_motorcycles"] < df_motorcycle_availability["number_of_licenses"], "motorcycle_availability"] = "some"
-    df_motorcycle_availability.loc[df_motorcycle_availability["number_of_motorcycles"] == 0, "motorcycle_availability"] = "none"
-    df_motorcycle_availability["motorcycle_availability"] = df_motorcycle_availability["motorcycle_availability"].astype("category")
-
-    df_population = pd.merge(df_population, df_motorcycle_availability[["household_id", "motorcycle_availability"]])
+    # Handle motorcycle use if needed (remove use_motorcycle)
+    if not context.config("with_motorcycles"):
+        df_population.drop(columns=["use_motorcycle"])
 
     # Add bike availability
     df_population["bike_availability"] = "all"

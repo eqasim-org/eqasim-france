@@ -51,8 +51,6 @@ def add_person(writer, person, activities, trips, vehicles):
         writer.add_attribute("carAvail", "java.lang.String", "never")
 
     # custom attributes for motorcycle availability
-    if getattr(person, "motorcycle_availability", -1) != -1:
-        writer.add_attribute("motorcycleAvailability", "java.lang.String", person.motorcycle_availability)
     if getattr(person, "use_motorcycle", -1) != -1:
         writer.add_attribute("useMotorcycle", "java.lang.Boolean", person.use_motorcycle)
 
@@ -119,8 +117,6 @@ def execute(context):
 
     person_fields = PERSON_FIELDS
     
-    if "motorcycle_availability" in df_persons:
-        person_fields = person_fields + ["motorcycle_availability"]
     if "use_motorcycle" in df_persons:
         person_fields = person_fields + ["use_motorcycle"]
 

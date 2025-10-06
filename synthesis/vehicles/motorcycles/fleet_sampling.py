@@ -79,11 +79,13 @@ def _sample_vehicle(context: ParallelSlaveContext, args):
         vehicle_type_id = "motorcycle_electric"
     else:
         if vehicle_engine_size == "0_50cc":
-            vehicle_type_id = "motorcycle_lte_50cc_50kmh_euro_%d" % euro
-        elif vehicle_engine_size in ["50_125cc", "125_250cc"]:
-            vehicle_type_id = "motorcycle_lte_250cc_%s_euro_%d" % (vehicle_engine, euro)
+            vehicle_type_id = "motorcycle_lte_50cc_50kmh_euro_%d_cnossos_4a" % euro
+        elif vehicle_engine_size == "50_125cc":
+            vehicle_type_id = "motorcycle_lte_250cc_%s_euro_%d_cnossos_4a" % (vehicle_engine, euro)
+        elif vehicle_engine_size == "125_250cc":
+            vehicle_type_id = "motorcycle_lte_250cc_%s_euro_%d_cnossos_4b" % (vehicle_engine, euro)
         else:
-            vehicle_type_id = "motorcycle_gt_250cc_4S_euro_%d" % euro
+            vehicle_type_id = "motorcycle_gt_250cc_4S_euro_%d_cnossos_4b" % euro
 
     vehicle["type_id"] = vehicle_type_id
 

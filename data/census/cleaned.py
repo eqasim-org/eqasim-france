@@ -13,6 +13,8 @@ def configure(context):
     context.stage("data.census.raw")
     context.stage("data.spatial.codes")
 
+    context.config("with_motorcycles", False)
+
     if context.config("use_urban_type", False):
         context.stage("data.spatial.urban_type")
 
@@ -96,7 +98,8 @@ def execute(context):
 
     # Force the use of motorcycle if commute by motorcycle
     df["use_motorcycle"] = False
-    df.loc[(df["commute_mode"] == "motorcycle"), "use_motorcycle"] = True
+    if context.config("with_motorcycles"):
+        df.loc[(df["commute_mode"] == "motorcycle"), "use_motorcycle"] = True
 
     # Household size
     df_size = df[["household_id"]].groupby("household_id").size().reset_index(name = "household_size")

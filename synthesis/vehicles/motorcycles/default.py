@@ -14,6 +14,7 @@ def execute(context):
     default_motorcycle_type = {
         'type_id': 'default_motorcycle', 'nb_seats': 1, 'length': 2.0, 'width': 1.0, 'pce': 1.0, 'mode': "motorcycle",
         'hbefa_cat': "motorcycle", 'hbefa_tech': "average", 'hbefa_size': "average", 'hbefa_emission': "average",
+        'cnossos_cat': "4a"  # 4a for motorcycles <=125cc in CNOSSOS-EU
     }
     df_motorcyle_types = pd.DataFrame.from_records([default_motorcycle_type])
 

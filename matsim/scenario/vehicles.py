@@ -28,6 +28,9 @@ def execute(context):
                         length=type["length"],
                         width=type["width"],
                         mode=type["mode"],
+                        attributes={
+                            "cnossos_cat": type["cnossos_cat"],
+                        },
                         engine_attributes = {
                             "HbefaVehicleCategory": type["hbefa_cat"],
                             "HbefaTechnology": type["hbefa_tech"],

@@ -7,9 +7,11 @@ https://www.statistiques.developpement-durable.gouv.fr/sites/default/files/2018-
 
 def configure(context):
     context.config("data_path")
+    context.config("2rm_path", "2rm")
 
 def execute(context):
-    df_motorcycles = pd.read_csv("%s/2rm/2rm-detail-diffusion.csv" % context.config("data_path"), sep=";", encoding="cp1252")
+    df_motorcycles = pd.read_csv(
+        "%s/%s/2rm-detail-diffusion.csv" % (context.config("data_path"), context.config("2rm_path")), sep=";", encoding="cp1252")
 
     # some filters
     df_motorcycles = df_motorcycles[df_motorcycles["KMANNUEL"] > 1] # vehicle never used

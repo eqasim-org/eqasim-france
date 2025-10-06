@@ -6,12 +6,13 @@ def configure(context):
 
     if method == "default":
         context.stage("synthesis.vehicles.cars.default", alias = "cars")
-        if with_motorcycles:
-            context.stage("synthesis.vehicles.motorcycles.default", alias = "motorcycles")
+        context.stage("synthesis.vehicles.motorcycles.default", alias = "motorcycles")
     elif method == "fleet_sample":
         context.stage("synthesis.vehicles.cars.fleet_sampling", alias = "cars")
         if with_motorcycles:
             context.stage("synthesis.vehicles.motorcycles.fleet_sampling", alias = "motorcycles")
+        else:
+            context.stage("synthesis.vehicles.motorcycles.default", alias = "motorcycles")
     else:
         raise RuntimeError("Unknown vehicles generation method : %s" % method)
     
@@ -28,7 +29,7 @@ def execute(context):
 
     if with_motorcycles:
         df_motorcycle_types, df_motorcycles = context.stage("motorcycles")
-            
+
         df_vehicles = pd.concat([df_vehicles, df_motorcycles])
         df_types = pd.concat([df_types, df_motorcycle_types])
     

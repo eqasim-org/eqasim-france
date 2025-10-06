@@ -27,8 +27,7 @@ def execute(context):
     df_trips = df_trips.rename(columns = { "person_id": "hts_id" })
     df_trips = pd.merge(df_matching, df_trips, on = "hts_id")
 
-    with_motorcycles = context.config("with_motorcycles")
-    if with_motorcycles:
+    if context.config("with_motorcycles"):
         df_population = context.stage("synthesis.population.enriched")[["person_id", "use_motorcycle"]]
         df_trips["mode"] = df_trips["mode"].cat.add_categories("motorcycle")
         df_trips = pd.merge(df_population, df_trips, on = "person_id")

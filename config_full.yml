@@ -255,5 +255,6 @@ config:
   # projection_year: 2030
 
   # vehicles_method: default # fleet_sample, default
-  # vehicles_path: vehicles
+  # critair_path: critair
+  # 2rm_path: vehicles
   # vehicles_year: 2021
