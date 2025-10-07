@@ -10,7 +10,6 @@ This image is used to run the EQASIM pipeline. It contains the necessary depende
 - Java 17 \
 - Maven \
 - Python 3 & Conda \
-- Osmosis 0.48.3 \
 - Git \
 \
 It also creates a conda environment named 'eqasim' with the dependencies specified in the environment.yml file. \
