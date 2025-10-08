@@ -76,4 +76,4 @@ class CustomFreeChainSolver(rda.RelaxationSolver):
         locations = np.vstack((anchor, locations))
 
         assert len(locations) == len(distances) + 1
-        return dict(valid = True, locations = locations)
+        return dict(valid = True, locations = locations, iterations = None)
