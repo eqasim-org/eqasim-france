@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 LABEL org.opencontainers.image.description="""\
 This image is used to run the EQASIM pipeline. It contains the necessary dependencies to build the project : \
 \
-- Java 17 \
+- Java 21 \
 - Maven \
 - Python 3 & Conda \
 - Osmosis 0.48.3 \
@@ -21,7 +21,7 @@ ARG env_path
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    openjdk-17-jdk \
+    openjdk-21-jdk \
     maven \
     python3 \
     python3-pip \
