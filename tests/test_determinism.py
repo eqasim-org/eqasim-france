@@ -95,8 +95,6 @@ def _test_determinism(index, data_path, tmpdir):
 
     }
 
-    assert False
-
     generated_csv_hashes = {
         file: hash_file("%s/%s" % (output_path, file)) for file in REFERENCE_CSV_HASHES.keys()
     }
@@ -117,8 +115,6 @@ def _test_determinism(index, data_path, tmpdir):
 def test_determinism_matsim(tmpdir):
     data_path = str(tmpdir.mkdir("data"))
     testdata.create(data_path)
-
-    assert False
 
     for index in range(2):
         _test_determinism_matsim(index, data_path, tmpdir)

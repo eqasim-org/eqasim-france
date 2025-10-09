@@ -49,7 +49,7 @@ jobs:
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
-        MKL_CBWR=AUTO pytest tests/test_determinism.py
+        MKL_CBWR=AUTO pytest tests/
 
     - name: Archive failed tests data
       uses: actions/upload-artifact@v4
@@ -58,4 +58,4 @@ jobs:
         name: tests-logs-${{ matrix.os }}-py${{ matrix.python-version }}
         path: |
           /tmp/pytest-of-runner/pytest-0
-        retention-days: 7
+        retention-days: 2
