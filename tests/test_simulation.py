@@ -2,7 +2,7 @@ import synpp
 import os
 from . import testdata
 
-TEST_NOISE = False
+TEST_NOISE = True
 
 def test_simulation(tmpdir):
 
