@@ -22,6 +22,7 @@ def process(context, attractors):
         norm = np.linalg.norm(delta, axis = - 1)
         norm[norm < 1.0] = 125.0 # prevent division by zero
         field += attractor[2] * delta / (norm**3)[..., np.newaxis]
+        context.progress.update()
     
     return field
 
