@@ -65,6 +65,8 @@ def execute(context):
                 for partial in parallel.map(process, batches):
                     field += partial
 
+        fields[activity_type] = field
+
     # output grid parameters
     grid_parameters = {
         "xmin": xmin - grid_margin,
