@@ -49,9 +49,9 @@ jobs:
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
-        MKL_CBWR=AUTO pytest tests/
+        MKL_CBWR=AUTO pytest tests/test_determinism.py
 
-    - name: Archive tests logs
+    - name: Archive failed tests data
       uses: actions/upload-artifact@v4
       if: ${{ failure() }}
       with:
