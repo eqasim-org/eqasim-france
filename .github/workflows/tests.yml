@@ -50,9 +50,9 @@ jobs:
       shell: bash -el {0}
       run: |
         MKL_CBWR=AUTO pytest tests/
-        
+
     - name: Archive tests logs
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       if: ${{ failure() }}
       with:
         name: tests-logs-${{ matrix.os }}-py${{ matrix.python-version }}
