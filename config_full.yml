@@ -190,6 +190,8 @@ config:
   # eqasim_commit: ece4932
   # eqasim_repository: https://github.com/eqasim-org/eqasim-java.git
   # eqasim_path: ""
+  # eqasim_tag:
+  
 
   ## pt2matsim parameters
   # pt2matsim_version: 22.3
@@ -258,3 +260,4 @@ config:
   # critair_path: critair
   # 2rm_path: vehicles
   # vehicles_year: 2021
+  # with_motorcycles: false
