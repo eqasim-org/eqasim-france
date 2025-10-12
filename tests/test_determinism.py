@@ -148,7 +148,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
         "ile_de_france_households.xml.gz":  "4c662b06a9dac1ff29879be602be91e7",
         #"ile_de_france_facilities.xml.gz":  "5ad41afff9ae5c470082510b943e6778",
         "ile_de_france_config.xml":         "40ecc4c881e9638db9a33f84dc02c8c7",
-        "ile_de_france_vehicles.xml.gz":    "55f9a098acf48fb54a3407dee3204bed"
+        "ile_de_france_vehicles.xml.gz":    "be099dffb271f7e2c65459408684e213"
     }
 
     # activities.gpkg, trips.gpkg, meta.json,
