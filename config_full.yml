@@ -102,7 +102,10 @@ config:
   ## list of attributes to enrich the persons from hts data
   ## this only work with hts: mobisurvstd
   ## the list of possible keys can be found here: https://mobisurvstd.github.io/MobiSurvStd/format/persons.html
-  # extra_enriched_attributes: ["detailed_education_level", "detailed_professional_occupation", "work_only_at_home"]
+  # extra_enriched_attributes:
+    # - "detailed_education_level"
+    # - "detailed_professional_occupation"
+    # - "work_only_at_home"
   
   ## Exclude entreprise without any employee (trancheEffectifsEtablissement is NA, "NN" or "00")
   # exclude_no_employee: true
