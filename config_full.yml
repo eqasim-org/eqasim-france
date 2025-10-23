@@ -2,7 +2,7 @@
 ## based on the synpp package
 
 # This is the path to a directory where the pipeline can store temporary data
-working_directory: cache
+working_directory: /path/tp/my/cache
 
 # This section defines which parts of the pipeline should be run
 run:
@@ -63,7 +63,7 @@ config:
   #######################
   
   ## output folder
-  output_path: output
+  output_path: /path/to/my/output
 
   ## output prefix, appended to file names
   # output_prefix: ile_de_france_
