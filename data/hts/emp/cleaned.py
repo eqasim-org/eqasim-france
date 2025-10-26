@@ -28,7 +28,7 @@ MODES_MAP = [
     ("1", "walk"),
     ("2", "car"), #
     ("2.1", "bike"), # bike
-    ("2.2", "bike"), # bike-sharing 
+    ("2.2", "bike"), # bike-sharing
     ("2.4", "car_passenger"), # motorcycle passenger
     ("2.6", "car_passenger"), # same
     ("3", "car"),
@@ -51,11 +51,14 @@ def execute(context):
     df_persons = pd.DataFrame(df_tcm_individu, copy = True).rename(columns={"ident_ind":"IDENT_IND", "ident_men":"IDENT_MEN"})
     df_households = pd.DataFrame(df_tcm_menage, copy = True).rename(columns={ "ident_men":"IDENT_MEN"})
     df_trips = pd.DataFrame(df_deploc, copy = True)
-    
-    # Get weights for persons that actually have trips
-    df_persons = pd.merge(df_persons, df_trips[["IDENT_IND", "POND_JOUR"]].drop_duplicates("IDENT_IND"), on = "IDENT_IND", how = "left")
-    df_persons["is_kish"] = ~df_persons["POND_JOUR"].isna()
-    df_persons["trip_weight"] = df_persons["POND_JOUR"].fillna(0.0)
+
+    # Keep only households / persons that were surveyed during weekday.
+    valid_households = df_individu.loc[
+        ~df_individu["MDATE_jour"].isin(("samedi", "dimanche")), "IDENT_MEN"
+    ]
+    df_persons = df_persons.loc[df_persons["IDENT_MEN"].isin(valid_households)].copy()
+    df_households = df_households.loc[df_households["IDENT_MEN"].isin(valid_households)].copy()
+    df_trips = df_trips.loc[df_trips["IDENT_MEN"].isin(valid_households)].copy()
 
     # Merge in additional information from EMP
     df_households = pd.merge(df_households, df_menage[[
@@ -63,13 +66,19 @@ def execute(context):
     "JNBVEH", "JNBMOTO", "JNBCYCLO"
     ]], on = "IDENT_MEN", how = "left")
 
-    df_persons = pd.merge(df_persons, df_tcm_individu_kish[["AGE", "ident_ind","CS24", "SITUA",
-    ]].rename(columns={"ident_ind":"IDENT_IND"}), on = "IDENT_IND", how = "left")
+    # df_tcm_individu_kish contains data for the persons that were actually surveyed (is_kish=True).
+    df_persons = pd.merge(
+        df_persons,
+        df_tcm_individu_kish.rename(columns={"ident_ind": "IDENT_IND"}),
+        on="IDENT_IND",
+        how="left",
+    )
+    df_persons["is_kish"] = df_persons["IDENT_IND"].isin(df_tcm_individu_kish["ident_ind"])
 
     df_persons = pd.merge(df_persons, df_individu[[
         "IDENT_IND", "BPERMIS", "BCARTABON","ETUDIE","pond_indC"
     ]], on = "IDENT_IND", how = "left")
-    
+
     # Transform original IDs to integer (they are hierarchichal)
     df_persons["emp_person_id"] = df_persons["IDENT_IND"].astype(int)
     df_persons["emp_household_id"] = df_persons["IDENT_MEN"].astype(int)
@@ -84,7 +93,7 @@ def execute(context):
         on = "emp_household_id"
     )
     df_persons["person_id"] = np.arange(len(df_persons))
-    
+
     df_trips = pd.merge(
         df_trips, df_persons[["emp_person_id", "person_id", "household_id"]],
         on = ["emp_person_id"]
@@ -93,6 +102,7 @@ def execute(context):
 
     # Weight
     df_persons["person_weight"] = df_persons["pond_indC"].astype(float)
+    df_persons["trip_weight"] = df_persons["pond_indC"].astype(float)
     df_households["household_weight"] = df_households["pond_menC"].astype(float)
 
     # Clean age
@@ -103,8 +113,15 @@ def execute(context):
     df_persons.loc[df_persons["SEXE"] == 2, "sex"] = "female"
     df_persons["sex"] = df_persons["sex"].astype("category")
 
-    # Household size
-    df_households["household_size"] = df_households["NPERS"]
+    # Compute household size (we do not use the NPERS variable since it is incorrect for 2
+    # householdds).
+    household_size = (
+        df_persons["IDENT_MEN"]
+        .value_counts()
+        .reset_index()
+        .rename(columns={"count": "household_size"})
+    )
+    df_households = pd.merge(df_households, household_size, on="IDENT_MEN", how="left")
 
     # Clean departement
     df_households["departement_id"] = df_households["DEP_RES"].fillna("undefined").astype("category")
@@ -181,22 +198,6 @@ def execute(context):
     df_trips["routed_distance"] = df_trips["MDISTTOT_fin"] * 1000.0
     df_trips["routed_distance"] = df_trips["routed_distance"].fillna(0.0) # This should be just one within Île-de-France
 
-    # Only leave weekday trips
-    f = df_trips["TYPEJOUR"] == 1
-    print("Removing %d trips on weekends" % np.count_nonzero(~f))
-    df_trips = df_trips[f]
-
-    # Only leave one day per person
-    initial_count = len(df_trips)
-
-    df_first_day = df_trips[["person_id","MDATE_jour","MDATE_mois"]].sort_values(
-        by = ["person_id", "MDATE_jour","MDATE_mois"]
-    ).drop_duplicates("person_id")
-    df_trips = pd.merge(df_trips, df_first_day, how = "inner", on = ["person_id", "MDATE_jour","MDATE_mois"])
-
-    final_count = len(df_trips)
-    print("Removed %d trips for non-primary days" % (initial_count - final_count))
-
     # Trip flags
     df_trips = hts.compute_first_last(df_trips)
 
@@ -210,7 +211,12 @@ def execute(context):
     hts.compute_activity_duration(df_trips)
 
     # Add weight to trips
-    df_trips["trip_weight"] = df_trips["POND_JOUR"]
+    df_trips = pd.merge(
+        df_trips,
+        df_persons[["person_id", "trip_weight"]],
+        on="person_id",
+        how="left",
+    )
 
     # Chain length
     df_persons = pd.merge(
@@ -224,10 +230,7 @@ def execute(context):
     df_persons["is_passenger"] = df_persons["person_id"].isin(
         df_trips[df_trips["mode"] == "car_passenger"]["person_id"].unique()
     )
-    
-    #Drop person without right household size 
-    df_persons = df_persons.drop(df_persons[(df_persons["number_of_trips"] == -1) & (df_persons['household_id'].isin([1647,6182,12630]))].index)
-    
+
     # Calculate consumption units
     hts.check_household_size(df_households, df_persons)
     df_households = pd.merge(df_households, hts.calculate_consumption_units(df_persons), on = "household_id")
