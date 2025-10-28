@@ -6,6 +6,7 @@ import numba
 
 import data.hts.egt.cleaned
 import data.hts.entd.cleaned
+from synthesis.population.commutes.utils import calculate_distance_class
 
 import multiprocessing as mp
 
@@ -28,13 +29,17 @@ def configure(context):
     context.config("processes")
     context.config("random_seed")
     context.config("matching_minimum_observations", 20)
-    context.config("matching_attributes", DEFAULT_MATCHING_ATTRIBUTES)
+    matching = context.config("matching_attributes", DEFAULT_MATCHING_ATTRIBUTES)
 
     context.stage("synthesis.population.sampled")
     context.stage("synthesis.population.income.selected")
 
     hts = context.config("hts")
     context.stage("data.hts.selected", alias = "hts")
+    if "distance_class" in matching:
+        context.stage("data.hts.commute_distance")
+
+        context.stage("synthesis.population.commutes.enriched")
 
 @numba.jit(nopython = True) # Already parallelized parallel = True)
 def sample_indices(uniform, cdf, selected_indices):
@@ -193,6 +198,17 @@ def execute(context):
 
         df_target = pd.merge(df_target, df_income)
         df_target["income_class"] = INCOME_CLASS[hts](df_target)
+
+    if "distance_class" in columns:
+        df_commutes = context.stage("synthesis.population.commutes.enriched")[["person_id","household_id", "socioprofessional_class", "distance_class"]]
+        df_commute_distance = context.stage("data.hts.commute_distance")["work"]
+        print(df_commute_distance["commute_distance"].values[:15])
+        df_commute_distance["distance_class"] = calculate_distance_class(df_commute_distance)
+
+        df_target = pd.merge(df_target, df_commutes,on=["person_id","household_id", "socioprofessional_class"])
+        df_source = pd.merge(df_source, df_commute_distance)
+        print(df_target.head())
+        print(df_source.head())
 
     if "any_cars" in columns:
         df_target["any_cars"] = df_target["number_of_vehicles"] > 0

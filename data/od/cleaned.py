@@ -10,7 +10,7 @@ def configure(context):
     context.stage("data.od.raw")
     context.stage("data.spatial.codes")
 
-RENAME = { "COMMUNE" : "origin_id", "DCLT" : "destination_id", "IPONDI" : "weight", "DCETUF" : "destination_id" }
+RENAME = { "COMMUNE" : "origin_id", "DCLT" : "destination_id", "IPONDI" : "weight", "DCETUF" : "destination_id","CS1": "socioprofessional_class" }
 
 def execute(context):
     
@@ -70,7 +70,7 @@ def execute(context):
 
     # Aggregate the flows
     print("Aggregating work ...")
-    df_work = df_work.groupby(["origin_id", "destination_id", "commute_mode"],observed=False)["weight"].sum().reset_index()
+    df_work = df_work.groupby(["origin_id", "destination_id", "commute_mode","socioprofessional_class"],observed=False)["weight"].sum().reset_index()
 
     print("Aggregating education ...")
     df_education = df_education.groupby(["origin_id", "destination_id","age_range"],observed=False)["weight"].sum().reset_index()

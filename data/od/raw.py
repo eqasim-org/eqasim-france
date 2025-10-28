@@ -27,7 +27,8 @@ def execute(context):
             "ARM":"str", 
             "TRANS":"int",
             "IPONDI":"float", 
-            "DCLT":"str"
+            "DCLT":"str",
+            "CS1":"int"
         }
 
         with zipfile.ZipFile(
