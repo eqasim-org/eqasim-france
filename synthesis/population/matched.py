@@ -66,7 +66,7 @@ def statistical_matching(progress, df_source, source_identifier, weight, df_targ
 
     for column in columns:
         unique_values[column] = list(sorted(set(df_source[column].unique()) | set(df_target[column].unique())))
-
+        print(unique_values[column])
     # Generate filters for all columns and values
     source_filters, target_filters = {}, {}
 
@@ -111,7 +111,7 @@ def statistical_matching(progress, df_source, source_identifier, weight, df_targ
                 assigned_indices[f_target] = sample_indices(uniform[f_target], cdf, selected_indices)
                 assigned_levels[f_target] = level
                 unassigned_mask[f_target] = False
-
+                
                 progress.update(np.count_nonzero(f_target))
 
     # Randomly assign unmatched observations
@@ -176,7 +176,7 @@ def execute(context):
     # Load data
     df_source_households, df_source_persons, df_source_trips = context.stage("hts")
     df_source = pd.merge(df_source_persons, df_source_households)
-
+    
     df_target = context.stage("synthesis.population.sampled")
 
     columns = context.config("matching_attributes")
@@ -201,15 +201,15 @@ def execute(context):
 
     if "distance_class" in columns:
         df_commutes = context.stage("synthesis.population.commutes.enriched")[["person_id","household_id", "socioprofessional_class", "distance_class"]]
-        df_commute_distance = context.stage("data.hts.commute_distance")["work"]
-        print(df_commute_distance["commute_distance"].values[:15])
-        df_commute_distance["distance_class"] = calculate_distance_class(df_commute_distance)
+        #df_commute_distance = context.stage("data.hts.commute_distance")["work"]
 
-        df_target = pd.merge(df_target, df_commutes,on=["person_id","household_id", "socioprofessional_class"])
-        df_source = pd.merge(df_source, df_commute_distance)
-        print(df_target.head())
-        print(df_source.head())
-
+        #df_commute_distance.loc[df_commute_distance["employed"],"distance_class"] = calculate_distance_class(df_commute_distance[df_commute_distance["employed"]])
+        df_target = pd.merge(df_target, df_commutes,on=["person_id","household_id", "socioprofessional_class"],how="left")
+        df_target["distance_class"] = df_target["distance_class"].fillna(99)
+        #df_source = pd.merge(df_source,df_commute_distance,how="left")
+        df_source.loc[~(df_source["commute_distance"].isna())&(df_source["employed"]),"distance_class"] = calculate_distance_class(df_source[~(df_source["commute_distance"].isna())&(df_source["employed"])])
+        df_source["distance_class"] = df_source["distance_class"].fillna(99)
+        print(df_source["distance_class"].unique())
     if "any_cars" in columns:
         df_target["any_cars"] = df_target["number_of_vehicles"] > 0
         df_source["any_cars"] = df_source["number_of_vehicles"] > 0

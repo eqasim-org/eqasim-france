@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-DISTANCE_CLASS_BOUNDS = [ 5000, 10000, 20000, 50000, 150000]
+DISTANCE_CLASS_BOUNDS = [ 5000, 10000, 20000, 50000, np.inf]
 
 def clean_work_commutes(df_data,df_distances):
     # calculate distance 

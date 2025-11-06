@@ -28,7 +28,7 @@ def _sample_class_dist(context, args):
     df_selected = df_person[f]
     count = len(df_selected)
 
-    if df_commutes.empty : 
+    if df_commutes.empty: 
         return f,np.empty(count).fill(np.nan)
     
     weight = df_commutes["weight"].values / df_commutes["weight"].sum()

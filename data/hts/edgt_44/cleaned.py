@@ -99,7 +99,7 @@ def execute(context):
 
     # Has subscription (not availabile in EDGT 44)
     df_persons["has_pt_subscription"] = False
-
+    df_persons["commute_distance"] = df_persons["DP13"]
     # Survey respondents 
     # PENQ 1 : fully awnsered the travel questionary section, having a chain or non-movers
     # PENQ 2 : nonrespondent of travel questionary section
