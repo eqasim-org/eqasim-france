@@ -17,11 +17,11 @@ def configure(context):
     context.stage("synthesis.vehicles.vehicles")
 
 PERSON_FIELDS = [
-    "person_id", "household_income", "car_availability", "bike_availability",
+    "person_id", "household_income", "car_availability", "bicycle_availability",
     "census_household_id", "census_person_id", "household_id",
-    "has_license", "has_pt_subscription", "is_passenger",
+    "has_license", "has_pt_subscription",
     "hts_id", "hts_household_id",
-    "age", "employed", "sex"
+    "age", "employed", "sex", "consumption_units"
 ]
 
 ACTIVITY_FIELDS = [
@@ -42,9 +42,10 @@ def add_person(writer, person, activities, trips, vehicles):
     writer.start_attributes()
     writer.add_attribute("householdId", "java.lang.Integer", person[PERSON_FIELDS.index("household_id")])
     writer.add_attribute("householdIncome", "java.lang.Double", person[PERSON_FIELDS.index("household_income")])
+    writer.add_attribute("householdConsumptionUnits", "java.lang.Double", person[PERSON_FIELDS.index("consumption_units")])
 
     writer.add_attribute("carAvailability", "java.lang.String", person[PERSON_FIELDS.index("car_availability")])
-    writer.add_attribute("bikeAvailability", "java.lang.String", person[PERSON_FIELDS.index("bike_availability")])
+    writer.add_attribute("bicycleAvailability", "java.lang.String", person[PERSON_FIELDS.index("bicycle_availability")])
 
     # compatibility with standard MATSim
     if person[PERSON_FIELDS.index("car_availability")] == "none":
@@ -58,8 +59,6 @@ def add_person(writer, person, activities, trips, vehicles):
 
     writer.add_attribute("hasPtSubscription", "java.lang.Boolean", person[PERSON_FIELDS.index("has_pt_subscription")])
     writer.add_attribute("hasLicense", "java.lang.String", writer.yes_no(person[PERSON_FIELDS.index("has_license")]))
-
-    writer.add_attribute("isPassenger", "java.lang.Boolean", person[PERSON_FIELDS.index("is_passenger")])
 
     writer.add_attribute("age", "java.lang.Integer", person[PERSON_FIELDS.index("age")])
     writer.add_attribute("employed", "java.lang.String", person[PERSON_FIELDS.index("employed")])

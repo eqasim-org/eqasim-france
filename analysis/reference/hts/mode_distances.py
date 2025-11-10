@@ -20,7 +20,7 @@ def execute(context):
 
     data = dict()
 
-    for mode in ["car", "car_passenger", "pt", "bike", "walk"]:
+    for mode in ["car", "car_passenger", "pt", "bicycle", "walk"]:
         f = df["mode"] == mode
 
         if np.count_nonzero(f) > 0:

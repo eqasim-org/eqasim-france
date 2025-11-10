@@ -22,7 +22,8 @@ MODES_MAP = {
     "car": [13, 15, 21, 81],
     "car_passenger": [14, 16, 22, 82],
     "pt": [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 51, 52, 53, 61, 71, 72, 73, 91, 92, 94, 95],
-    "bike": [11, 17, 12, 18, 93, 19],
+    "bicycle": [11, 17, 12, 18, 93, 19],
+    # "motorbike": [13, 15],
     "walk": [1, 2] # Actually, 2 is not really explained, but we assume it is walk
 }
 
@@ -90,9 +91,9 @@ def execute(context):
     df_persons["studies"] = df_persons["P7"].isin(["3", "4", "5"])
 
     # Number of vehicles
-    df_households["number_of_vehicles"] = df_households["M6"] + df_households["M5"]
-    df_households["number_of_vehicles"] = df_households["number_of_vehicles"].astype(int)
-    df_households["number_of_bikes"] = df_households["M7"].astype(int)
+    df_households["number_of_cars"] = df_households["M6"].astype(int)
+    df_households["number_of_cars"] += df_households["M5"].astype(int) # motorbikes
+    df_households["number_of_bicycles"] = df_households["M7"].astype(int)
 
     # License
     df_persons["has_license"] = df_persons["P5"] == "1"
@@ -165,11 +166,6 @@ def execute(context):
     df_persons.loc[(df_persons["travel_respondent"] == True) & (df_persons["number_of_trips"].isna()), "number_of_trips"]  = 0
     # Nonrespondent of travel questionary section (number_of_trips = -1)
     df_persons["number_of_trips"] = df_persons["number_of_trips"].fillna(-1).astype(int)
-
-    # Passenger attribute
-    df_persons["is_passenger"] = df_persons["person_id"].isin(
-        df_trips[df_trips["mode"] == "car_passenger"]["person_id"].unique()
-    )
 
     # Calculate consumption units
     hts.check_household_size(df_households, df_persons)

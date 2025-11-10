@@ -15,7 +15,7 @@ def configure(context):
 
 HOUSEHOLD_COLUMNS = {
     "ECH": str, "ZFM": str, # id
-    "M6": int, "M21": int, "M14": int,  # number_of_cars, number_of_bikes, number_of_motorbikes
+    "M6": int, "M21": int, "M14": int,  # number_of_cars, number_of_bicycles, number_of_motorbikes
     "COE0": float # weights
 }
 
