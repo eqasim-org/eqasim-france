@@ -209,7 +209,24 @@ def execute(context):
         #df_source = pd.merge(df_source,df_commute_distance,how="left")
         df_source.loc[~(df_source["commute_distance"].isna())&(df_source["employed"]),"distance_class"] = calculate_distance_class(df_source[~(df_source["commute_distance"].isna())&(df_source["employed"])])
         df_source["distance_class"] = df_source["distance_class"].fillna(99)
-        print(df_source["distance_class"].unique())
+
+        # fill missing commute distance in source for employed persons in hts data
+        # for each socioprofessional_class 1 to 6, apply known distribution of distance class on distance_class 99
+        random = np.random.RandomState(0)
+        for socioprofessional_class in [1, 2, 3, 4, 5, 6]:
+            distance_distribution = df_source[
+                    (df_source["distance_class"]!=99) & (df_source["socioprofessional_class"]==socioprofessional_class)
+                ].groupby(["socioprofessional_class", "distance_class"], as_index=False)["person_weight"].sum()
+            distance_distribution["probability"] =  distance_distribution["person_weight"] / distance_distribution["person_weight"].sum()
+
+            df_source.loc[
+                (df_source["distance_class"]==99) & (df_source["socioprofessional_class"]==socioprofessional_class), "distance_class"
+            ] = random.choice(
+                    distance_distribution["distance_class"],
+                    size=len(df_source[(df_source["distance_class"]==99) & (df_source["socioprofessional_class"]==socioprofessional_class)]),
+                    p=distance_distribution["probability"])
+
+        
     if "any_cars" in columns:
         df_target["any_cars"] = df_target["number_of_vehicles"] > 0
         df_source["any_cars"] = df_source["number_of_vehicles"] > 0
