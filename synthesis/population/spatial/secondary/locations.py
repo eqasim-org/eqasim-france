@@ -19,7 +19,13 @@ def configure(context):
     context.config("random_seed")
     context.config("processes")
 
-    context.config("secloc_maximum_iterations", np.inf)
+    context.config("secondary_activities.maximum_iterations", np.inf)
+
+    chain_solver = context.config("secondary_activities.chain_solver", "default")
+    assert chain_solver in ("default", "force_model")
+
+    if chain_solver == "force_model":
+        context.stage("synthesis.population.spatial.secondary.force_model.force_field")
 
 def prepare_locations(context):
     # Load persons and their primary locations
@@ -72,6 +78,7 @@ def resample_distributions(distributions, factors):
 
 from synthesis.population.spatial.secondary.rda import AssignmentSolver, DiscretizationErrorObjective, GravityChainSolver, AngularTailSolver, GeneralRelaxationSolver
 from synthesis.population.spatial.secondary.components import CustomDistanceSampler, CustomDiscretizationSolver, CandidateIndex, CustomFreeChainSolver
+from synthesis.population.spatial.secondary.force_model.solver import ForceFieldChainSolver
 
 def execute(context):
     # Load trips and primary locations
@@ -82,6 +89,11 @@ def execute(context):
     # Prepare data
     distance_distributions = context.stage("synthesis.population.spatial.secondary.distance_distributions")
     destinations = prepare_destinations(context)
+
+    # Optional data for force model
+    force_field_data = None
+    if context.config("secondary_activities.chain_solver") == "force_model":
+        force_field_data = context.stage("synthesis.population.spatial.secondary.force_model.force_field")
 
     # Resampling for calibration
     resample_distributions(distance_distributions, dict(
@@ -112,7 +124,8 @@ def execute(context):
     with context.progress(label = "Assigning secondary locations to persons", total = number_of_persons):
         with context.parallel(processes = processes, data = dict(
             distance_distributions = distance_distributions,
-            destinations = destinations
+            destinations = destinations,
+            force_field_data = force_field_data
         )) as parallel:
             df_locations, df_convergence = [], []
 
@@ -132,7 +145,7 @@ def process(context, arguments):
 
   # Set up RNG
   random = np.random.RandomState(random_seed)
-  maximum_iterations = context.config("secloc_maximum_iterations")
+  maximum_iterations = context.config("secondary_activities.maximum_iterations")
 
   # Set up discretization solver
   destinations = context.data("destinations")
@@ -147,10 +160,15 @@ def process(context, arguments):
         distributions = distance_distributions)
 
   # Set up relaxation solver; currently, we do not consider tail problems.
-  chain_solver = GravityChainSolver(
-    random = random, eps = 10.0, lateral_deviation = 10.0, alpha = 0.1,
-    maximum_iterations = min(1000, maximum_iterations)
-    )
+  chain_solver_option = context.config("secondary_activities.chain_solver")
+  if chain_solver_option == "default":
+    chain_solver = GravityChainSolver(
+      random = random, eps = 10.0, lateral_deviation = 10.0, alpha = 0.1,
+      maximum_iterations = min(1000, maximum_iterations))
+  elif chain_solver_option == "force_model":
+    grid_parameters, force_field_data = context.data("force_field_data")
+    chain_solver = ForceFieldChainSolver(grid_parameters, force_field_data, 
+      random = random, maximum_iterations = min(1000, maximum_iterations))
 
   tail_solver = AngularTailSolver(random = random)
   free_solver = CustomFreeChainSolver(random, candidate_index)
@@ -188,7 +206,7 @@ def process(context, arguments):
           ))
 
       df_convergence.append((
-          result["valid"], problem["size"]
+          result["valid"], problem["size"], result["iterations"], result["relaxation"]["iterations"], problem["person_id"]
       ))
 
       if problem["person_id"] != last_person_id:
@@ -199,5 +217,5 @@ def process(context, arguments):
   df_locations = gpd.GeoDataFrame(df_locations, crs = crs)
   assert not df_locations["geometry"].isna().any()
 
-  df_convergence = pd.DataFrame.from_records(df_convergence, columns = ["valid", "size"])
+  df_convergence = pd.DataFrame.from_records(df_convergence, columns = ["valid", "size", "assignment_iterations", "relaxation_iterations", "person_id"])
   return df_locations, df_convergence

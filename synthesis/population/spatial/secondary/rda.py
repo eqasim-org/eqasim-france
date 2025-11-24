@@ -114,12 +114,12 @@ class AngularTailSolver(RelaxationSolver):
         if reverse: locations = locations[::-1,:]
 
         assert len(locations) == len(distances)
-        return dict(valid = True, locations = locations)
+        return dict(valid = True, locations = locations, iterations = None)
 
 class GravityChainSolver:
     def __init__(self, random, alpha = 0.3, eps = 1.0, maximum_iterations = 1000, lateral_deviation = None):
-        self.alpha = 0.3
-        self.eps = 1e-2
+        self.alpha = alpha
+        self.eps = eps
         self.maximum_iterations = maximum_iterations
         self.random = random
         self.lateral_deviation = lateral_deviation

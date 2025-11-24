@@ -101,7 +101,8 @@ config:
   # education_location_source: bpe # bpe, addresses
 
   ## max iterations for the secondary location selection algorithm
-  # secloc_maximum_iterations: np.inf
+  # secondary_activities:
+  #   maximum_iterations: .inf
 
   ## Buffer arround buildings to capture adresses in their vicinity
   # home_address_buffer: 5.0
