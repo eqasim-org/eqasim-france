@@ -171,11 +171,11 @@ def create(output_path):
         iris = "CODE_IRIS", municipality = "INSEE_COM"
     ))
 
-    os.mkdir("%s/iris_2023" % output_path)
-    df_iris.to_file("%s/iris_2023/CONTOURS-IRIS.shp" % output_path)
+    os.mkdir("%s/iris_2024" % output_path)
+    df_iris.to_file("%s/iris_2024/CONTOURS-IRIS.gpkg" % output_path,driver="GPKG")
 
-    with py7zr.SevenZipFile("%s/iris_2023/iris.7z" % output_path, "w") as archive:
-        for source in glob.glob("%s/iris_2023/CONTOURS-IRIS.*" % output_path):
+    with py7zr.SevenZipFile("%s/iris_2024/iris.7z" % output_path, "w") as archive:
+        for source in glob.glob("%s/iris_2024/CONTOURS-IRIS.*" % output_path):
             archive.write(source, "LAMB93/{}".format(source.split("/")[-1]))
             os.remove(source)
 
@@ -188,10 +188,10 @@ def create(output_path):
         iris = "CODE_IRIS", municipality = "DEPCOM", department = "DEP", region = "REG"
     ))
 
-    os.mkdir("%s/codes_2023" % output_path)
+    os.mkdir("%s/codes_2024" % output_path)
 
-    with zipfile.ZipFile("%s/codes_2023/reference_IRIS_geo2023.zip" % output_path, "w") as archive:
-        with archive.open("reference_IRIS_geo2023.xlsx", "w") as f:
+    with zipfile.ZipFile("%s/codes_2024/reference_IRIS_geo2024.zip" % output_path, "w") as archive:
+        with archive.open("reference_IRIS_geo2024.xlsx", "w") as f:
             df_codes.to_excel(
                 f, sheet_name = "Emboitements_IRIS",
                 startrow = 5, index = False
@@ -207,14 +207,14 @@ def create(output_path):
     ))
 
     # Set all population to fixed number
-    df_population["P21_POP"] = 120.0
+    df_population["P22_POP"] = 120.0
 
-    os.mkdir("%s/rp_2021" % output_path)
+    os.mkdir("%s/rp_2022" % output_path)
 
-    with zipfile.ZipFile("%s/rp_2021/base-ic-evol-struct-pop-2021_xlsx.zip" % output_path, "w") as archive:
-        with archive.open("base-ic-evol-struct-pop-2021.xlsx", "w") as f:
-            df_population.to_excel(
-                f, sheet_name = "IRIS", startrow = 5, index = False
+    with zipfile.ZipFile("%s/rp_2022/base-ic-evol-struct-pop-2022_csv.zip" % output_path, "w") as archive:
+        with archive.open("base-ic-evol-struct-pop-2022.CSV", "w") as f:
+            df_population.to_csv(
+                f, sep = ";"
             )
 
     # Dataset: BPE
@@ -575,9 +575,7 @@ def create(output_path):
     df_persons = pd.DataFrame.from_records(persons)[columns]
     df_persons.columns = columns
 
-    with zipfile.ZipFile("%s/rp_2021/RP2021_indcvi.zip" % output_path, "w") as archive:
-        with archive.open("FD_INDCVI_2021.csv", "w") as f:
-            df_persons.to_csv(f, sep = ";")
+    df_persons.to_parquet("%s/rp_2022/RP2022_indcvi.parquet" % output_path)
 
     # Data set: commute flows
     print("Creating commute flows ...")
@@ -598,9 +596,7 @@ def create(output_path):
     columns = ["COMMUNE", "DCLT", "TRANS", "ARM", "IPONDI"]
     df_work.columns = columns
 
-    with zipfile.ZipFile("%s/rp_2021/RP2021_mobpro.zip" % output_path, "w") as archive:
-        with archive.open("FD_MOBPRO_2021.csv", "w") as f:
-            df_work.to_csv(f, sep = ";")
+    df_work.to_parquet("%s/rp_2022/RP2022_mobpro.parquet" % output_path)
 
     # ... education
     df_education = pd.DataFrame(dict(
@@ -614,9 +610,7 @@ def create(output_path):
     columns = ["COMMUNE", "DCETUF", "ARM", "IPONDI","AGEREV10"]
     df_education.columns = columns
 
-    with zipfile.ZipFile("%s/rp_2021/RP2021_mobsco.zip" % output_path, "w") as archive:
-        with archive.open("FD_MOBSCO_2021.csv", "w") as f:
-            df_education.to_csv(f, sep = ";")
+    df_education.to_parquet("%s/rp_2022/RP2022_mobsco.parquet" % output_path)
 
     # Data set: BD-TOPO
     print("Creating BD-TOPO ...")

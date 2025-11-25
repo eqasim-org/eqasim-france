@@ -5,31 +5,31 @@ to start with an empty folder, e.g. `/data`. All data sets need to be named
 in a specific way and put into specific sub-directories. The following paragraphs
 describe this process.
 
-## 1) Census data (RP 2021)
+## 1) Census data (RP 2022)
 
 Census data containing the socio-demographic information of people living in
 France is available from INSEE:
 
-- [Census data](https://www.insee.fr/fr/statistiques/8268848)
-- Download the data set in **csv** format by clicking the link under *Individus localisés au canton-ou-ville*.
-- Copy the *zip* file into the folder `data/rp_2021`
+- [Census data](https://www.insee.fr/fr/statistiques/8647104)
+- Download the data set in **parquet** format by clicking the link under *Individus localisés au canton-ou-ville*.
+- Copy the *parquet* file into the folder `data/rp_2022`
 
-## 2) Population totals (RP 2021)
+## 2) Population totals (RP 2022)
 
 We also make use of more aggregated population totals available from INSEE:
 
-- [Population data](https://www.insee.fr/fr/statistiques/8268806)
-- Download the data for *France hors Mayotte* in **xlsx** format.
-- Copy the *zip* file into the folder `data/rp_2021`.
+- [Population data](https://www.insee.fr/fr/statistiques/8647014)
+- Download the data for *France hors Mayotte* in **csv** format.
+- Copy the *zip* file into the folder `data/rp_2022`.
 
-## 3) Origin-destination data (RP-MOBPRO / RP-MOBSCO 2021)
+## 3) Origin-destination data (RP-MOBPRO / RP-MOBSCO 2022)
 
 Origin-destination data is available from INSEE (at two locations):
 
-- [Work origin-destination data](https://www.insee.fr/fr/statistiques/8205896)
-- [Education origin-destination data](https://www.insee.fr/fr/statistiques/8205892)
-- Download the data from the links, both in **csv** format.
-- Copy both *zip* files into the folder `data/rp_2021`.
+- [Work origin-destination data](https://www.insee.fr/fr/statistiques/8589904)
+- [Education origin-destination data](https://www.insee.fr/fr/statistiques/8589945)
+- Download the data from the links, both in **parquet** format.
+- Copy both *parquet* files into the folder `data/rp_2022`.
 
 ## 4) Income tax data (Filosofi 2021)
 
@@ -83,13 +83,13 @@ guarantee that you have exactly the correct format), you should make sure that
 the following files are accessible in the folder `data/egt_2010`:
 `Menages_semaine.csv`, `Personnes_semaine.csv`, `Deplacements_semaine.csv`.
 
-## 7) IRIS zoning system (2023)
+## 7) IRIS zoning system (2024)
 
 The IRIS zoning system is available from IGN:
 
 - [IRIS data](https://geoservices.ign.fr/contoursiris)
-- Download the **2023** edition.
-- Copy the *7z* file into the folder `data/iris_2023`
+- Download the **2024** edition.
+- Copy the *7z* file into the folder `data/iris_2024`
 
 
 ## 8) Zoning registry (2023)
@@ -98,8 +98,8 @@ We make use of a zoning registry by INSEE that establishes a connection between
 the identifiers of IRIS, municipalities, departments and regions:
 
 - [Zoning data](https://www.insee.fr/fr/information/7708995)
-- Download the **2023** edition as a *zip* file.
-- Copy the *zip* file into `data/codes_2023`.
+- Download the **2024** edition as a *zip* file.
+- Copy the *zip* file into `data/codes_2024`.
 
 ## 9) Enterprise census (SIRENE)
 
@@ -154,21 +154,21 @@ The French adresses database is available on data.gouv.fr :
 
 Your folder structure should now have at least the following files:
 
-- `data/rp_2021/RP2021_indcvi.zip`
-- `data/rp_2021/RP2021_mobpro.zip`
-- `data/rp_2021/RP2021_mobsco.zip`
-- `data/rp_2021/base-ic-evol-struct-pop-2021_xlsx.zip`
+- `data/rp_2022/RP2022_indcvi.parquet`
+- `data/rp_2022/RP2022_mobpro.parquet`
+- `data/rp_2022/RP2022_mobsco.parquet`
+- `data/rp_2022/base-ic-evol-struct-pop-2022_csv.zip`
 - `data/filosofi_2021/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip`
 - `data/filosofi_2021/indic-struct-distrib-revenu-2021-SUPRA_XLSX.zip`
-- `data/bpe_2023/BPE23.zip`
+- `data/bpe_2024/BPE24.zip`
 - `data/entd_2008/Q_individu.csv`
 - `data/entd_2008/Q_tcm_individu.csv`
 - `data/entd_2008/Q_menage.csv`
 - `data/entd_2008/Q_tcm_menage_0.csv`
 - `data/entd_2008/K_deploc.csv`
 - `data/entd_2008/Q_ind_lieu_teg.csv`
-- `data/iris_2023/CONTOURS-IRIS_3-0__SHP__FRA_2023-01-01.7z`
-- `data/codes_2023/reference_IRIS_geo2023.zip`
+- `data/iris_2024/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01.7z`
+- `data/codes_2024/reference_IRIS_geo2024.zip`
 - `data/sirene/StockEtablissement_utf8.csv`
 - `data/sirene/StockUniteLegale_utf8.zip`
 - `data/sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.zip`
