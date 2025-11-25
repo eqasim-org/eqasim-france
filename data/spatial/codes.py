@@ -13,8 +13,8 @@ def configure(context):
 
     context.config("regions", [11])
     context.config("departments", [])
-    context.config("codes_path", "codes_2023/reference_IRIS_geo2023.zip")
-    context.config("codes_xlsx", "reference_IRIS_geo2023.xlsx")
+    context.config("codes_path", "codes_2024/reference_IRIS_geo2024.zip")
+    context.config("codes_xlsx", "reference_IRIS_geo2024.xlsx")
 
 def execute(context):
     # Load IRIS registry
@@ -22,13 +22,13 @@ def execute(context):
         "{}/{}".format(context.config("data_path"), context.config("codes_path"))) as archive:
         with archive.open(context.config("codes_xlsx")) as f:
             df_codes = pd.read_excel(f,
-                skiprows = 5, sheet_name = "Emboitements_IRIS"
+                skiprows = 5, sheet_name = "Emboitements_IRIS",dtype={"CODE_IRIS":str,"DEPCOM":str}
             )[["CODE_IRIS", "DEPCOM", "DEP", "REG"]].rename(columns = {
                 "CODE_IRIS": "iris_id",
                 "DEPCOM": "commune_id",
                 "DEP": "departement_id",
                 "REG": "region_id"
-            })
+            }).fillna('0')
 
     df_codes["iris_id"] = df_codes["iris_id"].astype("category")
     df_codes["commune_id"] = df_codes["commune_id"].astype("category")
@@ -48,6 +48,7 @@ def execute(context):
     df_codes["iris_id"] = df_codes["iris_id"].cat.remove_unused_categories()
     df_codes["commune_id"] = df_codes["commune_id"].cat.remove_unused_categories()
     df_codes["departement_id"] = df_codes["departement_id"].cat.remove_unused_categories()
+    #df_codes['id'] = 0
 
     return df_codes
 
