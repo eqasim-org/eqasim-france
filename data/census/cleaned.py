@@ -13,6 +13,8 @@ def configure(context):
     context.stage("data.census.raw")
     context.stage("data.spatial.codes")
 
+    context.config("with_motorcycles", False)
+
     if context.config("use_urban_type", False):
         context.stage("data.spatial.urban_type")
 
@@ -62,7 +64,7 @@ def execute(context):
     df.loc[df["TRANS"] == "1", "commute_mode"] = np.nan
     df.loc[df["TRANS"] == "2", "commute_mode"] = "walk"
     df.loc[df["TRANS"] == "3", "commute_mode"] = "bike"
-    df.loc[df["TRANS"] == "4", "commute_mode"] = "car"
+    df.loc[df["TRANS"] == "4", "commute_mode"] = "motorcycle"
     df.loc[df["TRANS"] == "5", "commute_mode"] = "car"
     df.loc[df["TRANS"] == "6", "commute_mode"] = "pt"
     df.loc[df["TRANS"] == "Z", "commute_mode"] = np.nan
@@ -83,13 +85,21 @@ def execute(context):
     df["studies"] = df["ETUD"] == "1"
 
     # Number of vehicles
-    df["number_of_vehicles"] = df["VOIT"].apply(
+    df["number_of_cars"] = df["VOIT"].apply(
         lambda x: str(x).replace("Z", "0").replace("X", "0")
     ).astype(int)
 
-    df["number_of_vehicles"] += df["DEROU"].apply(
+    df["number_of_motorcycles"] = df["DEROU"].apply(
         lambda x: str(x).replace("U", "0").replace("Z", "0").replace("X", "0")
     ).astype(int)
+    # DEROU is often not known, if commute by motorcycle, at least one motorcycle in the household
+    df["number_of_motorcycles"] += ((df["number_of_motorcycles"] == 0) & (df["commute_mode"] == "motorcycle")).astype(int)
+    df["number_of_vehicles"] = df["number_of_cars"] + df["number_of_motorcycles"]
+
+    # Force the use of motorcycle if commute by motorcycle
+    df["use_motorcycle"] = False
+    if context.config("with_motorcycles"):
+        df.loc[(df["commute_mode"] == "motorcycle"), "use_motorcycle"] = True
 
     # Household size
     df_size = df[["household_id"]].groupby("household_id").size().reset_index(name = "household_size")
@@ -105,9 +115,9 @@ def execute(context):
         "person_id", "household_id", "weight",
         "iris_id", "commune_id", "departement_id",
         "age", "sex", "couple",
-        "commute_mode", "employed",
-        "studies", "number_of_vehicles", "household_size",
-        "consumption_units", "socioprofessional_class"
+        "commute_mode", "employed", "studies",
+        "number_of_cars", "number_of_motorcycles", "number_of_vehicles", "use_motorcycle",
+        "household_size", "consumption_units", "socioprofessional_class"
     ]]
 
     if context.config("use_urban_type"):

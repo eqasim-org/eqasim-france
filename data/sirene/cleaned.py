@@ -77,8 +77,8 @@ def execute(context):
     if len(excess_communes) > 0:
         print("Found excess municipalities in SIRENE data: ", excess_communes)
 
-    if len(excess_communes) > 5:
-        raise RuntimeError("Found more than 5 excess municipalities in SIRENE data")
+    if len(excess_communes) > 6:
+        raise RuntimeError("Found more than 6 excess municipalities in SIRENE data")
 
     df_sirene = df_sirene[["siren", "commune_id", "minimum_employees", "maximum_employees", "ape", "siret"]]
 

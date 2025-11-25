@@ -934,6 +934,8 @@ def create(output_path):
     data.gtfs.utils.write_feed(feed, "%s/gtfs_idf/IDFM-gtfs.zip" % output_path)
 
     # Dataset: Parc automobile
+    print("Creating CRIT'AIR ...")
+
     df_vehicles_region = pd.DataFrame(index = pd.MultiIndex.from_product([
         df["region"].unique(),
         np.arange(20),
@@ -974,15 +976,35 @@ def create(output_path):
         "region": "Code région",
     })
 
-    os.mkdir("%s/vehicles" % output_path)
+    os.mkdir("%s/critair" % output_path)
     
-    with zipfile.ZipFile("%s/vehicles/parc_vp_regions.zip" % output_path, "w") as archive:
+    with zipfile.ZipFile("%s/critair/parc_vp_regions.zip" % output_path, "w") as archive:
         with archive.open("Parc_VP_Regions_2021.xlsx", "w") as f:
             df_vehicles_region.to_excel(f)
 
-    with zipfile.ZipFile("%s/vehicles/parc_vp_communes.zip" % output_path, "w") as archive:
+    with zipfile.ZipFile("%s/critair/parc_vp_communes.zip" % output_path, "w") as archive:
         with archive.open("Parc_VP_Communes_2021.xlsx", "w") as f:
             df_vehicles_commune.to_excel(f)
+
+    # add 2rm dataset
+    print("Creating 2RM dataset ...")
+
+    os.mkdir("%s/2rm" % output_path)
+
+    df_2rm = pd.DataFrame.from_records([dict(
+        IDENTIFIANT = i,
+        PF = random.randint(20),
+        ENDURO = 2,
+        AGEVEHICULE = random.randint(10),
+        MOTEUR = random.randint(3),
+        KMANNUEL = random.randint(1, 10000),
+        AGECONDUCTEUR = random.randint(18, 90),
+        SEXE = random.choice([1, 2]),
+        POIDSVEHICULE = random.randint(100),
+        POIDSCONDUCTEUR = random.randint(100)
+    ) for i in range(1, 300)])
+
+    df_2rm.to_csv("%s/2rm/2rm-detail-diffusion.csv" % output_path, sep = ";", encoding="cp1252", index = False)
 
 if __name__ == "__main__":
     import shutil

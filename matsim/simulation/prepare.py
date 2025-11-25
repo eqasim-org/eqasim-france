@@ -5,6 +5,7 @@ import matsim.runtime.eqasim as eqasim
 
 def configure(context):
     context.config("mode_choice", False)
+    context.config("with_motorcycles", False)
     
     context.stage("matsim.scenario.population")
     context.stage("matsim.scenario.households")
@@ -99,6 +100,16 @@ def execute(context):
         "--prefix", context.config("output_prefix")
     ])
     assert os.path.exists("%s/%sconfig.xml" % (context.path(), context.config("output_prefix")))
+
+    # Optionally, enable motorcycles
+    if context.config("with_motorcycles"):
+        eqasim.run(context, "org.eqasim.core.scenario.config.EditConfig", [
+            "--input-path", "%sconfig.xml" % context.config("output_prefix"),
+            "--output-path", "%sconfig.xml" % context.config("output_prefix"),
+            "--config:qsim.mainMode", "car,motorcycle",
+            "--config:qsim.linkDynamics", "SeepageQ",
+            "--config:qsim.seepMode", "bike,motorcycle"
+    ])
 
     # Add urban attributes to population and network
     # (but only if Paris is included in the scenario!)

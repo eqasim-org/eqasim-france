@@ -78,20 +78,20 @@ def _test_determinism(index, data_path, tmpdir):
     synpp.run(stages, config, working_directory = cache_path)
 
     REFERENCE_CSV_HASHES = {
-        "ile_de_france_activities.csv":     "3bf2f0cb0214f9d243936a608bd48f8b",
-        "ile_de_france_households.csv":     "e1e805d7f2f5af1c058df7432318e596",
-        "ile_de_france_persons.csv":        "14331fd23121c64ba1494a7c1d356702",
-        "ile_de_france_trips.csv":          "153a48d6df448af9b32acfe99221fe90",
-        "ile_de_france_vehicle_types.csv":  "af7578c363ed4e7a23163b4ab554a0e1",
+        "ile_de_france_activities.csv":     "b3d1213692ab0f4458db501630a00009",
+        "ile_de_france_households.csv":     "9b31833091b78385b5c75c9339d2165d",
+        "ile_de_france_persons.csv":        "e290007ce58f120bf09c7edb758b8782",
+        "ile_de_france_trips.csv":          "71cab5fbe6ab058d9ee514ba7d9ba9f4",
+        "ile_de_france_vehicle_types.csv":  "e35f237b15dbd76b1fa137f01f54d1c1",
         "ile_de_france_vehicles.csv":       "1151d40b07c612b62ec40ff40d3e9272",
     }
 
     REFERENCE_GPKG_HASHES = {
       
-        "ile_de_france_activities.gpkg":    "aa86e232f1497a25d6855d47fa5c040a",
-        "ile_de_france_commutes.gpkg":      "a9b648f5083f2fbe7b304b076bc00afa",
+        "ile_de_france_activities.gpkg":    "b6b8dcdc4bdabe0815852beb26ac3a08",
+        "ile_de_france_commutes.gpkg":      "3dab267ba9b90186547d72d70eeb2212",
         "ile_de_france_homes.gpkg":         "930ce972f0f5a6f4307bc741f4cbcc80",
-        "ile_de_france_trips.gpkg":         "511693fa5d6970b43800ead2b4aa2982",
+        "ile_de_france_trips.gpkg":         "c7777836387aaba517f773728b61232c",
 
     }
 
@@ -145,10 +145,10 @@ def _test_determinism_matsim(index, data_path, tmpdir):
     REFERENCE_HASHES = {
         #"ile_de_france_population.xml.gz":  "e1407f918cb92166ebf46ad769d8d085",
         #"ile_de_france_network.xml.gz":     "5f10ec295b49d2bb768451c812955794",
-        "ile_de_france_households.xml.gz":  "42fee71fe5ad5906d76c6cf87a354a3f",
+        "ile_de_france_households.xml.gz":  "4c662b06a9dac1ff29879be602be91e7",
         #"ile_de_france_facilities.xml.gz":  "5ad41afff9ae5c470082510b943e6778",
-        "ile_de_france_config.xml":         "30871dfbbd2b5bf6922be1dfe20ffe73",
-        "ile_de_france_vehicles.xml.gz":    "1f3c393ea69b557798ab0915581e33a4"
+        "ile_de_france_config.xml":         "40ecc4c881e9638db9a33f84dc02c8c7",
+        "ile_de_france_vehicles.xml.gz":    "be099dffb271f7e2c65459408684e213"
     }
 
     # activities.gpkg, trips.gpkg, meta.json,

@@ -18,7 +18,7 @@ def configure(context):
     context.config("sampling_rate")
 
 def execute(context):
-    df_census = context.stage("source").sort_values(by = "household_id").copy()
+    df_census = context.stage("source").sort_values(by = ["household_id", "person_id"]).copy()
 
     sampling_rate = context.config("sampling_rate")
     random = np.random.RandomState(context.config("random_seed"))
