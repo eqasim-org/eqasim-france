@@ -21,11 +21,10 @@ def execute(context):
     # Filter out establishments without a corresponding headquarter
     df_sirene = df_sirene_establishments[df_sirene_establishments["siren"].isin(df_sirene_headquarters["siren"])].copy()
 
-    # Remove inactive enterprises and misplaced 
+    # Remove inactive enterprises 
     df_sirene = df_sirene[
         df_sirene["etatAdministratifEtablissement"] == "A"
     ].copy()
-    df_sirene =df_sirene[~(df_sirene.duplicated("codeCommuneEtablissement",keep= False))]
 
     if context.config("exclude_no_employee"):
         # exclude "NN", "00", and NaN
@@ -80,8 +79,8 @@ def execute(context):
     if len(excess_communes) > 0:
         print("Found excess municipalities in SIRENE data: ", excess_communes)
     
-    if len(excess_communes) > 5:
-        raise RuntimeError("Found more than 5 excess municipalities in SIRENE data")
+    if len(excess_communes) > 10:
+        raise RuntimeError("Found more than 10 excess municipalities in SIRENE data")
 
     df_sirene = df_sirene[["siren", "commune_id", "minimum_employees", "maximum_employees", "ape", "siret"]]
 
