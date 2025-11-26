@@ -554,7 +554,7 @@ def create(output_path):
             persons.append(dict(
                 CANTVILLE = "ABCE", NUMMI = household_id,
                 AGED = "%03d" % random.randint(90), COUPLE = random.choice([1, 2]),
-                CS1 = random.randint(9),
+                GS = random.randint(9),
                 DEPT = department, IRIS = iris, REGION = region, ETUD = random.choice([1, 2]),
                 ILETUD = 4 if department != destination_department else 0,
                 ILT = 4 if department != destination_department else 0,
