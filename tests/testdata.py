@@ -242,10 +242,8 @@ def create(output_path):
 
     os.mkdir("%s/bpe_2024" % output_path)
 
-    with zipfile.ZipFile("%s/bpe_2024/BPE24.zip" % output_path, "w") as archive:
-        with archive.open("BPE24.csv", "w") as f:
-            df_selection[columns].to_csv(f,
-                sep = ";", index = False)
+    df_selection[columns].to_parquet("%s/bpe_2024/BPE24.parquet" % output_path,
+             index = False)
 
     # Dataset: Tax data
     # Required attributes: CODGEO, D115, ..., D915
