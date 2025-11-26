@@ -168,7 +168,7 @@ def create(output_path):
 
     df_iris = df.copy()
     df_iris = df_iris[["iris", "municipality", "geometry"]].rename(columns = dict(
-        iris = "CODE_IRIS", municipality = "INSEE_COM"
+        iris = "code_iris", municipality = "code_insee"
     ))
 
     os.mkdir("%s/iris_2024" % output_path)
@@ -565,7 +565,7 @@ def create(output_path):
             ))
 
     columns = [
-        "CANTVILLE", "NUMMI", "AGED", "COUPLE", "CS1", "DEPT", "IRIS", "REGION",
+        "CANTVILLE", "NUMMI", "AGED", "COUPLE", "GS", "DEPT", "IRIS", "REGION",
         "ETUD", "ILETUD", "ILT", "IPONDI",
         "SEXE", "TACT", "TRANS", "VOIT", "DEROU"
     ]
