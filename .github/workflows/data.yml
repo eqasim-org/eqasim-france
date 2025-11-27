@@ -9,14 +9,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: actions/cache@v4
       with:
         path: ~/conda_pkgs_dir
         key: ubuntu-latest-conda-${{ hashFiles('environment.yml') }}
     - uses: conda-incubator/setup-miniconda@v3
       with:
-        activate-environment: "ile-de-france"
+        activate-environment: "eqasim"
         environment-file: environment.yml
         python-version: "3.13"
         channels: conda-forge

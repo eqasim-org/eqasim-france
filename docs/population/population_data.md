@@ -1,9 +1,12 @@
 # Gathering the data
 
-To create the scenario, a couple of data sources must be collected. It is best
-to start with an empty folder, e.g. `/data`. All data sets need to be named
-in a specific way and put into specific sub-directories. The following paragraphs
-describe this process.
+To create the scenario, synthetic population, a couple of data sources must be collected. It is best to start with an empty folder that can be located anywhere in your file system. In the following, the folder will be denoted as `/data`. All downloaded data sets need to be put into specific sub-directories. The following paragraphs describe this process.
+
+:::{tip} 
+
+**Mixing code and data:** Often, when people clone the eqasim repository, they see the `data` folder and put the data sets there. This is not the intended procedure: the cloned repository only contains the processing code that should be separated from where the data is located. See [Running the pipeline](population_execution.md) for a common project directory structure.
+
+:::
 
 ## 1) Census data (RP 2022)
 
