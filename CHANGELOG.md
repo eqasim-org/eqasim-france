@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.4.0](https://github.com/eqasim-org/ile-de-france/compare/v1.3.0...v1.4.0) (2025-12-12)
+
+
+### Features
+
+* add carAvail attribute for standard MATSim ([#315](https://github.com/eqasim-org/ile-de-france/issues/315)) ([a639bb4](https://github.com/eqasim-org/ile-de-france/commit/a639bb456d8c75fcbc0332def917ae539816845b))
+* Add docker and apptainer containers ([#274](https://github.com/eqasim-org/ile-de-france/issues/274)) ([e70a297](https://github.com/eqasim-org/ile-de-france/commit/e70a29701ea6da004526dc18cea13c3c5ca8f401))
+* **data:** support emp 2019  ([#298](https://github.com/eqasim-org/ile-de-france/issues/298)) ([e280e27](https://github.com/eqasim-org/ile-de-france/commit/e280e27ea7dcfffee7ab160567886838300176c0))
+* **data:** use parquet format for SIRENE data ([#348](https://github.com/eqasim-org/ile-de-france/issues/348)) ([8962295](https://github.com/eqasim-org/ile-de-france/commit/896229550572a873aacea993de854d0b25c20def))
+* Full MATSim run, Scenario Cutter and Acoustic maps ([#337](https://github.com/eqasim-org/ile-de-france/issues/337)) ([5435ab6](https://github.com/eqasim-org/ile-de-france/commit/5435ab64a6f25da2a2ec908a6123d0414572bae6))
+* handle GTFS without location types ([#309](https://github.com/eqasim-org/ile-de-france/issues/309)) ([4a372d0](https://github.com/eqasim-org/ile-de-france/commit/4a372d09ec56e0c12e1d0cd45cc4ce3420bcd275))
+* make use of osmium instead of osmosis ([#321](https://github.com/eqasim-org/ile-de-france/issues/321)) ([2c985ae](https://github.com/eqasim-org/ile-de-france/commit/2c985ae7f86e2fc372ecc49bfc14db4c78df6006))
+* optionally use local maven cache ([#316](https://github.com/eqasim-org/ile-de-france/issues/316)) ([f84b295](https://github.com/eqasim-org/ile-de-france/commit/f84b295c5d0ef4e9377d878dbcbedee841f7ae86))
+* update projections functionality by department ([#270](https://github.com/eqasim-org/ile-de-france/issues/270)) ([6e17a25](https://github.com/eqasim-org/ile-de-france/commit/6e17a25f4c49fd41c12e5a584c6746dddf313936))
+
+
+### Bug Fixes
+
+* **analysis:** correct and improve population analysis ([#299](https://github.com/eqasim-org/ile-de-france/issues/299)) ([de8d1a2](https://github.com/eqasim-org/ile-de-france/commit/de8d1a2007f43dc7d559e3c98cd688bac05660a0))
+* avoid devalidation of gtfs stage ([#387](https://github.com/eqasim-org/ile-de-france/issues/387)) ([299e757](https://github.com/eqasim-org/ile-de-france/commit/299e7571b8cf3ccba4e3fc6f42a3dd2f27a7f019))
+* **data:** update BPE to 2024 version ([#347](https://github.com/eqasim-org/ile-de-france/issues/347)) ([20664aa](https://github.com/eqasim-org/ile-de-france/commit/20664aab65d9b6150566dd8eff436db93ba449f3))
+* improve schools numbers ([#300](https://github.com/eqasim-org/ile-de-france/issues/300)) ([dd7d779](https://github.com/eqasim-org/ile-de-france/commit/dd7d7790e0ab7ecede5cb6a7efef5f9bd59d81ad))
+* **vehicles:** use valid hbefa keys for vehicle types ([#343](https://github.com/eqasim-org/ile-de-france/issues/343)) ([791369c](https://github.com/eqasim-org/ile-de-france/commit/791369c6fe1d49ff2edbd3ac5312490e89ca8f63))
+
 ## [1.3.0](https://github.com/eqasim-org/ile-de-france/compare/v1.2.0...v1.3.0) (2025-01-06)
 
 
