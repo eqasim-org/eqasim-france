@@ -40,13 +40,18 @@ config:
   #################################
 
   ## Define whether to use ENTD or EGT as the HTS
-  hts: entd # entd, egt, edgt_lyon, edgt_44
+  hts: entd # entd, egt, edgt_lyon, edgt_44, mobisurvstd
 
   ## Whether to filter people going outside of the area and other filters
   # filter_hts: true
 
   ## if selected, chose the source for edgt_lyon
   # edgt_lyon_source: unchosen # unchosen, adisp, cerema
+
+  ## path to the zipfile / directory where the HTS to be read by MobiSurvStd is located
+  ## path is relative to `data_path`
+  # mobisurvstd:
+  #   path: my_survey.zip
 
   ##################
   # Zone selection #
@@ -93,6 +98,14 @@ config:
   # use_urban_type: true
   # urban_type_path: urban_type/UU2020_au_01-01-2023.zip
   # matching_attributes: ["urban_type", "*default*"]
+  
+  ## list of attributes to enrich the persons from hts data
+  ## this only work with hts: mobisurvstd
+  ## the list of possible keys can be found here: https://mobisurvstd.github.io/MobiSurvStd/format/persons.html
+  # extra_enriched_attributes:
+    # - "detailed_education_level"
+    # - "detailed_professional_occupation"
+    # - "work_only_at_home"
   
   ## Exclude entreprise without any employee (trancheEffectifsEtablissement is NA, "NN" or "00")
   # exclude_no_employee: true
