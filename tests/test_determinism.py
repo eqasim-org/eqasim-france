@@ -54,6 +54,8 @@ def test_determinism(tmpdir):
     for index in range(2):
         _test_determinism(index, data_path, tmpdir)
 
+import shutil
+
 def _test_determinism(index, data_path, tmpdir):
     print("Running index %d" % index)
 
@@ -107,6 +109,10 @@ def _test_determinism(index, data_path, tmpdir):
     print("Generated GPKG hashes: ", generated_gpkg_hashes)
 
     for file in REFERENCE_CSV_HASHES.keys():
+        if REFERENCE_CSV_HASHES[file] != generated_csv_hashes[file]:
+            os.makedirs("/tmp/eqasim", exist_ok = True)
+            shutil.copy("%s/%s" % (output_path, file), "/tmp/eqasim")
+
         assert REFERENCE_CSV_HASHES[file] == generated_csv_hashes[file]
 
     for file in REFERENCE_GPKG_HASHES.keys():

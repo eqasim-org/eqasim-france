@@ -51,11 +51,20 @@ jobs:
       run: |
         MKL_CBWR=AUTO pytest tests/
 
-    - name: Archive failed tests data
+    - name: Archive failed tests logs
       uses: actions/upload-artifact@v6
       if: ${{ failure() }}
       with:
         name: tests-logs-${{ matrix.os }}-py${{ matrix.python-version }}
         path: |
           /tmp/pytest-of-runner/pytest-0
-        retention-days: 2
+        retention-days: 1
+
+    - name: Archive failed tests data
+      uses: actions/upload-artifact@v6
+      if: ${{ failure() }}
+      with:
+        name: tests-data-${{ matrix.os }}-py${{ matrix.python-version }}
+        path: |
+          /tmp/eqasim
+        retention-days: 1
