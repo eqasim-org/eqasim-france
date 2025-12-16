@@ -2,7 +2,7 @@ name: Deploy documentation
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "main" ]
 
   workflow_dispatch:
 
