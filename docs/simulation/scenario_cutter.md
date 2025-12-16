@@ -2,7 +2,7 @@
 
 The Scenario Cutter allows you to define and use a specific region of interest, such as a city or metropolitan area area for further detailed simulation or analysis. This is by providing a custom boundary (cutter) file.
 
-The code is called from the [eqasim-java](https://github.com/eqasim-org/eqasim-java) project, here: [RunScenariojava](https://github.com/eqasim-org/eqasim-java/blob/develop/core/src/main/java/org/eqasim/core/scenario/cutter/RunScenariojava). 
+The code is called from the [eqasim-java](https://github.com/eqasim-org/eqasim-java) project, here: [RunScenariojava](https://github.com/eqasim-org/eqasim-java/blob/main/core/src/main/java/org/eqasim/core/scenario/cutter/RunScenariojava). 
 
 ## Configuration Options
 
