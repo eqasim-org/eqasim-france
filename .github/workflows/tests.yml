@@ -2,9 +2,9 @@ name: Unit and integration tests
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ develop ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
       with:
         distribution: "corretto"
         java-version: "17"
-    - uses: actions/cache@v4
+    - uses: actions/cache@v5
       with:
         path: ~/conda_pkgs_dir
         key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
@@ -52,7 +52,7 @@ jobs:
         MKL_CBWR=AUTO pytest tests/
 
     - name: Archive failed tests data
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: ${{ failure() }}
       with:
         name: tests-logs-${{ matrix.os }}-py${{ matrix.python-version }}
