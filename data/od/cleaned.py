@@ -47,7 +47,7 @@ def execute(context):
         raise RuntimeError("Found additional communes: %s" % excess_communes)
 
     # Clean commute mode for work
-    df_work["commute_mode"] = np.nan
+    df_work["commute_mode"] = None
     df_work.loc[df_work["TRANS"] == 1, "commute_mode"] = "no transport"
     df_work.loc[df_work["TRANS"] == 2, "commute_mode"] = "walk"
     df_work.loc[df_work["TRANS"] == 3, "commute_mode"] = "bike"
@@ -59,7 +59,8 @@ def execute(context):
     assert not np.any(df_work["commute_mode"].isna())
 
     # Clean age range for education
-    df_education["age_range"] = np.nan
+    df_education["AGEREV10"] = df_education["AGEREV10"].astype(int)
+    df_education["age_range"] = None
     df_education.loc[df_education["AGEREV10"] <= 6, "age_range"] = "primary_school"
     df_education.loc[df_education["AGEREV10"] == 11, "age_range"] = "middle_school"
     df_education.loc[df_education["AGEREV10"] == 15, "age_range"] = "high_school"
