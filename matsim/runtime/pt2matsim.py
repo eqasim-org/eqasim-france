@@ -10,8 +10,8 @@ def configure(context):
     context.stage("matsim.runtime.java")
     context.stage("matsim.runtime.maven")
 
-    context.config("pt2matsim_version", "22.3")
-    context.config("pt2matsim_branch", "v22.3")
+    context.config("pt2matsim_version", "25.12")
+    context.config("pt2matsim_branch", "v25.12")
 
 def run(context, command, arguments, vm_arguments=[]):
     # Make sure there is a dependency
