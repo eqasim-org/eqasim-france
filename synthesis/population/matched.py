@@ -53,8 +53,8 @@ def statistical_matching(progress, df_source, source_identifier, weight, df_targ
     df_target = df_target[[target_identifier] + columns].copy()
 
     # Sort data frames
-    df_source = df_source.sort_values(by = columns)
-    df_target = df_target.sort_values(by = columns)
+    df_source = df_source.sort_values(by = columns + [source_identifier, weight])
+    df_target = df_target.sort_values(by = columns + [target_identifier])
 
     # Find unique values for all columns
     unique_values = {}
