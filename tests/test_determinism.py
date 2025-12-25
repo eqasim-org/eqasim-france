@@ -23,10 +23,10 @@ class HashManager:
         })
 
         if valid:
-            print("Hash:", " OK", name, expected)
+            print("HashManager :: ", " OK", name, expected)
 
         else:
-            print("Hash:", "NOK", name, "ac:" + actual, "!=", "ex:" + expected)
+            print("HashManager :: ", "NOK", name, "ac:" + actual, "!=", "ex:" + expected)
 
     def finish(self):
         errors = [
@@ -115,22 +115,22 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.csv",
         "{}/ile_de_france_households.csv".format(output_path),
-        "e1e805d7f2f5af1c058df7432318e596")
+        "977a0ec2752e207e5ae89146e74657fd")
     
     manager.check(
         "ile_de_france_persons.csv",
         "{}/ile_de_france_persons.csv".format(output_path),
-        "14331fd23121c64ba1494a7c1d356702")
+        "0db38397d84d4dc51ed8531e7fef2cd8")
     
     manager.check(
         "ile_de_france_activities.csv",
         "{}/ile_de_france_activities.csv".format(output_path),
-        "3bf2f0cb0214f9d243936a608bd48f8b")
+        "bdc44d328608622f4cf320f6483b7d70")
     
     manager.check(
         "ile_de_france_trips.csv",
         "{}/ile_de_france_trips.csv".format(output_path),
-        "153a48d6df448af9b32acfe99221fe90")
+        "ab331a1acccb69cdcdbcf443f4e323d7")
     
     manager.check(
         "ile_de_france_vehicle_types.csv",
@@ -145,22 +145,22 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_activities.gpkg",
         "{}/ile_de_france_activities.gpkg".format(output_path),
-        "aa86e232f1497a25d6855d47fa5c040a")
+        "945d95a5e31a490602967d0417fd8085")
 
     manager.check(
         "ile_de_france_commutes.gpkg",
         "{}/ile_de_france_commutes.gpkg".format(output_path),
-        "a9b648f5083f2fbe7b304b076bc00afa")
+        "318b0854644d0832405ae484f51bc3c6")
     
     manager.check(
         "ile_de_france_homes.gpkg",
         "{}/ile_de_france_homes.gpkg".format(output_path),
-        "930ce972f0f5a6f4307bc741f4cbcc80")
+        "8dc69f257ad29c6b87ba90f16bf5f9eb")
     
     manager.check(
         "ile_de_france_trips.gpkg",
         "{}/ile_de_france_trips.gpkg".format(output_path),
-        "511693fa5d6970b43800ead2b4aa2982")
+        "3f9881af25ef5bda2ea9f67a3a715858")
 
     manager.finish()
 
@@ -204,7 +204,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.xml.gz",
         "{}/ile_de_france_households.xml.gz".format(output_path),
-        "42fee71fe5ad5906d76c6cf87a354a3f")
+        "8b1486a9a3c10c68885115042133c744")
     
     manager.check(
         "ile_de_france_vehicles.xml.gz",
