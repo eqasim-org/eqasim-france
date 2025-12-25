@@ -21,12 +21,12 @@ def execute(context):
     df_census = context.stage("source").sort_values(by = "household_id").copy()
 
     sampling_rate = context.config("sampling_rate")
-    random = np.random.RandomState(context.config("random_seed"))
+    random = np.random.default_rng(context.config("random_seed"))
 
     # Perform stochastic rounding for the population (and scale weights)
     df_rounding = df_census[["household_id", "weight", "household_size"]].drop_duplicates("household_id")
     df_rounding["multiplicator"] = np.floor(df_rounding["weight"])
-    df_rounding["multiplicator"] += random.random_sample(len(df_rounding)) <= (df_rounding["weight"] - df_rounding["multiplicator"])
+    df_rounding["multiplicator"] += random.random(len(df_rounding)) <= (df_rounding["weight"] - df_rounding["multiplicator"])
     df_rounding["multiplicator"] = df_rounding["multiplicator"].astype(int)
 
     # Multiply households (use same multiplicator for all household members)
@@ -53,7 +53,7 @@ def execute(context):
     df_census.loc[:, "household_id"] = np.repeat(np.arange(household_count), household_sizes)
 
     # Select sample from 100% population
-    selector = random.random_sample(household_count) < sampling_rate
+    selector = random.random(household_count) < sampling_rate
     selector = np.repeat(selector, household_sizes)
     df_census = df_census[selector]
 
