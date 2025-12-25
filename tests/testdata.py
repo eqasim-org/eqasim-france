@@ -70,7 +70,7 @@ def create(output_path):
     ADDRESS_OBSERVATIONS = 2000
     SIRENE_OBSERVATIONS = 2000
 
-    random = np.random.RandomState(0)
+    random = np.random.default_rng(1000)
 
     REGION_LENGTH = 50 * 1e3
     DEPARTMENT_LENGTH = 25 * 1e3
@@ -225,14 +225,14 @@ def create(output_path):
     observations = BPE_OBSERVATIONS
     categories = np.array(["A", "B", "C", "D", "E", "F", "G"])
 
-    df_selection = df.iloc[random.randint(0, len(df), size = observations)].copy()
+    df_selection = df.iloc[random.integers(0, len(df), size = observations)].copy()
     df_selection["CAPACITE"] = 500
     df_selection["DCIRIS"] = df_selection["iris"]
     df_selection["DEPCOM"] = df_selection["municipality"]
     df_selection["DEP"] = df_selection["department"]
     df_selection["LAMBERT_X"] = df_selection["geometry"].centroid.x
     df_selection["LAMBERT_Y"] = df_selection["geometry"].centroid.y
-    df_selection["TYPEQU"] = categories[random.randint(0, len(categories), size = len(df_selection))]
+    df_selection["TYPEQU"] = categories[random.integers(0, len(categories), size = len(df_selection))]
 
     # Deliberately set coordinates for some to NaN
     df_selection.iloc[-10:, df_selection.columns.get_loc("LAMBERT_X")] = np.nan
@@ -351,8 +351,8 @@ def create(output_path):
 
         data["Q_MENAGE"].append(dict(
             DEP = department, idENT_MEN = household_id, PONDV1 = 1.0,
-            RG = region, V1_JNBVELOADT = random.randint(4),
-            V1_JNBVEH = random.randint(3), V1_JNBMOTO = random.randint(2),
+            RG = region, V1_JNBVELOADT = random.integers(4),
+            V1_JNBVEH = random.integers(3), V1_JNBMOTO = random.integers(2),
             V1_JNBCYCLO = 0
         ))
 
@@ -369,7 +369,7 @@ def create(output_path):
 
         for person_index in range(HTS_HOUSEHOLD_MEMBERS):
             person_id = household_id * 1000 + person_index
-            studies = random.random_sample() < 0.3
+            studies = random.random() < 0.3
 
             data["Q_INDIVIDU"].append(dict(
                 IDENT_IND = person_id, idENT_MEN = household_id,
@@ -379,8 +379,8 @@ def create(output_path):
             ))
 
             data["Q_TCM_INDIVIDU"].append(dict(
-                AGE = random.randint(90), SEXE = random.choice([1, 2]),
-                CS24 = random.randint(8) * 10, DEP = department,
+                AGE = random.integers(90), SEXE = random.choice([1, 2]),
+                CS24 = random.integers(8) * 10, DEP = department,
                 ETUDES = 1 if studies else 2, IDENT_IND = person_id,
                 IDENT_MEN = household_id, PONDV1 = 1.0,
                 SITUA = random.choice([1, 2])
@@ -461,20 +461,20 @@ def create(output_path):
 
         data["households"].append(dict(
             RESDEP = department, NQUEST = household_id, POIDSM = 1.0,
-            NB_VELO = random.randint(3), NB_VD = random.randint(2),
+            NB_VELO = random.integers(3), NB_VD = random.integers(2),
             RESCOMM = municipality, NB_2RM = 0,
-            MNP = 3, REVENU = random.randint(12)
+            MNP = 3, REVENU = random.integers(12)
         ))
 
         for person_id in range(1, HTS_HOUSEHOLD_MEMBERS + 1):
-            studies = random.random_sample() < 0.3
+            studies = random.random() < 0.3
 
             data["persons"].append(dict(
                 RESDEP = department, NP = person_id, POIDSP = 1.0,
                 NQUEST = household_id, SEXE = random.choice([1, 2]),
-                AGE = random.randint(90), PERMVP = random.choice([1, 2]),
+                AGE = random.integers(90), PERMVP = random.choice([1, 2]),
                 ABONTC = random.choice([1, 2]), OCCP = 3 if studies else 2,
-                PERM2RM = random.choice([1, 2]), NBDEPL = 2, CS8 = random.randint(9)
+                PERM2RM = random.choice([1, 2]), NBDEPL = 2, CS8 = random.integers(9)
             ))
 
             home_department = department
@@ -541,12 +541,12 @@ def create(output_path):
     for household_index in range(CENSUS_HOUSEHOLDS):
         household_id = household_index
 
-        iris = df["iris"].iloc[random.randint(len(df))]
+        iris = df["iris"].iloc[random.integers(len(df))]
         department = iris[:2]
         if iris.endswith("0000"):
             iris = iris[:-4] + "XXXX"
 
-        if random.random_sample() < 0.1: # For some, commune is not known
+        if random.random() < 0.1: # For some, commune is not known
             iris = "ZZZZZZZZZ"
 
         destination_municipality = random.choice(df["municipality"].unique())
@@ -555,15 +555,15 @@ def create(output_path):
         for person_index in range(CENSUS_HOUSEHOLD_MEMBERS):
             persons.append(dict(
                 CANTVILLE = "ABCE", NUMMI = household_id,
-                AGED = "%03d" % random.randint(90), COUPLE = random.choice([1, 2]),
-                CS1 = random.randint(9),
+                AGED = "%03d" % random.integers(90), COUPLE = random.choice([1, 2]),
+                CS1 = random.integers(9),
                 DEPT = department, IRIS = iris, REGION = region, ETUD = random.choice([1, 2]),
                 ILETUD = 4 if department != destination_department else 0,
                 ILT = 4 if department != destination_department else 0,
                 IPONDI = float(1.0),
                 SEXE = random.choice([1, 2]),
                 TACT = random.choice([1, 2]),
-                TRANS = 4, VOIT = random.randint(3), DEROU = random.randint(2)
+                TRANS = 4, VOIT = random.integers(3), DEROU = random.integers(2)
             ))
 
     columns = [
@@ -587,9 +587,9 @@ def create(output_path):
 
     # ... work
     df_work = pd.DataFrame(dict(
-        COMMUNE = municipalities[random.randint(0, len(municipalities), observations)],
-        DCLT = municipalities[random.randint(0, len(municipalities), observations)],
-        TRANS = random.randint(1, 6, size = (observations,))
+        COMMUNE = municipalities[random.integers(0, len(municipalities), observations)],
+        DCLT = municipalities[random.integers(0, len(municipalities), observations)],
+        TRANS = random.integers(1, 6, size = (observations,))
     ))
 
     df_work["ARM"] = "Z"
@@ -604,8 +604,8 @@ def create(output_path):
 
     # ... education
     df_education = pd.DataFrame(dict(
-        COMMUNE = municipalities[random.randint(0, len(municipalities), observations)],
-        DCETUF = municipalities[random.randint(0, len(municipalities), observations)]
+        COMMUNE = municipalities[random.integers(0, len(municipalities), observations)],
+        DCETUF = municipalities[random.integers(0, len(municipalities), observations)]
     ))
     df_education["ARM"] = "Z"
     df_education["IPONDI"] = 1.0
@@ -623,20 +623,20 @@ def create(output_path):
 
     observations = ADDRESS_OBSERVATIONS
 
-    df_selection = df_iris.iloc[random.randint(0, len(df_iris), observations)]
+    df_selection = df_iris.iloc[random.integers(0, len(df_iris), observations)]
 
     x = df_selection["geometry"].centroid.x.values
     y = df_selection["geometry"].centroid.y.values
-    z = random.randint(100, 400, observations) # Not used but keeping unit test hashes constant
+    z = random.integers(100, 400, observations) # Not used but keeping unit test hashes constant
 
     ids = [
-        "BATIMENT{:016d}".format(n) for n in random.randint(1000, 1000000, observations) 
+        "BATIMENT{:016d}".format(n) for n in random.integers(1000, 1000000, observations) 
     ]
     
     ids[0] = ids[1] # setting multiple adresses for 1 building usecase
 
     df_bdtopo = gpd.GeoDataFrame({
-        "nombre_de_logements": random.randint(0, 10, observations),
+        "nombre_de_logements": random.integers(0, 10, observations),
         "cleabs": ids,
         "geometry": [
             geo.Point(x, y) for x, y in zip(x, y)
@@ -669,14 +669,14 @@ def create(output_path):
 
     observations = ADDRESS_OBSERVATIONS
 
-    df_selection = df_iris.iloc[random.randint(0, len(df_iris), observations)]
+    df_selection = df_iris.iloc[random.integers(0, len(df_iris), observations)]
 
     x = df_selection["geometry"].centroid.x.values
     y = df_selection["geometry"].centroid.y.values
     municipality = df["municipality"].unique()
 
     df_ban = pd.DataFrame({
-        "code_insee": municipality[random.randint(0, len(municipality), observations)],
+        "code_insee": municipality[random.integers(0, len(municipality), observations)],
         "x": x,
         "y": y})
 
@@ -691,12 +691,12 @@ def create(output_path):
 
     observations = SIRENE_OBSERVATIONS
 
-    identifiers = random.randint(0, 99999999, observations)
+    identifiers = random.integers(0, 99999999, observations)
 
     df_sirene = pd.DataFrame({
         "siren": identifiers,
         "siret": identifiers,
-        "codeCommuneEtablissement": municipalities[random.randint(0, len(municipalities), observations)],
+        "codeCommuneEtablissement": municipalities[random.integers(0, len(municipalities), observations)],
         "etatAdministratifEtablissement": "A"
     })
 
@@ -716,11 +716,11 @@ def create(output_path):
     # Data set: SIRENE GEOLOCATION
     print("Creating SIRENE GEOLOCATION...")
 
-    df_selection = df_iris.iloc[random.randint(0, len(df_iris), observations)]
+    df_selection = df_iris.iloc[random.integers(0, len(df_iris), observations)]
     x = df_selection["geometry"].centroid.x.values
     y = df_selection["geometry"].centroid.y.values
 
-    codes_com =  df_codes["DEPCOM"].iloc[random.randint(0, len(df_iris), observations)]
+    codes_com =  df_codes["DEPCOM"].iloc[random.integers(0, len(df_iris), observations)]
 
     df_sirene_geoloc = pd.DataFrame({
         "siret": identifiers,

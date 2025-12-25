@@ -82,7 +82,7 @@ class GeneralRelaxationSolver(RelaxationSolver):
             return self.chain_solver.solve(problem, distances)
 
 def sample_tail(random, anchor, distances):
-    angles = random.random_sample(len(distances)) * 2.0 * np.pi
+    angles = random.random(len(distances)) * 2.0 * np.pi
     offsets = np.vstack([np.cos(angles), np.sin(angles)]).T * distances[:, np.newaxis]
 
     locations = [anchor]
@@ -161,7 +161,7 @@ class GravityChainSolver:
         else:
             A = 0.5 * ( distances[0]**2 - distances[1]**2 + direct_distance**2 ) / direct_distance
             H = np.sqrt(max(0, distances[0]**2 - A**2))
-            r = self.random.random_sample()
+            r = self.random.random()
 
             center = origin + direction * A
             offset = direction * H
