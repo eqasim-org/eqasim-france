@@ -46,7 +46,7 @@ def sample_indices(uniform, cdf, selected_indices):
     return selected_indices[indices]
 
 def statistical_matching(progress, df_source, source_identifier, weight, df_target, target_identifier, columns, random_seed = 0, minimum_observations = 0):
-    random = np.random.RandomState(random_seed)
+    random = np.random.default_rng(random_seed)
 
     # Reduce data frames
     df_source = df_source[[source_identifier, weight] + columns].copy()
@@ -78,7 +78,7 @@ def statistical_matching(progress, df_source, source_identifier, weight, df_targ
     assigned_indices = np.ones((len(df_target),), dtype = int) * -1
     unassigned_mask = np.ones((len(df_target),), dtype = bool)
     assigned_levels = np.ones((len(df_target),), dtype = int) * -1
-    uniform = random.random_sample(size = (len(df_target),))
+    uniform = random.random(size = (len(df_target),))
 
     column_indices = [np.arange(len(unique_values[column])) for column in columns]
 
@@ -148,7 +148,7 @@ def parallel_statistical_matching(context, df_source, source_identifier, weight,
     random_seed = context.config("random_seed")
     processes = context.config("processes")
 
-    random = np.random.RandomState(random_seed)
+    random = np.random.default_rng(random_seed)
     chunks = np.array_split(df_target, processes)
 
     with context.progress(label = "Statistical matching ...", total = len(df_target)):
@@ -157,7 +157,7 @@ def parallel_statistical_matching(context, df_source, source_identifier, weight,
             "target_identifier": target_identifier, "columns": columns,
             "minimum_observations": minimum_observations
         }) as parallel:
-                random_seeds = random.randint(10000, size = len(chunks))
+                random_seeds = random.integers(10000, size = len(chunks))
                 results = parallel.map(_run_parallel_statistical_matching, zip(chunks, random_seeds))
 
                 levels = np.hstack([r[1] for r in results])
