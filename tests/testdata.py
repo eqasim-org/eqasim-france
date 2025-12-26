@@ -1001,6 +1001,20 @@ def create(output_path):
         from_stop_id = [], to_stop_id = [], transfer_type = []
     ))
 
+    hashes = {
+        "agency": 13493700580171507455,
+        "calendar": 10218547249189875560,
+        "routes": 11850801604070115960,
+        "stops": 8568619790350083472,
+        "trips": 17055210715220228913,
+        "stop_times": 10192698642068689270,
+        "transfers": 0
+    }
+
+    for name, item in feed.items():
+        print("Hash GTFS", name, pd.util.hash_pandas_object(item, index = True).sum())
+        assert pd.util.hash_pandas_object(item, index = True).sum() == hashes[name]
+
     os.mkdir("%s/gtfs_idf" % output_path)
 
     import data.gtfs.utils
@@ -1090,7 +1104,6 @@ def hash_zip(file):
             with archive.open(name) as f:
                 for chunk in iter(lambda: f.read(4096), b""):
                     hash.update(chunk)
-            f.close()
 
     return hash.hexdigest()
 
