@@ -959,14 +959,14 @@ def create(output_path):
     feed["stops"] = pd.DataFrame.from_records([dict(
         stop_id = "A", stop_code = "A", stop_name = "A",
         stop_desc = "",
-        stop_lat = df_stops["geometry"].iloc[0].centroid.y,
-        stop_lon = df_stops["geometry"].iloc[0].centroid.x,
+        stop_lat = np.round(df_stops["geometry"].iloc[0].centroid.y, 5),
+        stop_lon = np.round(df_stops["geometry"].iloc[0].centroid.x, 5),
         location_type = 1, parent_station = None
     ), dict(
         stop_id = "B", stop_code = "B", stop_name = "B",
         stop_desc = "",
-        stop_lat = df_stops["geometry"].iloc[1].centroid.y,
-        stop_lon = df_stops["geometry"].iloc[1].centroid.x,
+        stop_lat = np.round(df_stops["geometry"].iloc[1].centroid.y, 5),
+        stop_lon = np.round(df_stops["geometry"].iloc[1].centroid.x, 5),
         location_type = 1, parent_station = None
     )])
 
@@ -1005,7 +1005,7 @@ def create(output_path):
         "agency": 13493700580171507455,
         "calendar": 10218547249189875560,
         "routes": 11850801604070115960,
-        "stops": 8568619790350083472,
+        "stops": 13363528949336997892,
         "trips": 17055210715220228913,
         "stop_times": 10192698642068689270,
         "transfers": 0
@@ -1021,7 +1021,7 @@ def create(output_path):
     data.gtfs.utils.write_feed(feed, "%s/gtfs_idf/IDFM-gtfs.zip" % output_path)
 
     print("Hash", "GTFS", hash_zip("%s/gtfs_idf/IDFM-gtfs.zip" % output_path))
-    assert hash_zip("%s/gtfs_idf/IDFM-gtfs.zip" % output_path) == "16641860dccb6a57245d731139bd28c8"
+    assert hash_zip("%s/gtfs_idf/IDFM-gtfs.zip" % output_path) == "4dc21e7134e51ed093075207ce3a917e"
 
     # Dataset: Parc automobile
     df_vehicles_region = pd.DataFrame(index = pd.MultiIndex.from_product([
