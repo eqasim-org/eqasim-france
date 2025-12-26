@@ -7,6 +7,7 @@ import shutil
 import py7zr
 import zipfile
 import glob
+import hashlib, sqlite3, gzip
 
 def create(output_path):
     """
@@ -171,14 +172,17 @@ def create(output_path):
         iris = "CODE_IRIS", municipality = "INSEE_COM"
     ))
 
+    print("Hash", "df_iris", pd.util.hash_pandas_object(df_iris, index = True).sum())
+    assert pd.util.hash_pandas_object(df_iris, index = True).sum() == 2008500941212791046
+
     os.mkdir("%s/iris_2023" % output_path)
     df_iris.to_file("%s/iris_2023/CONTOURS-IRIS.shp" % output_path)
-
+    
     with py7zr.SevenZipFile("%s/iris_2023/iris.7z" % output_path, "w") as archive:
         for source in glob.glob("%s/iris_2023/CONTOURS-IRIS.*" % output_path):
             archive.write(source, "LAMB93/{}".format(source.split("/")[-1]))
             os.remove(source)
-
+    
     # Dataset: Codes
     # Required attributes: CODE_IRIS, DEPCOM, DEP, REG
     print("Creating codes ...")
@@ -187,6 +191,9 @@ def create(output_path):
     df_codes = df_codes[["iris", "municipality", "department", "region"]].rename(columns = dict(
         iris = "CODE_IRIS", municipality = "DEPCOM", department = "DEP", region = "REG"
     ))
+
+    print("Hash", "df_codes", pd.util.hash_pandas_object(df_codes, index = True).sum())
+    assert pd.util.hash_pandas_object(df_codes, index = True).sum() == 7331396037856123913
 
     os.mkdir("%s/codes_2023" % output_path)
 
@@ -209,6 +216,9 @@ def create(output_path):
     # Set all population to fixed number
     df_population["P21_POP"] = 120.0
 
+    print("Hash", "df_population", pd.util.hash_pandas_object(df_population, index = True).sum())
+    assert pd.util.hash_pandas_object(df_population, index = True).sum() == 9564481601138338437
+
     os.mkdir("%s/rp_2021" % output_path)
 
     with zipfile.ZipFile("%s/rp_2021/base-ic-evol-struct-pop-2021_xlsx.zip" % output_path, "w") as archive:
@@ -225,18 +235,21 @@ def create(output_path):
     observations = BPE_OBSERVATIONS
     categories = np.array(["A", "B", "C", "D", "E", "F", "G"])
 
-    df_selection = df.iloc[random.integers(0, len(df), size = observations)].copy()
-    df_selection["CAPACITE"] = 500
-    df_selection["DCIRIS"] = df_selection["iris"]
-    df_selection["DEPCOM"] = df_selection["municipality"]
-    df_selection["DEP"] = df_selection["department"]
-    df_selection["LAMBERT_X"] = df_selection["geometry"].centroid.x
-    df_selection["LAMBERT_Y"] = df_selection["geometry"].centroid.y
-    df_selection["TYPEQU"] = categories[random.integers(0, len(categories), size = len(df_selection))]
+    df_bpe = df.iloc[random.integers(0, len(df), size = observations)].copy()
+    df_bpe["CAPACITE"] = 500
+    df_bpe["DCIRIS"] = df_bpe["iris"]
+    df_bpe["DEPCOM"] = df_bpe["municipality"]
+    df_bpe["DEP"] = df_bpe["department"]
+    df_bpe["LAMBERT_X"] = df_bpe["geometry"].centroid.x
+    df_bpe["LAMBERT_Y"] = df_bpe["geometry"].centroid.y
+    df_bpe["TYPEQU"] = categories[random.integers(0, len(categories), size = len(df_bpe))]
 
     # Deliberately set coordinates for some to NaN
-    df_selection.iloc[-10:, df_selection.columns.get_loc("LAMBERT_X")] = np.nan
-    df_selection.iloc[-10:, df_selection.columns.get_loc("LAMBERT_Y")] = np.nan
+    df_bpe.iloc[-10:, df_bpe.columns.get_loc("LAMBERT_X")] = np.nan
+    df_bpe.iloc[-10:, df_bpe.columns.get_loc("LAMBERT_Y")] = np.nan
+
+    print("Hash", "df_bpe", pd.util.hash_pandas_object(df_bpe, index = True).sum())
+    assert pd.util.hash_pandas_object(df_bpe, index = True).sum() == 875998870050180323
 
     columns = ["CAPACITE","DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"]
 
@@ -244,7 +257,7 @@ def create(output_path):
 
     with zipfile.ZipFile("%s/bpe_2024/BPE24.zip" % output_path, "w") as archive:
         with archive.open("BPE24.csv", "w") as f:
-            df_selection[columns].to_csv(f,
+            df_bpe[columns].to_csv(f,
                 sep = ";", index = False)
 
     # Dataset: Tax data
@@ -314,6 +327,9 @@ def create(output_path):
         ]
         for i, column in enumerate(columns):
             value["df"][column] = value["data"][i]
+
+    print("Hash", "df_income", pd.util.hash_pandas_object(df_income, index = True).sum())
+    assert pd.util.hash_pandas_object(df_income, index = True).sum() == 8212824527521797510
 
     os.mkdir("%s/filosofi_2021" % output_path)
 
@@ -440,7 +456,19 @@ def create(output_path):
     pd.DataFrame.from_records(data["Q_INDIVIDU"]).to_csv("%s/entd_2008/Q_individu.csv" % output_path, index = False, sep = ";")
     pd.DataFrame.from_records(data["Q_TCM_INDIVIDU"]).to_csv("%s/entd_2008/Q_tcm_individu.csv" % output_path, index = False, sep = ";")
     pd.DataFrame.from_records(data["K_DEPLOC"]).to_csv("%s/entd_2008/K_deploc.csv" % output_path, index = False, sep = ";")
+    
+    hashes = {
+        "Q_MENAGE": 13747765506488913060,
+        "Q_TCM_MENAGE": 11743608538769824299,
+        "Q_INDIVIDU": 10605303610959774056,
+        "Q_TCM_INDIVIDU": 14111705055958460361,
+        "K_DEPLOC": 8223897019656200695
+    }
 
+    for slot in ["Q_MENAGE", "Q_TCM_MENAGE", "Q_INDIVIDU", "Q_TCM_INDIVIDU", "K_DEPLOC"]:
+        df_test = pd.DataFrame.from_records(data[slot])
+        print("Hash ENTD", slot, pd.util.hash_pandas_object(df_test, index = True).sum())
+        assert pd.util.hash_pandas_object(df_test, index = True).sum() == hashes[slot]
 
     # Data set: EGT
     print("Creating EGT ...")
@@ -533,6 +561,17 @@ def create(output_path):
     pd.DataFrame.from_records(data["persons"]).to_csv("%s/egt_2010/Personnes_semaine.csv" % output_path, index = False, sep = ",")
     pd.DataFrame.from_records(data["trips"]).to_csv("%s/egt_2010/Deplacements_semaine.csv" % output_path, index = False, sep = ",")
 
+    hashes = {
+        "households": 9610947733268415162,
+        "persons": 13109131857344238946,
+        "trips": 3642532006631400738,
+    }
+
+    for slot in ["households", "persons", "trips"]:
+        df_test = pd.DataFrame.from_records(data[slot])
+        print("Hash EGT", slot, pd.util.hash_pandas_object(df_test, index = True).sum())
+        assert pd.util.hash_pandas_object(df_test, index = True).sum() == hashes[slot]
+
     # Data set: Census
     print("Creating census ...")
 
@@ -575,6 +614,9 @@ def create(output_path):
     df_persons = pd.DataFrame.from_records(persons)[columns]
     df_persons.columns = columns
 
+    print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
+    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 2179663752841856527
+
     with zipfile.ZipFile("%s/rp_2021/RP2021_indcvi.zip" % output_path, "w") as archive:
         with archive.open("FD_INDCVI_2021.csv", "w") as f:
             df_persons.to_csv(f, sep = ";")
@@ -598,6 +640,9 @@ def create(output_path):
     columns = ["COMMUNE", "DCLT", "TRANS", "ARM", "IPONDI"]
     df_work.columns = columns
 
+    print("Hash", "df_work", pd.util.hash_pandas_object(df_work, index = True).sum())
+    assert pd.util.hash_pandas_object(df_work, index = True).sum() == 5028761696203377742
+
     with zipfile.ZipFile("%s/rp_2021/RP2021_mobpro.zip" % output_path, "w") as archive:
         with archive.open("FD_MOBPRO_2021.csv", "w") as f:
             df_work.to_csv(f, sep = ";")
@@ -613,6 +658,9 @@ def create(output_path):
 
     columns = ["COMMUNE", "DCETUF", "ARM", "IPONDI","AGEREV10"]
     df_education.columns = columns
+
+    print("Hash", "df_education", pd.util.hash_pandas_object(df_education, index = True).sum())
+    assert pd.util.hash_pandas_object(df_education, index = True).sum() == 13755284994950693635
 
     with zipfile.ZipFile("%s/rp_2021/RP2021_mobsco.zip" % output_path, "w") as archive:
         with archive.open("FD_MOBSCO_2021.csv", "w") as f:
@@ -646,6 +694,9 @@ def create(output_path):
     # polygons as buildings from iris centroid points
     df_bdtopo.set_geometry(df_bdtopo.buffer(40),inplace=True,drop=True,crs="EPSG:2154")
 
+    print("Hash", "df_bdtopo", pd.util.hash_pandas_object(df_bdtopo, index = True).sum())
+    assert pd.util.hash_pandas_object(df_bdtopo, index = True).sum() == 1677284904346368773
+
     os.mkdir("{}/bdtopo_idf".format(output_path))
     df_bdtopo.to_file("{}/bdtopo_idf/content.gpkg".format(output_path), layer = "batiment")
 
@@ -663,7 +714,7 @@ def create(output_path):
                 output_path, department, bdtopo_date))
         
     os.remove("{}/bdtopo_idf/bdtopo.7z".format(output_path))
-        
+
     # Data set: BAN
     print("Creating BAN ...")
 
@@ -681,6 +732,10 @@ def create(output_path):
         "y": y})
 
     df_ban = df_ban[:round(len(x)*.8)]
+
+    print("Hash", "df_ban", pd.util.hash_pandas_object(df_ban, index = True).sum())
+    assert pd.util.hash_pandas_object(df_ban, index = True).sum() == 11457325539618328810
+
     os.mkdir("%s/ban_idf" % output_path)
 
     for dep in df["department"].unique():
@@ -703,15 +758,19 @@ def create(output_path):
     df_sirene["activitePrincipaleEtablissement"] = "52.1"
     df_sirene["trancheEffectifsEtablissement"] = "03"
 
+    print("Hash", "SIRENE ET", pd.util.hash_pandas_object(df_sirene, index = True).sum())
+    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 11162526982213001091
 
     os.mkdir("%s/sirene" % output_path)
     df_sirene.to_parquet(output_path + "/sirene/StockEtablissement_utf8.parquet", index = False)
-
 
     df_sirene = df_sirene[["siren"]].copy()
     df_sirene["categorieJuridiqueUniteLegale"] = "1000"
 
     df_sirene.to_parquet(output_path + "/sirene/StockUniteLegale_utf8.parquet", index = False)
+
+    print("Hash", "SIRENE UL", pd.util.hash_pandas_object(df_sirene, index = True).sum())
+    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 18299179317079659922
 
     # Data set: SIRENE GEOLOCATION
     print("Creating SIRENE GEOLOCATION...")
@@ -728,7 +787,10 @@ def create(output_path):
         "y": y,
         "plg_code_commune":codes_com,
     })
-    
+
+    print("Hash", "SIRENE GEO", pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum())
+    assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 2064545953456097994
+
     df_sirene_geoloc.to_parquet("%s/sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet" % output_path, index = False)
 
     # Data set: Urban type
@@ -742,11 +804,13 @@ def create(output_path):
         "STATUT_2017": ["C", "C", "C"]
     })])
 
+    print("Hash", "df_urban_type", pd.util.hash_pandas_object(df_urban_type, index = True).sum())
+    assert pd.util.hash_pandas_object(df_urban_type, index = True).sum() == 15662019550405027472
+
     os.mkdir("%s/urban_type" % output_path)
     with zipfile.ZipFile("%s/urban_type/UU2020_au_01-01-2023.zip" % output_path, "w") as archive:
         with archive.open("UU2020_au_01-01-2023.xlsx", "w") as f:
             df_urban_type.to_excel(f, startrow = 5, sheet_name = "Composition_communale", index = False)
-
 
     # set scenario cutter shape
     print("Creating Cutter shape ...")
@@ -762,6 +826,9 @@ def create(output_path):
         )],
         crs = "EPSG:2154"
     ).to_file("%s/cutter/cutter.geojson" % output_path)
+
+    print("Hash", "Cutter", hash_file("%s/cutter/cutter.geojson" % output_path))
+    assert hash_file("%s/cutter/cutter.geojson" % output_path) == "71f15f98d6c0bff8577e905fc5005055"
 
     # Data set: OSM
     # We add add a road grid of 500m
@@ -853,10 +920,16 @@ def create(output_path):
     with gzip.open("%s/osm_idf/ile-de-france-220101.osm.gz" % output_path, "wb+") as f:
         f.write(bytes("\n".join(osm), "utf-8"))
 
+    print("Hash", "OSM XML", hash_file("%s/osm_idf/ile-de-france-220101.osm.gz" % output_path))
+    assert hash_file("%s/osm_idf/ile-de-france-220101.osm.gz" % output_path) == "8ca19248d3e8016326673be2019947fc"
+
     import osmium
     with osmium.SimpleWriter("{}/osm_idf/ile-de-france-220101.osm.pbf".format(output_path)) as writer:
         for item in osmium.FileProcessor("{}/osm_idf/ile-de-france-220101.osm.gz".format(output_path)):
             writer.add(item)
+
+    print("Hash", "OSM PBF", hash_file("%s/osm_idf/ile-de-france-220101.osm.pbf" % output_path))
+    assert hash_file("%s/osm_idf/ile-de-france-220101.osm.pbf" % output_path) == "afb6e5a03bea56d06145eef68d1cae8e"
 
     # Data set: GTFS
     print("Creating GTFS ...")
@@ -886,14 +959,14 @@ def create(output_path):
     feed["stops"] = pd.DataFrame.from_records([dict(
         stop_id = "A", stop_code = "A", stop_name = "A",
         stop_desc = "",
-        stop_lat = df_stops["geometry"].iloc[0].centroid.y,
-        stop_lon = df_stops["geometry"].iloc[0].centroid.x,
+        stop_lat = np.round(df_stops["geometry"].iloc[0].centroid.y, 5),
+        stop_lon = np.round(df_stops["geometry"].iloc[0].centroid.x, 5),
         location_type = 1, parent_station = None
     ), dict(
         stop_id = "B", stop_code = "B", stop_name = "B",
         stop_desc = "",
-        stop_lat = df_stops["geometry"].iloc[1].centroid.y,
-        stop_lon = df_stops["geometry"].iloc[1].centroid.x,
+        stop_lat = np.round(df_stops["geometry"].iloc[1].centroid.y, 5),
+        stop_lon = np.round(df_stops["geometry"].iloc[1].centroid.x, 5),
         location_type = 1, parent_station = None
     )])
 
@@ -928,10 +1001,30 @@ def create(output_path):
         from_stop_id = [], to_stop_id = [], transfer_type = []
     ))
 
+    hashes = {
+        "agency": 13493700580171507455,
+        "calendar": 10218547249189875560,
+        "routes": 11850801604070115960,
+        "stops": 13363528949336997892,
+        "trips": 17055210715220228913,
+        "stop_times": 10192698642068689270,
+        "transfers": 0
+    }
+
+    for name, item in feed.items():
+        print("Hash GTFS", name, pd.util.hash_pandas_object(item, index = True).sum())
+        assert pd.util.hash_pandas_object(item, index = True).sum() == hashes[name]
+
     os.mkdir("%s/gtfs_idf" % output_path)
 
     import data.gtfs.utils
     data.gtfs.utils.write_feed(feed, "%s/gtfs_idf/IDFM-gtfs.zip" % output_path)
+
+    # Somehow doesn't produce valid hash on Windows CI
+    # Falling back to the individual file validation above
+    
+    # print("Hash", "GTFS", hash_zip("%s/gtfs_idf/IDFM-gtfs.zip" % output_path))
+    # assert hash_zip("%s/gtfs_idf/IDFM-gtfs.zip" % output_path) == "4dc21e7134e51ed093075207ce3a917e"
 
     # Dataset: Parc automobile
     df_vehicles_region = pd.DataFrame(index = pd.MultiIndex.from_product([
@@ -974,6 +1067,12 @@ def create(output_path):
         "region": "Code région",
     })
 
+    print("Hash", "df_vehicles_region", pd.util.hash_pandas_object(df_vehicles_region, index = True).sum())
+    assert pd.util.hash_pandas_object(df_vehicles_region, index = True).sum() == 14754920152858933334
+
+    print("Hash", "df_vehicles_commune", pd.util.hash_pandas_object(df_vehicles_commune, index = True).sum())
+    assert pd.util.hash_pandas_object(df_vehicles_commune, index = True).sum() == 9918836920028610943
+
     os.mkdir("%s/vehicles" % output_path)
     
     with zipfile.ZipFile("%s/vehicles/parc_vp_regions.zip" % output_path, "w") as archive:
@@ -983,6 +1082,33 @@ def create(output_path):
     with zipfile.ZipFile("%s/vehicles/parc_vp_communes.zip" % output_path, "w") as archive:
         with archive.open("Parc_VP_Communes_2021.xlsx", "w") as f:
             df_vehicles_commune.to_excel(f)
+
+def hash_file(file):
+    hash = hashlib.md5()
+
+    # Gzip saves time stamps, so the gzipped files are NOT the same!
+    opener = lambda: open(file, "rb")
+
+    if file.endswith(".gz"):
+        opener = lambda: gzip.open(file)
+
+    with opener() as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash.update(chunk)
+
+    f.close()
+    return hash.hexdigest()
+
+def hash_zip(file):
+    hash = hashlib.md5()
+
+    with zipfile.ZipFile(file) as archive:
+        for name in sorted(archive.namelist()):
+            with archive.open(name) as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    hash.update(chunk)
+
+    return hash.hexdigest()
 
 if __name__ == "__main__":
     import shutil
