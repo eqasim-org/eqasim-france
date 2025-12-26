@@ -249,7 +249,7 @@ def create(output_path):
     df_bpe.iloc[-10:, df_bpe.columns.get_loc("LAMBERT_Y")] = np.nan
 
     print("Hash", "df_bpe", pd.util.hash_pandas_object(df_bpe, index = True).sum())
-    assert pd.util.hash_pandas_object(df_bpe, index = True).sum() == 17758827409572779014
+    assert pd.util.hash_pandas_object(df_bpe, index = True).sum() == 875998870050180323
 
     columns = ["CAPACITE","DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"]
 
@@ -458,11 +458,11 @@ def create(output_path):
     pd.DataFrame.from_records(data["K_DEPLOC"]).to_csv("%s/entd_2008/K_deploc.csv" % output_path, index = False, sep = ";")
     
     hashes = {
-        "Q_MENAGE": 6229523920579664079,
-        "Q_TCM_MENAGE": 3882015656891574730,
-        "Q_INDIVIDU": 5278617382643963618,
-        "Q_TCM_INDIVIDU": 8277251024949316086,
-        "K_DEPLOC": 13628355886112617953
+        "Q_MENAGE": 13747765506488913060,
+        "Q_TCM_MENAGE": 11743608538769824299,
+        "Q_INDIVIDU": 10605303610959774056,
+        "Q_TCM_INDIVIDU": 14111705055958460361,
+        "K_DEPLOC": 8223897019656200695
     }
 
     for slot in ["Q_MENAGE", "Q_TCM_MENAGE", "Q_INDIVIDU", "Q_TCM_INDIVIDU", "K_DEPLOC"]:
@@ -562,9 +562,9 @@ def create(output_path):
     pd.DataFrame.from_records(data["trips"]).to_csv("%s/egt_2010/Deplacements_semaine.csv" % output_path, index = False, sep = ",")
 
     hashes = {
-        "households": 3474059455064100121,
-        "persons": 8131372527124491297,
-        "trips": 5002137334958945254,
+        "households": 9610947733268415162,
+        "persons": 13109131857344238946,
+        "trips": 3642532006631400738,
     }
 
     for slot in ["households", "persons", "trips"]:
@@ -615,7 +615,7 @@ def create(output_path):
     df_persons.columns = columns
 
     print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
-    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 13280538958512233387
+    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 2179663752841856527
 
     with zipfile.ZipFile("%s/rp_2021/RP2021_indcvi.zip" % output_path, "w") as archive:
         with archive.open("FD_INDCVI_2021.csv", "w") as f:
@@ -641,7 +641,7 @@ def create(output_path):
     df_work.columns = columns
 
     print("Hash", "df_work", pd.util.hash_pandas_object(df_work, index = True).sum())
-    assert pd.util.hash_pandas_object(df_work, index = True).sum() == 942132541720466055
+    assert pd.util.hash_pandas_object(df_work, index = True).sum() == 5028761696203377742
 
     with zipfile.ZipFile("%s/rp_2021/RP2021_mobpro.zip" % output_path, "w") as archive:
         with archive.open("FD_MOBPRO_2021.csv", "w") as f:
@@ -660,7 +660,7 @@ def create(output_path):
     df_education.columns = columns
 
     print("Hash", "df_education", pd.util.hash_pandas_object(df_education, index = True).sum())
-    assert pd.util.hash_pandas_object(df_education, index = True).sum() == 5637933646488616863
+    assert pd.util.hash_pandas_object(df_education, index = True).sum() == 13755284994950693635
 
     with zipfile.ZipFile("%s/rp_2021/RP2021_mobsco.zip" % output_path, "w") as archive:
         with archive.open("FD_MOBSCO_2021.csv", "w") as f:
@@ -695,7 +695,7 @@ def create(output_path):
     df_bdtopo.set_geometry(df_bdtopo.buffer(40),inplace=True,drop=True,crs="EPSG:2154")
 
     print("Hash", "df_bdtopo", pd.util.hash_pandas_object(df_bdtopo, index = True).sum())
-    assert pd.util.hash_pandas_object(df_bdtopo, index = True).sum() == 14629657341014984074
+    assert pd.util.hash_pandas_object(df_bdtopo, index = True).sum() == 1677284904346368773
 
     os.mkdir("{}/bdtopo_idf".format(output_path))
     df_bdtopo.to_file("{}/bdtopo_idf/content.gpkg".format(output_path), layer = "batiment")
@@ -734,7 +734,7 @@ def create(output_path):
     df_ban = df_ban[:round(len(x)*.8)]
 
     print("Hash", "df_ban", pd.util.hash_pandas_object(df_ban, index = True).sum())
-    assert pd.util.hash_pandas_object(df_ban, index = True).sum() == 11023402377606997162
+    assert pd.util.hash_pandas_object(df_ban, index = True).sum() == 11457325539618328810
 
     os.mkdir("%s/ban_idf" % output_path)
 
@@ -759,7 +759,7 @@ def create(output_path):
     df_sirene["trancheEffectifsEtablissement"] = "03"
 
     print("Hash", "SIRENE ET", pd.util.hash_pandas_object(df_sirene, index = True).sum())
-    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 17121119310899322089
+    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 11162526982213001091
 
     os.mkdir("%s/sirene" % output_path)
     df_sirene.to_parquet(output_path + "/sirene/StockEtablissement_utf8.parquet", index = False)
@@ -770,7 +770,7 @@ def create(output_path):
     df_sirene.to_parquet(output_path + "/sirene/StockUniteLegale_utf8.parquet", index = False)
 
     print("Hash", "SIRENE UL", pd.util.hash_pandas_object(df_sirene, index = True).sum())
-    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 16250044125570058044
+    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 18299179317079659922
 
     # Data set: SIRENE GEOLOCATION
     print("Creating SIRENE GEOLOCATION...")
@@ -789,7 +789,7 @@ def create(output_path):
     })
 
     print("Hash", "SIRENE GEO", pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum())
-    assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 12643670108785877786
+    assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 2064545953456097994
 
     df_sirene_geoloc.to_parquet("%s/sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet" % output_path, index = False)
 
