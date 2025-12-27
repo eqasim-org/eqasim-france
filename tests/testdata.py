@@ -692,7 +692,7 @@ def create(output_path):
     }, crs = "EPSG:2154")
 
     # polygons as buildings from iris centroid points
-    df_bdtopo.set_geometry(df_bdtopo.buffer(40),inplace=True,drop=True,crs="EPSG:2154")
+    df_bdtopo.set_geometry(df_bdtopo.buffer(40),inplace=True,crs="EPSG:2154")
 
     print("Hash", "df_bdtopo", pd.util.hash_pandas_object(df_bdtopo, index = True).sum())
     assert pd.util.hash_pandas_object(df_bdtopo, index = True).sum() == 1677284904346368773

@@ -149,8 +149,10 @@ def parallel_statistical_matching(context, df_source, source_identifier, weight,
     processes = context.config("processes")
 
     random = np.random.default_rng(random_seed)
-    chunks = np.array_split(df_target, processes)
-
+    
+    chunk_size = int(len(df_target) / processes) + 1
+    chunks = [df_target[i:i + chunk_size] for i in range(0, len(df_target), chunk_size)]
+    
     with context.progress(label = "Statistical matching ...", total = len(df_target)):
         with context.parallel({
             "df_source": df_source, "source_identifier": source_identifier, "weight": weight,
