@@ -107,7 +107,7 @@ def statistical_matching(progress, df_source, source_identifier, weight, df_targ
                 assigned_levels[f_target] = level
                 unassigned_mask[f_target] = False
 
-                progress.update(np.count_nonzero(f_target))
+                progress.update(int(np.count_nonzero(f_target)))
 
     # Randomly assign unmatched observations
     cdf = np.cumsum(weights)
@@ -116,7 +116,7 @@ def statistical_matching(progress, df_source, source_identifier, weight, df_targ
     assigned_indices[unassigned_mask] = sample_indices(uniform[unassigned_mask], cdf, np.arange(len(weights)))
     assigned_levels[unassigned_mask] = 0
 
-    progress.update(np.count_nonzero(unassigned_mask))
+    progress.update(int(np.count_nonzero(unassigned_mask)))
 
     if np.count_nonzero(unassigned_mask) > 0:
         raise RuntimeError("Some target observations could not be matched. Minimum observations configured too high?")
@@ -219,7 +219,7 @@ def execute(context):
     assert len(df_target) == len(df_assignment)
 
     context.set_info("matched_counts", {
-        count: np.count_nonzero(levels >= count) for count in range(len(columns) + 1)
+        count: int(np.count_nonzero(levels >= count)) for count in range(len(columns) + 1)
     })
 
     for count in range(len(columns) + 1):
