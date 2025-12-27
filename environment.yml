@@ -7,7 +7,7 @@ dependencies:
   - matplotlib=3.10.8
   - pandas=2.3.3
   - scipy=1.16.3
-  - numpy=2.2.6
+  - numpy=2.3.5
   - geopandas=1.1.2
   - numba=0.63.1
   - palettable=3.3.3
