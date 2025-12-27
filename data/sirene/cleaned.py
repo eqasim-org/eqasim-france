@@ -32,36 +32,36 @@ def execute(context):
         ].copy()
 
     # Define work place weights by person under salary ....
-    df_sirene["minimum_employees"] = 1 # Includes "NN", "00", and NaN
-    df_sirene["maximum_employees"] = 1 # Includes "NN", "00", and NaN
+    df_sirene["minimum_employees"] = 1.0 # Includes "NN", "00", and NaN
+    df_sirene["maximum_employees"] = 1.0 # Includes "NN", "00", and NaN
 
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "01", "minimum_employees"] = 1
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "01", "maximum_employees"] = 2
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "02", "minimum_employees"] = 3
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "02", "maximum_employees"] = 5
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "03", "minimum_employees"] = 6
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "03", "maximum_employees"] = 9
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "11", "minimum_employees"] = 10
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "11", "maximum_employees"] = 19
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "12", "minimum_employees"] = 20
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "12", "maximum_employees"] = 49
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "21", "minimum_employees"] = 50
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "21", "maximum_employees"] = 99
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "22", "minimum_employees"] = 100
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "22", "maximum_employees"] = 199
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "31", "minimum_employees"] = 200
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "31", "maximum_employees"] = 249
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "32", "minimum_employees"] = 250
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "32", "maximum_employees"] = 499
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "41", "minimum_employees"] = 500
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "41", "maximum_employees"] = 999
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "42", "minimum_employees"] = 1000
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "42", "maximum_employees"] = 1999
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "51", "minimum_employees"] = 2000
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "51", "maximum_employees"] = 4999
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "52", "minimum_employees"] = 5000
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "52", "maximum_employees"] = 9999
-    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "53", "minimum_employees"] = 10000
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "01", "minimum_employees"] = 1.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "01", "maximum_employees"] = 2.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "02", "minimum_employees"] = 3.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "02", "maximum_employees"] = 5.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "03", "minimum_employees"] = 6.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "03", "maximum_employees"] = 9.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "11", "minimum_employees"] = 10.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "11", "maximum_employees"] = 19.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "12", "minimum_employees"] = 20.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "12", "maximum_employees"] = 49.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "21", "minimum_employees"] = 50.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "21", "maximum_employees"] = 99.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "22", "minimum_employees"] = 100.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "22", "maximum_employees"] = 199.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "31", "minimum_employees"] = 200.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "31", "maximum_employees"] = 249.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "32", "minimum_employees"] = 250.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "32", "maximum_employees"] = 499.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "41", "minimum_employees"] = 500.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "41", "maximum_employees"] = 999.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "42", "minimum_employees"] = 1000.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "42", "maximum_employees"] = 1999.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "51", "minimum_employees"] = 2000.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "51", "maximum_employees"] = 4999.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "52", "minimum_employees"] = 5000.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "52", "maximum_employees"] = 9999.0
+    df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "53", "minimum_employees"] = 10000.0
     df_sirene.loc[df_sirene["trancheEffectifsEtablissement"] == "53", "maximum_employees"] = np.inf
 
     # Add activity classification

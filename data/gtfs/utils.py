@@ -15,6 +15,18 @@ OPTIONAL_SLOTS = [
     "feed_info", "translations", "attributions"
 ]
 
+DTYPES = {
+    "stops": {
+        "stop_id": str, "parent_station": str
+    },
+    "agency": {
+        "agency_id": str
+    },
+    "routes": {
+        "agency_id": str
+    }
+}
+
 def read_feed(path):
     feed = {}
 
@@ -48,7 +60,7 @@ def read_feed(path):
                 print("  Loading %s.txt ..." % slot)
 
                 with zip.open("%s%s.txt" % (prefix, slot)) as f:
-                    feed[slot] = pd.read_csv(f, skipinitialspace = True)
+                    feed[slot] = pd.read_csv(f, skipinitialspace = True, dtype = DTYPES.get(slot, None))
             else:
                 print("  Not loading %s.txt" % slot)
 
