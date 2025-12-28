@@ -128,7 +128,9 @@ def execute(context):
     with gzip.open(output_path, 'wb+') as writer:
         with io.BufferedWriter(writer, buffer_size = 2 * 1024**3) as writer:
             writer = writers.PopulationWriter(writer)
-            writer.start_population()
+            writer.start_population({
+                "coordinateReferenceSystem": df_locations.crs
+            })
 
             activity_iterator = backlog_iterator(iter(df_activities[ACTIVITY_FIELDS].itertuples(index = False)))
             trip_iterator = backlog_iterator(iter(df_trips[TRIP_FIELDS].itertuples(index = False)))
