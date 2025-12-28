@@ -18,6 +18,12 @@ OPTIONAL_SLOTS = [
 DTYPES = {
     "stops": {
         "stop_id": str, "parent_station": str
+    },
+    "agency": {
+        "agency_id": str
+    },
+    "routes": {
+        "agency_id": str
     }
 }
 

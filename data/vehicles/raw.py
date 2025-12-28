@@ -65,8 +65,8 @@ def execute(context):
     df_regions["fleet"] = df_regions[count_column_name]
     df_regions["age"] = df_regions[age_column_name]
 
-    df_vehicle_fleet_counts = df_municipalities.groupby(["region_id", "commune_id", "critair","technology"])["fleet"].sum().reset_index().dropna()
-    df_vehicle_age_counts = df_regions.groupby(["region_id", "critair", "technology", "age"])["fleet"].sum().reset_index().dropna()
+    df_vehicle_fleet_counts = df_municipalities.groupby(["region_id", "commune_id", "critair","technology"], observed = True)["fleet"].sum().reset_index().dropna()
+    df_vehicle_age_counts = df_regions.groupby(["region_id", "critair", "technology", "age"], observed = True)["fleet"].sum().reset_index().dropna()
 
     return df_vehicle_fleet_counts, df_vehicle_age_counts
 
