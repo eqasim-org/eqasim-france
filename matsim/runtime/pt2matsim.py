@@ -11,7 +11,7 @@ def configure(context):
     context.stage("matsim.runtime.maven")
 
     context.config("pt2matsim_version", "25.12")
-    context.config("pt2matsim_branch", "v25.12")
+    context.config("pt2matsim_branch", "feat/set-crs")
 
 def run(context, command, arguments, vm_arguments=[]):
     # Make sure there is a dependency

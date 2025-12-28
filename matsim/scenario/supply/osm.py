@@ -11,7 +11,7 @@ def configure(context):
     context.config("export_detailed_network", False)
 
 def execute(context):
-    osm_path = "%s/output.osm.gz" % context.path("data.osm.cleaned")
+    osm_path = "{}/output.osm.gz".format(context.path("data.osm.cleaned"))
     crs = context.stage("data.spatial.iris").crs
 
     pt2matsim.run(context, "org.matsim.pt2matsim.run.CreateDefaultOsmConfig", 
@@ -23,7 +23,12 @@ def execute(context):
 
         content = content.replace(
             '<param name="osmFile" value="null" />',
-            '<param name="osmFile" value="%s" />' % osm_path
+            '<param name="osmFile" value="{}" />'.format(osm_path)
+        )
+
+        content = content.replace(
+            '<param name="writeCRS" value="false" />',
+            '<param name="writeCRS" value="true" />'
         )
 
         content = content.replace(
