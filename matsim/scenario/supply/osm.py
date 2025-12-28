@@ -26,10 +26,10 @@ def execute(context):
             '<param name="osmFile" value="{}" />'.format(osm_path)
         )
 
-        content = content.replace(
-            '<param name="writeCRS" value="false" />',
-            '<param name="writeCRS" value="true" />'
-        )
+        # content = content.replace(
+        #     '<param name="writeCRS" value="false" />',
+        #     '<param name="writeCRS" value="true" />'
+        # )
 
         content = content.replace(
             '<param name="outputCoordinateSystem" value="null" />',

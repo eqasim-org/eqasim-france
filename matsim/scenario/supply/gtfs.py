@@ -14,12 +14,11 @@ def execute(context):
     gtfs_path = "{}/gtfs.zip".format(context.path("data.gtfs.cleaned"))
     crs = context.stage("data.spatial.iris").crs
 
-    pt2matsim.run(context, "org.matsim.pt2matsim.run.Gtfs2TransitScheduleWithParameters", [
-        "--input-path", gtfs_path,
-        "--day", context.config("gtfs_date"), 
-        "--crs", crs, "--write-crs", "true",
-        "--output-schedule-path", "{}/transit_schedule.xml.gz".format(context.path()),
-        "--output-vehicles-path", "{}/transit_vehicles.xml.gz".format(context.path())
+    pt2matsim.run(context, "org.matsim.pt2matsim.run.Gtfs2TransitSchedule", [
+        gtfs_path,
+        context.config("gtfs_date"), crs,
+        "{}/transit_schedule.xml.gz".format(context.path()),
+        "{}/transit_vehicles.xml.gz".format(context.path())
     ])
 
     assert(os.path.exists("{}/transit_schedule.xml.gz".format(context.path())))
