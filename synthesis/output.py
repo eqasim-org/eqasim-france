@@ -224,10 +224,10 @@ def execute(context):
         df_spatial[df_spatial["purpose"] == "work"].drop_duplicates("person_id")[["person_id", "geometry"]].rename(columns = { "geometry": "work_geometry" })
     )
 
-    df_spatial["geometry"] = [
+    df_spatial["geometry"] = gpd.GeoSeries([
         geo.LineString(od)
         for od in zip(df_spatial["home_geometry"], df_spatial["work_geometry"])
-    ]
+    ], crs = df_locations.crs)
 
     df_spatial = df_spatial.drop(columns = ["home_geometry", "work_geometry"])
     if "gpkg" in output_formats:

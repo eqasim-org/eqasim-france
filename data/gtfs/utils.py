@@ -15,6 +15,18 @@ OPTIONAL_SLOTS = [
     "feed_info", "translations", "attributions"
 ]
 
+DTYPES = {
+    "stops": {
+        "stop_id": str, "parent_station": str
+    },
+    "agency": {
+        "agency_id": str
+    },
+    "routes": {
+        "agency_id": str
+    }
+}
+
 def read_feed(path):
     feed = {}
 
@@ -48,7 +60,7 @@ def read_feed(path):
                 print("  Loading %s.txt ..." % slot)
 
                 with zip.open("%s%s.txt" % (prefix, slot)) as f:
-                    feed[slot] = pd.read_csv(f, skipinitialspace = True)
+                    feed[slot] = pd.read_csv(f, skipinitialspace = True, dtype = DTYPES.get(slot, None))
             else:
                 print("  Not loading %s.txt" % slot)
 
@@ -284,31 +296,32 @@ def merge_two_feeds(first, second, suffix = "_merged"):
             df_first = first[collision["slot"]]
             df_second = second[collision["slot"]]
 
-            df_first[collision["identifier"]] = df_first[collision["identifier"]].astype(str)
-            df_second[collision["identifier"]] = df_second[collision["identifier"]].astype(str)
+            if collision["identifier"] in df_first and collision["identifier"] in df_second:
+                df_first[collision["identifier"]] = df_first[collision["identifier"]].astype(str)
+                df_second[collision["identifier"]] = df_second[collision["identifier"]].astype(str)
 
-            df_concat = pd.concat([df_first, df_second], sort = True).drop_duplicates()
-            duplicate_ids = list(df_concat[df_concat[collision["identifier"]].duplicated()][
-                collision["identifier"]].astype(str).unique())
+                df_concat = pd.concat([df_first, df_second], sort = True).drop_duplicates()
+                duplicate_ids = list(df_concat[df_concat[collision["identifier"]].duplicated()][
+                    collision["identifier"]].astype(str).unique())
 
-            if len(duplicate_ids) > 0:
-                print("   Found %d duplicate identifiers in %s" % (
-                    len(duplicate_ids), collision["slot"]))
+                if len(duplicate_ids) > 0:
+                    print("   Found %d duplicate identifiers in %s" % (
+                        len(duplicate_ids), collision["slot"]))
 
-                replacement_ids = [str(id) + suffix for id in duplicate_ids]
+                    replacement_ids = [str(id) + suffix for id in duplicate_ids]
 
-                df_second[collision["identifier"]] = df_second[collision["identifier"]].replace(
-                    duplicate_ids, replacement_ids
-                )
+                    df_second[collision["identifier"]] = df_second[collision["identifier"]].replace(
+                        duplicate_ids, replacement_ids
+                    )
 
-                for ref_slot, ref_identifier in collision["references"]:
-                    if ref_slot in first and ref_slot in second:
-                        first[ref_slot][ref_identifier] = first[ref_slot][ref_identifier].astype(str)
-                        second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].astype(str)
+                    for ref_slot, ref_identifier in collision["references"]:
+                        if ref_slot in first and ref_slot in second:
+                            first[ref_slot][ref_identifier] = first[ref_slot][ref_identifier].astype(str)
+                            second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].astype(str)
 
-                        second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].replace(
-                            duplicate_ids, replacement_ids
-                        )
+                            second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].replace(
+                                duplicate_ids, replacement_ids
+                            )
 
     for slot in REQUIRED_SLOTS + OPTIONAL_SLOTS:
         if slot in first and slot in second:

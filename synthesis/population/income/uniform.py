@@ -24,7 +24,7 @@ def _sample_income(context, args):
     commune_id, random_seed = args
     df_households, df_income = context.data("households"), context.data("income")
 
-    random = np.random.RandomState(random_seed)
+    random = np.random.default_rng(random_seed)
 
     f = df_households["commune_id"] == commune_id
     df_selected = df_households[f]
@@ -36,7 +36,7 @@ def _sample_income(context, args):
     return f, incomes
 
 def execute(context):
-    random = np.random.RandomState(context.config("random_seed"))
+    random = np.random.default_rng(context.config("random_seed"))
 
     # Load data
     df_income = context.stage("data.income.municipality")
@@ -55,7 +55,7 @@ def execute(context):
     # Perform sampling per commune
     with context.parallel(dict(households = df_households, income = df_income)) as parallel:
         commune_ids = df_households["commune_id"].unique()
-        random_seeds = random.randint(10000, size = len(commune_ids))
+        random_seeds = random.integers(10000, size = len(commune_ids))
 
         for f, incomes in context.progress(parallel.imap(_sample_income, zip(commune_ids, random_seeds)), label = "Imputing income ...", total = len(commune_ids)):
             df_households.loc[f, "household_income"] = incomes * df_households.loc[f, "consumption_units"]

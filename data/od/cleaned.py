@@ -47,27 +47,25 @@ def execute(context):
         raise RuntimeError("Found additional communes: %s" % excess_communes)
 
     # Clean commute mode for work
-    df_work["commute_mode"] = None
+    df_work["commute_mode"] = ""
     df_work.loc[df_work["TRANS"] == 1, "commute_mode"] = "no transport"
     df_work.loc[df_work["TRANS"] == 2, "commute_mode"] = "walk"
     df_work.loc[df_work["TRANS"] == 3, "commute_mode"] = "bike"
     df_work.loc[df_work["TRANS"] == 4, "commute_mode"] = "car"
     df_work.loc[df_work["TRANS"] == 5, "commute_mode"] = "car"
     df_work.loc[df_work["TRANS"] == 6, "commute_mode"] = "pt"
+    assert not np.any(df_work["commute_mode"] == "")
     df_work["commute_mode"] = df_work["commute_mode"].astype("category")
-    
-    assert not np.any(df_work["commute_mode"].isna())
 
     # Clean age range for education
     df_education["AGEREV10"] = df_education["AGEREV10"].astype(int)
-    df_education["age_range"] = None
+    df_education["age_range"] = ""
     df_education.loc[df_education["AGEREV10"] <= 6, "age_range"] = "primary_school"
     df_education.loc[df_education["AGEREV10"] == 11, "age_range"] = "middle_school"
     df_education.loc[df_education["AGEREV10"] == 15, "age_range"] = "high_school"
     df_education.loc[df_education["AGEREV10"] >= 18, "age_range"] = "higher_education"
+    assert not np.any(df_education["age_range"] == "")
     df_education["age_range"] = df_education["age_range"].astype("category")
-    
-    assert not np.any(df_education["age_range"].isna())
 
     # Aggregate the flows
     print("Aggregating work ...")

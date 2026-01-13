@@ -5,30 +5,30 @@ channels:
 
 dependencies:
   - matplotlib=3.10.8
-  - pandas=2.3.2
-  - scipy=1.16.2
-  - numpy=2.2.6
-  - geopandas=1.1.1
+  - pandas=2.3.3
+  - scipy=1.16.3
+  - numpy=2.3.5
+  - geopandas=1.1.2
   - numba=0.63.1
   - palettable=3.3.3
-  - scikit-learn=1.7.2
+  - scikit-learn=1.8.0
   - shapely=2.1.2
   - tqdm=4.67.1
   - pytables=3.10.2
   - xlrd=2.0.2
   - openpyxl=3.1.5
-  - pip=25.2
-  - python=3.13.7
-  - python-calamine=0.5.3
-  - pytest=8.4.2
+  - pip=25.3
+  - python=3.13.11
+  - python-calamine=0.6.1
+  - pytest=9.0.2
   - xlwt=1.3.0
-  - sqlite=3.50.4
+  - sqlite=3.51.1
   - mock=5.2.0
-  - pyarrow=21.0.0
-  - polars=1.33.1
+  - pyarrow=22.0.0
+  - polars=1.36.1
 
   - pip:
     - synpp==1.6.1
     - bhepop2==2.0.1
     - osmium==4.2.0
-    - py7zr==1.0.0
+    - py7zr==1.1.0
