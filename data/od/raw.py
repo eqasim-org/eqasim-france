@@ -12,8 +12,6 @@ def configure(context):
     context.config("data_path")
     context.config("od_pro_path", "rp_2022/RP2022_mobpro.parquet")
     context.config("od_sco_path", "rp_2022/RP2022_mobsco.parquet")
-    #context.config("od_pro_csv", "FD_MOBPRO_2021.csv")
-    #context.config("od_sco_csv", "FD_MOBSCO_2021.csv")
 
 def execute(context):
     df_codes = context.stage("data.spatial.codes")

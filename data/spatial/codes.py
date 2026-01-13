@@ -48,7 +48,6 @@ def execute(context):
     df_codes["iris_id"] = df_codes["iris_id"].cat.remove_unused_categories()
     df_codes["commune_id"] = df_codes["commune_id"].cat.remove_unused_categories()
     df_codes["departement_id"] = df_codes["departement_id"].cat.remove_unused_categories()
-    #df_codes['id'] = 0
 
     return df_codes
 

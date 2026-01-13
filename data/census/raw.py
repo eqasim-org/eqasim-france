@@ -12,7 +12,6 @@ def configure(context):
 
     context.config("data_path")
     context.config("census_path", "rp_2022/RP2022_indcvi.parquet")
-    #context.config("census_csv", "FD_INDCVI_2021.csv")
 
 COLUMNS_DTYPES = {
     "CANTVILLE":"str", 
