@@ -31,4 +31,4 @@ dependencies:
     - synpp==1.6.1
     - bhepop2==2.0.1
     - osmium==4.2.0
-    - py7zr==1.1.0
+    - py7zr==1.1.2
