@@ -94,7 +94,7 @@ def execute(context):
     df_activities["preceding_trip_index"] = df_activities["preceding_trip_index"].astype(int)
     # Prepare spatial data sets
     df_locations = context.stage("synthesis.population.spatial.locations")[[
-        "person_id",  "iris_id", "commune_id","departement_id","region_id","activity_index", "geometry"
+        "person_id",  "iris_id", "commune_id","departement_id","region_id","activity_index", "location_id", "geometry"
     ]]
 
     df_activities = pd.merge(df_activities, df_locations[[
