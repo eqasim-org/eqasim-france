@@ -12,7 +12,7 @@ def configure(context):
     context.stage("data.spatial.iris")
 
 def execute(context):
-    df_home = context.stage("synthesis.population.spatial.home.locations").rename(columns = { "home_location_id": "location_id" })
+    df_home = context.stage("synthesis.population.spatial.home.locations")
     df_work, df_education = context.stage("synthesis.population.spatial.primary.locations")
     df_secondary = context.stage("synthesis.population.spatial.secondary.locations")[0]
 
