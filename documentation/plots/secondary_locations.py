@@ -21,7 +21,6 @@ def execute(context):
     plt.figure()
 
     modes = list(context.stage("analysis.reference.hts.mode_distances").keys())
-    #modes = ["car", "car_passenger", "pt", "bike", "walk"]
 
     for index, mode in enumerate(modes):
         mode_distribution = distributions[mode]
@@ -71,10 +70,10 @@ def execute(context):
 
     limits = dict(
         car = 20 * 1e3, car_passenger = 20 * 1e3, pt = 20 * 1e3,
-        bike = 6 * 1e3, walk = 1 * 1e3
+        bicycle = 6 * 1e3, walk = 1 * 1e3
     )
 
-    modes = ["car", "bike" if "bike" in modes else "walk" ]
+    modes = ["car", "bicycle" if "bicycle" in modes else "walk" ]
 
     for index, mode in enumerate(modes):
         plt.subplot(1, 2, index + 1)

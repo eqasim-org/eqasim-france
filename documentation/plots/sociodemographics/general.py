@@ -79,11 +79,11 @@ def label(row):
     elif row["attribute"] == "household_size_class":
         return "Household size %s" % analysis.marginals.HOUSEHOLD_SIZE_LABELS[row["value"]]
 
-    elif row["attribute"] == "number_of_vehicles_class":
-        return "No. vehicles %s" % analysis.marginals.NUMBER_OF_VEHICLES_LABELS[row["value"]]
+    elif row["attribute"] == "number_of_cars_class":
+        return "No. vehicles %s" % analysis.marginals.NUMBER_OF_CARS_LABELS[row["value"]]
 
-    elif row["attribute"] == "number_of_bikes_class":
-        return "No. bicycles %s" % analysis.marginals.NUMBER_OF_BIKES_LABELS[row["value"]]
+    elif row["attribute"] == "number_of_bicycles_class":
+        return "No. bicycles %s" % analysis.marginals.NUMBER_OF_BICYCLES_LABELS[row["value"]]
 
 def add_labels(df_figure):
     df_figure["label"] = df_figure.apply(label, axis = 1, raw = False)
@@ -115,7 +115,7 @@ def execute(context):
         ),
         dict(
             level = "household", label = "Number of households", size = plotting.WIDE_FIGSIZE,
-            marginals = ["household_size_class", "number_of_vehicles_class", "number_of_bikes_class"]
+            marginals = ["household_size_class", "number_of_cars_class", "number_of_bikes_class"]
         )
     ]
 

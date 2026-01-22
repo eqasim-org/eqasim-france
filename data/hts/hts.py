@@ -222,7 +222,7 @@ def calculate_consumption_units(df_persons):
 
 HOUSEHOLD_COLUMNS = [
     "household_id", "household_weight", "household_size",
-    "number_of_vehicles", "number_of_bikes", "departement_id",
+    "number_of_cars", "number_of_bicycles", "departement_id",
     "consumption_units", # "income_class"
 ]
 
@@ -231,7 +231,7 @@ PERSON_COLUMNS = [
     "age", "sex", "employed", "studies",
     "has_license", "has_pt_subscription",
     "number_of_trips", "departement_id", "trip_weight",
-    "is_passenger", "socioprofessional_class"
+    "socioprofessional_class"
 ]
 
 TRIP_COLUMNS = [

@@ -31,8 +31,8 @@ MODES_MAP = {
     1 : "pt",
     2 : "car",
     3 : "car_passenger",
-    4 : "car",
-    5 : "bike",
+    4 : "car", # motorbike
+    5 : "bicycle",
     #6 : "pt", # default (other)
     7 : "walk"
 }
@@ -99,9 +99,9 @@ def execute(context):
     df_persons["studies"] = df_persons["OCCP"].isin([3.0, 4.0, 5.0])
 
     # Number of vehicles
-    df_households["number_of_vehicles"] = df_households["NB_2RM"] + df_households["NB_VD"]
-    df_households["number_of_vehicles"] = df_households["number_of_vehicles"].astype(int)
-    df_households["number_of_bikes"] = df_households["NB_VELO"].astype(int)
+    df_households["number_of_cars"] = df_households["NB_VD"].astype(int)
+    df_households["number_of_cars"] += df_households["NB_2RM"].astype(int) # motorbikes
+    df_households["number_of_bicycles"] = df_households["NB_VELO"].astype(int)
 
     # License
     df_persons["has_license"] = (df_persons["PERMVP"] == 1) | (df_persons["PERM2RM"] == 1)
@@ -171,11 +171,6 @@ def execute(context):
 
     # Chain length
     df_persons["number_of_trips"] = df_persons["NBDEPL"].fillna(0).astype(int)
-
-    # Passenger attribute
-    df_persons["is_passenger"] = df_persons["person_id"].isin(
-        df_trips[df_trips["mode"] == "car_passenger"]["person_id"].unique()
-    )
 
     # Calculate consumption units
     hts.check_household_size(df_households, df_persons)

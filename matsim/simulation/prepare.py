@@ -116,23 +116,13 @@ def execute(context):
             eqasim.run(context, "org.eqasim.core.scenario.spatial.RunImputeSpatialAttribute", [
                 "--input-population-path", "prepared_population.xml.gz",
                 "--output-population-path", "prepared_population.xml.gz",
-                "--input-network-path", "%snetwork.xml.gz" % context.config("output_prefix"),
-                "--output-network-path", "%snetwork.xml.gz" % context.config("output_prefix"),
+                "--input-schedule-path", "{}transit_schedule.xml.gz".format(context.config("output_prefix")),
+                "--output-schedule-path", "{}transit_schedule.xml.gz".format(context.config("output_prefix")),
                 "--shape-path", "departments.shp",
                 "--shape-attribute", "id",
                 "--shape-value", "75",
-                "--attribute", "isUrban"
+                "--attribute", "isParis"
             ])
-
-            eqasim.run(context, "org.eqasim.core.scenario.spatial.RunAdjustCapacity", [
-                "--input-path", "%snetwork.xml.gz" % context.config("output_prefix"),
-                "--output-path", "%snetwork.xml.gz" % context.config("output_prefix"),
-                "--shape-path", "departments.shp",
-                "--shape-attribute", "id",
-                "--shape-value", "75",
-                "--factor", str(0.8)
-            ])
-
     
     # Optionally, perform mode choice
     if context.config("mode_choice"):
