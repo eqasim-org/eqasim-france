@@ -169,17 +169,17 @@ def create(output_path):
 
     df_iris = df.copy()
     df_iris = df_iris[["iris", "municipality", "geometry"]].rename(columns = dict(
-        iris = "CODE_IRIS", municipality = "INSEE_COM"
+        iris = "code_iris", municipality = "code_insee"
     ))
 
     print("Hash", "df_iris", pd.util.hash_pandas_object(df_iris, index = True).sum())
     assert pd.util.hash_pandas_object(df_iris, index = True).sum() == 2008500941212791046
 
-    os.mkdir("%s/iris_2023" % output_path)
-    df_iris.to_file("%s/iris_2023/CONTOURS-IRIS.shp" % output_path)
-    
-    with py7zr.SevenZipFile("%s/iris_2023/iris.7z" % output_path, "w") as archive:
-        for source in glob.glob("%s/iris_2023/CONTOURS-IRIS.*" % output_path):
+    os.mkdir("%s/iris_2024" % output_path)
+    df_iris.to_file("%s/iris_2024/CONTOURS-IRIS.gpkg" % output_path,driver="GPKG")
+
+    with py7zr.SevenZipFile("%s/iris_2024/iris.7z" % output_path, "w") as archive:
+        for source in glob.glob("%s/iris_2024/CONTOURS-IRIS.*" % output_path):
             archive.write(source, "LAMB93/{}".format(source.split("/")[-1]))
             os.remove(source)
     
@@ -195,10 +195,10 @@ def create(output_path):
     print("Hash", "df_codes", pd.util.hash_pandas_object(df_codes, index = True).sum())
     assert pd.util.hash_pandas_object(df_codes, index = True).sum() == 7331396037856123913
 
-    os.mkdir("%s/codes_2023" % output_path)
+    os.mkdir("%s/codes_2024" % output_path)
 
-    with zipfile.ZipFile("%s/codes_2023/reference_IRIS_geo2023.zip" % output_path, "w") as archive:
-        with archive.open("reference_IRIS_geo2023.xlsx", "w") as f:
+    with zipfile.ZipFile("%s/codes_2024/reference_IRIS_geo2024.zip" % output_path, "w") as archive:
+        with archive.open("reference_IRIS_geo2024.xlsx", "w") as f:
             df_codes.to_excel(
                 f, sheet_name = "Emboitements_IRIS",
                 startrow = 5, index = False
@@ -214,17 +214,17 @@ def create(output_path):
     ))
 
     # Set all population to fixed number
-    df_population["P21_POP"] = 120.0
+    df_population["P22_POP"] = 120.0
 
     print("Hash", "df_population", pd.util.hash_pandas_object(df_population, index = True).sum())
     assert pd.util.hash_pandas_object(df_population, index = True).sum() == 9564481601138338437
 
-    os.mkdir("%s/rp_2021" % output_path)
+    os.mkdir("%s/rp_2022" % output_path)
 
-    with zipfile.ZipFile("%s/rp_2021/base-ic-evol-struct-pop-2021_xlsx.zip" % output_path, "w") as archive:
-        with archive.open("base-ic-evol-struct-pop-2021.xlsx", "w") as f:
-            df_population.to_excel(
-                f, sheet_name = "IRIS", startrow = 5, index = False
+    with zipfile.ZipFile("%s/rp_2022/base-ic-evol-struct-pop-2022_csv.zip" % output_path, "w") as archive:
+        with archive.open("base-ic-evol-struct-pop-2022.CSV", "w") as f:
+            df_population.to_csv(
+                f, sep = ";"
             )
 
     # Dataset: BPE
@@ -255,10 +255,8 @@ def create(output_path):
 
     os.mkdir("%s/bpe_2024" % output_path)
 
-    with zipfile.ZipFile("%s/bpe_2024/BPE24.zip" % output_path, "w") as archive:
-        with archive.open("BPE24.csv", "w") as f:
-            df_bpe[columns].to_csv(f,
-                sep = ";", index = False)
+    df_bpe[columns].to_parquet("%s/bpe_2024/BPE24.parquet" % output_path,
+             index = False)
 
     # Dataset: Tax data
     # Required attributes: CODGEO, D115, ..., D915
@@ -595,7 +593,7 @@ def create(output_path):
             persons.append(dict(
                 CANTVILLE = "ABCE", NUMMI = household_id,
                 AGED = "%03d" % random.integers(90), COUPLE = random.choice([1, 2]),
-                CS1 = random.integers(9),
+                GS = random.integers(9),
                 DEPT = department, IRIS = iris, REGION = region, ETUD = random.choice([1, 2]),
                 ILETUD = 4 if department != destination_department else 0,
                 ILT = 4 if department != destination_department else 0,
@@ -606,7 +604,7 @@ def create(output_path):
             ))
 
     columns = [
-        "CANTVILLE", "NUMMI", "AGED", "COUPLE", "CS1", "DEPT", "IRIS", "REGION",
+        "CANTVILLE", "NUMMI", "AGED", "COUPLE", "GS", "DEPT", "IRIS", "REGION",
         "ETUD", "ILETUD", "ILT", "IPONDI",
         "SEXE", "TACT", "TRANS", "VOIT", "DEROU"
     ]
@@ -616,10 +614,8 @@ def create(output_path):
 
     print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
     assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 2179663752841856527
-
-    with zipfile.ZipFile("%s/rp_2021/RP2021_indcvi.zip" % output_path, "w") as archive:
-        with archive.open("FD_INDCVI_2021.csv", "w") as f:
-            df_persons.to_csv(f, sep = ";")
+    
+    df_persons.to_parquet("%s/rp_2022/RP2022_indcvi.parquet" % output_path)
 
     # Data set: commute flows
     print("Creating commute flows ...")
@@ -643,9 +639,7 @@ def create(output_path):
     print("Hash", "df_work", pd.util.hash_pandas_object(df_work, index = True).sum())
     assert pd.util.hash_pandas_object(df_work, index = True).sum() == 5028761696203377742
 
-    with zipfile.ZipFile("%s/rp_2021/RP2021_mobpro.zip" % output_path, "w") as archive:
-        with archive.open("FD_MOBPRO_2021.csv", "w") as f:
-            df_work.to_csv(f, sep = ";")
+    df_work.to_parquet("%s/rp_2022/RP2022_mobpro.parquet" % output_path)
 
     # ... education
     df_education = pd.DataFrame(dict(
@@ -662,9 +656,7 @@ def create(output_path):
     print("Hash", "df_education", pd.util.hash_pandas_object(df_education, index = True).sum())
     assert pd.util.hash_pandas_object(df_education, index = True).sum() == 13755284994950693635
 
-    with zipfile.ZipFile("%s/rp_2021/RP2021_mobsco.zip" % output_path, "w") as archive:
-        with archive.open("FD_MOBSCO_2021.csv", "w") as f:
-            df_education.to_csv(f, sep = ";")
+    df_education.to_parquet("%s/rp_2022/RP2022_mobsco.parquet" % output_path)
 
     # Data set: BD-TOPO
     print("Creating BD-TOPO ...")
