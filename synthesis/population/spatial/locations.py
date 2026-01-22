@@ -12,7 +12,7 @@ def configure(context):
     context.stage("data.spatial.iris")
 
 def execute(context):
-    df_home = context.stage("synthesis.population.spatial.home.locations")
+    df_home = context.stage("synthesis.population.spatial.home.locations").rename(columns = { "home_location_id": "location_id" })
     df_work, df_education = context.stage("synthesis.population.spatial.primary.locations")
     df_secondary = context.stage("synthesis.population.spatial.secondary.locations")[0]
 
@@ -22,7 +22,7 @@ def execute(context):
     # Home locations
     df_home_locations = df_locations[df_locations["purpose"] == "home"]
     df_home_locations = pd.merge(df_home_locations, df_persons, on = "person_id")
-    df_home_locations = pd.merge(df_home_locations, df_home[["household_id", "geometry"]], on = "household_id")
+    df_home_locations = pd.merge(df_home_locations, df_home[["household_id", "location_id", "geometry"]], on = "household_id")
     df_home_locations = df_home_locations[["person_id", "activity_index", "location_id", "geometry"]]
 
     # Work locations
