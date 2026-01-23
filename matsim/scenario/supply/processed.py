@@ -10,7 +10,7 @@ def configure(context):
     context.stage("matsim.scenario.supply.gtfs")
 
     context.config("data_path")
-    context.config("processes")
+    context.config("processes", volatile = True)
 
 def execute(context):
     # Prepare input paths

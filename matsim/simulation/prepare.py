@@ -21,7 +21,7 @@ def configure(context):
     context.stage("data.spatial.codes")
 
     context.config("sampling_rate")
-    context.config("processes")
+    context.config("processes", volatile = True)
     context.config("random_seed")
 
     context.config("output_prefix", "ile_de_france_")
