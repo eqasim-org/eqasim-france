@@ -17,7 +17,7 @@ def configure(context):
     context.stage("synthesis.locations.secondary")
 
     context.config("random_seed")
-    context.config("processes")
+    context.config("processes", volatile = True)
 
     context.config("secloc_maximum_iterations", np.inf)
 
