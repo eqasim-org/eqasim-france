@@ -11,6 +11,7 @@ def configure(context: ConfigurationContext):
     
     context.stage("matsim.simulation.emissions.events")
 
+    eqasim.configure(context)
     context.stage("matsim.runtime.eqasim")
 
 

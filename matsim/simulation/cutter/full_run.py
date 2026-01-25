@@ -8,6 +8,7 @@ def configure(context: ConfigurationContext):
 
     context.config("cutter.name", "cutter")
 
+    eqasim.configure(context)
     context.stage("matsim.runtime.eqasim")
 
     context.stage("matsim.simulation.cutter.cut")

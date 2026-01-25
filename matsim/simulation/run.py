@@ -6,6 +6,7 @@ import matsim.runtime.eqasim as eqasim
 def configure(context):
     context.stage("matsim.simulation.prepare")
 
+    eqasim.configure(context)
     context.stage("matsim.runtime.eqasim")
 
 def execute(context):
