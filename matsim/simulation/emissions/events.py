@@ -10,7 +10,6 @@ def configure(context: ConfigurationContext):
     
     context.stage("matsim.simulation.cutter.full_run")
 
-    context.stage("matsim.runtime.java")
     context.stage("matsim.runtime.eqasim")
 
 

@@ -1,7 +1,11 @@
 import subprocess as sp
 import os, shutil
 
+import matsim.runtime.java as java
+
 def configure(context):
+    java.configure(context)
+
     context.config("maven_binary", "mvn")
     context.config("maven_skip_tests", False)
     context.config("maven_local_cache", False)
@@ -47,6 +51,8 @@ def run(context, arguments = [], cwd = None):
         raise RuntimeError("Maven return code: %d" % return_code)
 
 def validate(context):
+    java.validate(context)
+    
     if shutil.which(context.config("maven_binary")) in ["", None]:
         raise RuntimeError("Cannot find Maven binary at: %s" % context.config("maven_binary"))
 

@@ -3,7 +3,6 @@ from synpp import ConfigurationContext, ExecuteContext
 import matsim.runtime.eqasim as eqasim
 
 def configure(context: ConfigurationContext):
-    context.stage("matsim.runtime.java")
     context.stage("matsim.runtime.eqasim")
 
     context.stage("matsim.scenario.supply.processed")

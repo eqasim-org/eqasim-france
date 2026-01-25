@@ -14,7 +14,6 @@ def configure(context):
     context.stage("matsim.scenario.supply.processed")
     context.stage("matsim.scenario.supply.gtfs")
 
-    context.stage("matsim.runtime.java")
     context.stage("matsim.runtime.eqasim")
 
     context.stage("data.spatial.departments")

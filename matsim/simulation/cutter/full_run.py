@@ -8,7 +8,6 @@ def configure(context: ConfigurationContext):
 
     context.config("cutter.name", "cutter")
 
-    context.stage("matsim.runtime.java")
     context.stage("matsim.runtime.eqasim")
 
     context.stage("matsim.simulation.cutter.cut")

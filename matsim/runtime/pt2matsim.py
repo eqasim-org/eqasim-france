@@ -1,4 +1,3 @@
-import subprocess as sp
 import os, os.path
 
 import matsim.runtime.git as git
@@ -7,8 +6,8 @@ import matsim.runtime.maven as maven
 
 def configure(context):
     git.configure(context)
+    java.configure(context)
 
-    context.stage("matsim.runtime.java")
     context.stage("matsim.runtime.maven")
 
     context.config("pt2matsim_version", "22.3")
@@ -46,3 +45,4 @@ def execute(context):
 
 def validate(context):
     git.validate(context)
+    java.validate(context)
