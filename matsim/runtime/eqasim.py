@@ -10,7 +10,8 @@ DEFAULT_EQASIM_BRANCH = "develop"
 DEFAULT_EQASIM_COMMIT = "ece4932"
 
 def configure(context):
-    context.stage("matsim.runtime.git")
+    git.configure(context)
+    
     context.stage("matsim.runtime.java")
     context.stage("matsim.runtime.maven")
 
@@ -62,6 +63,7 @@ def execute(context):
     return "eqasim-java/ile_de_france/target/ile_de_france-%s.jar" % version
 
 def validate(context):
+    git.validate(context)
     path = context.config("eqasim_path")
 
     if path == "":

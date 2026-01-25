@@ -6,7 +6,8 @@ import matsim.runtime.java as java
 import matsim.runtime.maven as maven
 
 def configure(context):
-    context.stage("matsim.runtime.git")
+    git.configure(context)
+
     context.stage("matsim.runtime.java")
     context.stage("matsim.runtime.maven")
 
@@ -42,3 +43,6 @@ def execute(context):
 
     assert os.path.exists("%s/test_config.xml" % context.path())
     return jar_path
+
+def validate(context):
+    git.validate(context)
