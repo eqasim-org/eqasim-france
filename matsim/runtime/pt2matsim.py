@@ -7,8 +7,7 @@ import matsim.runtime.maven as maven
 def configure(context):
     git.configure(context)
     java.configure(context)
-
-    context.stage("matsim.runtime.maven")
+    maven.configure(context)
 
     context.config("pt2matsim_version", "22.3")
     context.config("pt2matsim_branch", "v22.3")
@@ -46,3 +45,4 @@ def execute(context):
 def validate(context):
     git.validate(context)
     java.validate(context)
+    maven.validate(context)

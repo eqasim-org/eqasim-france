@@ -11,8 +11,7 @@ DEFAULT_EQASIM_COMMIT = "ece4932"
 def configure(context):
     git.configure(context)
     java.configure(context)
-
-    context.stage("matsim.runtime.maven")
+    maven.configure(context)
 
     context.config("eqasim_version", DEFAULT_EQASIM_VERSION)
     context.config("eqasim_branch", DEFAULT_EQASIM_BRANCH)
@@ -64,6 +63,7 @@ def execute(context):
 def validate(context):
     git.validate(context)
     java.validate(context)
+    maven.validate(context)
 
     path = context.config("eqasim_path")
 
