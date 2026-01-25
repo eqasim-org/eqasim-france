@@ -3,7 +3,9 @@ import os.path
 import matsim.runtime.pt2matsim as pt2matsim
 
 def configure(context):
+    pt2matsim.configure(context)
     context.stage("matsim.runtime.pt2matsim")
+    
     context.stage("data.gtfs.cleaned")
     context.stage("data.spatial.iris")
 
