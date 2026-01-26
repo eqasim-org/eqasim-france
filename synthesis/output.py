@@ -94,11 +94,11 @@ def execute(context):
     df_activities["preceding_trip_index"] = df_activities["preceding_trip_index"].astype(int)
     # Prepare spatial data sets
     df_locations = context.stage("synthesis.population.spatial.locations")[[
-        "person_id",  "iris_id", "commune_id","departement_id","region_id","activity_index", "geometry"
+        "person_id",  "iris_id", "commune_id","departement_id","region_id","activity_index", "location_id", "geometry"
     ]]
 
     df_activities = pd.merge(df_activities, df_locations[[
-        "person_id", "iris_id", "commune_id","departement_id","region_id","activity_index", "geometry"
+        "person_id", "iris_id", "commune_id","departement_id","region_id","activity_index","location_id", "geometry"
     ]], how = "left", on = ["person_id", "activity_index"])
 
     # Prepare spatial activities
@@ -107,7 +107,7 @@ def execute(context):
             "iris_id", "commune_id","departement_id","region_id",
             "preceding_trip_index", "following_trip_index",
             "purpose", "start_time", "end_time",
-            "is_first", "is_last", "geometry"
+            "is_first", "is_last", "location_id", "geometry"
         ]], crs = df_locations.crs)
     df_spatial = df_spatial.astype({'purpose': 'str', "departement_id": 'str'})
 
@@ -117,7 +117,7 @@ def execute(context):
         "iris_id", "commune_id","departement_id","region_id",
         "preceding_trip_index", "following_trip_index",
         "purpose", "start_time", "end_time",
-        "is_first", "is_last"
+        "location_id", "is_first", "is_last"
     ]]
 
     if "csv" in output_formats:
@@ -208,7 +208,7 @@ def execute(context):
     df_spatial_homes = df_spatial[
         df_spatial["purpose"] == "home"
     ].drop_duplicates("household_id")[[
-        "household_id","iris_id", "commune_id","departement_id","region_id", "geometry"
+        "household_id","iris_id", "commune_id", "departement_id", "region_id", "location_id", "geometry"
     ]]
     if "gpkg" in output_formats:
         path = "%s/%shomes.gpkg" % (output_path, output_prefix)
@@ -220,8 +220,8 @@ def execute(context):
 
     # Write spatial commutes
     df_spatial = pd.merge(
-        df_spatial[df_spatial["purpose"] == "home"].drop_duplicates("person_id")[["person_id", "geometry"]].rename(columns = { "geometry": "home_geometry" }),
-        df_spatial[df_spatial["purpose"] == "work"].drop_duplicates("person_id")[["person_id", "geometry"]].rename(columns = { "geometry": "work_geometry" })
+        df_spatial[df_spatial["purpose"] == "home"].drop_duplicates("person_id")[["person_id", "location_id", "geometry"]].rename(columns = { "geometry": "home_geometry", "location_id": "home_location_id" }),
+        df_spatial[df_spatial["purpose"] == "work"].drop_duplicates("person_id")[["person_id", "location_id", "geometry"]].rename(columns = { "geometry": "work_geometry", "location_id": "work_location_id" })
     )
 
     df_spatial["geometry"] = gpd.GeoSeries([
