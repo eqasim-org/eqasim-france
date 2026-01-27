@@ -15,6 +15,18 @@ OPTIONAL_SLOTS = [
     "feed_info", "translations", "attributions"
 ]
 
+DTYPES = {
+    "stops": {
+        "stop_id": str, "parent_station": str
+    },
+    "agency": {
+        "agency_id": str
+    },
+    "routes": {
+        "agency_id": str
+    }
+}
+
 def read_feed(path):
     feed = {}
 
@@ -48,7 +60,7 @@ def read_feed(path):
                 print("  Loading %s.txt ..." % slot)
 
                 with zip.open("%s%s.txt" % (prefix, slot)) as f:
-                    feed[slot] = pd.read_csv(f, skipinitialspace = True)
+                    feed[slot] = pd.read_csv(f, skipinitialspace = True, dtype = DTYPES.get(slot, None))
             else:
                 print("  Not loading %s.txt" % slot)
 
@@ -69,8 +81,8 @@ def read_feed(path):
         df_stops = feed["stops"]
 
         if not "parent_station" in df_stops:
-            print("WARNING Missing parent_station in stops, setting to NaN")
-            df_stops["parent_station"] = np.nan
+            print("WARNING Missing parent_station in stops, setting to empty string")
+            df_stops["parent_station"] = ""
 
     if "transfers" in feed:
         df_transfers = feed["transfers"]
@@ -121,7 +133,7 @@ def write_feed(feed, path):
 
                     # We cannot write directly to the file handle as it
                     # is binary, but pandas only writes in text mode.
-                    zip.writestr("%s.txt" % slot, feed[slot].to_csv(index = None))
+                    zip.writestr("%s.txt" % slot, feed[slot].to_csv(index = None, lineterminator = "\n"))
 
     else:
         if not os.path.exists(path):
@@ -134,7 +146,7 @@ def write_feed(feed, path):
             if slot in feed:
                 with open("%s/%s.txt" % (path, slot), "w+", encoding="utf-8") as f:
                     print("  Writing %s.txt ..." % slot)
-                    feed[slot].to_csv(f, index = None, lineterminator='\n')
+                    feed[slot].to_csv(f, index = None, lineterminator = "\n")
 
 def cut_feed(feed, df_area, crs = None):
     feed = copy_feed(feed)
@@ -284,31 +296,32 @@ def merge_two_feeds(first, second, suffix = "_merged"):
             df_first = first[collision["slot"]]
             df_second = second[collision["slot"]]
 
-            df_first[collision["identifier"]] = df_first[collision["identifier"]].astype(str)
-            df_second[collision["identifier"]] = df_second[collision["identifier"]].astype(str)
+            if collision["identifier"] in df_first and collision["identifier"] in df_second:
+                df_first[collision["identifier"]] = df_first[collision["identifier"]].astype(str)
+                df_second[collision["identifier"]] = df_second[collision["identifier"]].astype(str)
 
-            df_concat = pd.concat([df_first, df_second], sort = True).drop_duplicates()
-            duplicate_ids = list(df_concat[df_concat[collision["identifier"]].duplicated()][
-                collision["identifier"]].astype(str).unique())
+                df_concat = pd.concat([df_first, df_second], sort = True).drop_duplicates()
+                duplicate_ids = list(df_concat[df_concat[collision["identifier"]].duplicated()][
+                    collision["identifier"]].astype(str).unique())
 
-            if len(duplicate_ids) > 0:
-                print("   Found %d duplicate identifiers in %s" % (
-                    len(duplicate_ids), collision["slot"]))
+                if len(duplicate_ids) > 0:
+                    print("   Found %d duplicate identifiers in %s" % (
+                        len(duplicate_ids), collision["slot"]))
 
-                replacement_ids = [str(id) + suffix for id in duplicate_ids]
+                    replacement_ids = [str(id) + suffix for id in duplicate_ids]
 
-                df_second[collision["identifier"]] = df_second[collision["identifier"]].replace(
-                    duplicate_ids, replacement_ids
-                )
+                    df_second[collision["identifier"]] = df_second[collision["identifier"]].replace(
+                        duplicate_ids, replacement_ids
+                    )
 
-                for ref_slot, ref_identifier in collision["references"]:
-                    if ref_slot in first and ref_slot in second:
-                        first[ref_slot][ref_identifier] = first[ref_slot][ref_identifier].astype(str)
-                        second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].astype(str)
+                    for ref_slot, ref_identifier in collision["references"]:
+                        if ref_slot in first and ref_slot in second:
+                            first[ref_slot][ref_identifier] = first[ref_slot][ref_identifier].astype(str)
+                            second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].astype(str)
 
-                        second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].replace(
-                            duplicate_ids, replacement_ids
-                        )
+                            second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].replace(
+                                duplicate_ids, replacement_ids
+                            )
 
     for slot in REQUIRED_SLOTS + OPTIONAL_SLOTS:
         if slot in first and slot in second:
@@ -317,30 +330,5 @@ def merge_two_feeds(first, second, suffix = "_merged"):
             feed[slot] = first[slot].copy()
         elif slot in second:
             feed[slot] = second[slot].copy()
-
-    return feed
-
-def despace_stop_ids(feed, replacement = ":::"):
-    feed = copy_feed(feed)
-
-    references = None
-
-    for item in SLOT_COLLISIONS:
-        if item["slot"] == "stops":
-            references = item["references"]
-
-    df_stops = feed["stops"]
-    df_stops["stop_id"] = df_stops["stop_id"].astype(str)
-
-    search_ids = list(df_stops[df_stops["stop_id"].str.contains(" ")]["stop_id"].unique())
-    replacement_ids = [item.replace(" ", replacement) for item in search_ids]
-
-    df_stops["stop_id"] = df_stops["stop_id"].replace(search_ids, replacement_ids)
-
-    for reference_slot, reference_field in references:
-        if reference_slot in feed:
-            feed[reference_slot][reference_field] = feed[reference_slot][reference_field].astype(str).replace(search_ids, replacement_ids)
-
-    print("De-spaced %d/%d stops" % (len(search_ids), len(df_stops)))
 
     return feed

@@ -1,7 +1,8 @@
 import pandas as pd
 import os
 import zipfile
-
+import pyarrow as pa
+import polars as pl
 """
 Loads raw OD data from French census data.
 """
@@ -9,10 +10,8 @@ Loads raw OD data from French census data.
 def configure(context):
     context.stage("data.spatial.codes")
     context.config("data_path")
-    context.config("od_pro_path", "rp_2021/RP2021_mobpro.zip")
-    context.config("od_sco_path", "rp_2021/RP2021_mobsco.zip")
-    context.config("od_pro_csv", "FD_MOBPRO_2021.csv")
-    context.config("od_sco_csv", "FD_MOBSCO_2021.csv")
+    context.config("od_pro_path", "rp_2022/RP2022_mobpro.parquet")
+    context.config("od_sco_path", "rp_2022/RP2022_mobsco.parquet")
 
 def execute(context):
     df_codes = context.stage("data.spatial.codes")
@@ -23,62 +22,44 @@ def execute(context):
         df_records = []
 
         COLUMNS_DTYPES = {
-            "COMMUNE":"str", 
-            "ARM":"str", 
-            "TRANS":"int",
-            "IPONDI":"float", 
-            "DCLT":"str"
+            "COMMUNE":pl.String, 
+            "ARM":pl.String, 
+            "TRANS":pl.Int32,
+            "IPONDI":pl.Float32, 
+            "DCLT":pl.String
         }
 
-        with zipfile.ZipFile(
-            "{}/{}".format(context.config("data_path"), context.config("od_pro_path"))) as archive:
-            with archive.open(context.config("od_pro_csv")) as f:
-                csv = pd.read_csv(f, usecols = COLUMNS_DTYPES.keys(), 
-                                  dtype = COLUMNS_DTYPES, sep = ";",chunksize = 10240)
+        parquet = pl.read_parquet("{}/{}".format(context.config("data_path"), context.config("od_pro_path")),columns=  list(COLUMNS_DTYPES.keys()),
+                                  )
+        
+        parquet = parquet.cast(COLUMNS_DTYPES)
+        parquet = parquet.filter(((pl.col("COMMUNE").is_in(requested_communes))|(pl.col("ARM").is_in(requested_communes)))&(pl.col("DCLT").is_in(requested_communes)))
+        
+        progress.update(len(parquet))
 
-                for df_chunk in csv:
-                    progress.update(len(df_chunk))
-
-                    f = df_chunk["COMMUNE"].isin(requested_communes)
-                    f |= df_chunk["ARM"].isin(requested_communes)
-                    f &= df_chunk["DCLT"].isin(requested_communes)
-
-                    df_chunk = df_chunk[f]
-
-                    if len(df_chunk) > 0:
-                        df_records.append(df_chunk)
-    work = pd.concat(df_records)
+    work = parquet.to_pandas()
 
     # Second, load education
     with context.progress(label = "Reading education flows ...") as progress:
         df_records = []
 
         COLUMNS_DTYPES = {
-            "COMMUNE":"str", 
-            "ARM":"str", 
-            "IPONDI":"float",
-            "DCETUF":"str",
-            "AGEREV10":"int"
+            "COMMUNE":pl.String, 
+            "ARM":pl.String, 
+            "IPONDI":pl.Float32,
+            "DCETUF":pl.String,
+            "AGEREV10":pl.String
         }
 
-        with zipfile.ZipFile(
-            "{}/{}".format(context.config("data_path"), context.config("od_sco_path"))) as archive:
-            with archive.open(context.config("od_sco_csv")) as f:
-                csv = pd.read_csv(f, usecols = COLUMNS_DTYPES.keys(), 
-                                  dtype = COLUMNS_DTYPES, sep = ";",chunksize = 10240)
+        parquet = pl.read_parquet("{}/{}".format(context.config("data_path"), context.config("od_sco_path")), columns=  COLUMNS_DTYPES.keys(), 
+                                  )
 
-                for df_chunk in csv:
-                    progress.update(len(df_chunk))
+        parquet = parquet.filter(((pl.col("COMMUNE").is_in(requested_communes))|(pl.col("ARM").is_in(requested_communes)))&(pl.col("DCETUF").is_in(requested_communes)))
+        parquet = parquet.cast(COLUMNS_DTYPES)
 
-                    f = df_chunk["COMMUNE"].isin(requested_communes)
-                    f |= df_chunk["ARM"].isin(requested_communes)
-                    f &= df_chunk["DCETUF"].isin(requested_communes)
+        progress.update(len(parquet))
 
-                    df_chunk = df_chunk[f]
-
-                    if len(df_chunk) > 0:
-                        df_records.append(df_chunk)
-    education = pd.concat(df_records)
+    education = parquet.to_pandas()
 
     return work, education
 

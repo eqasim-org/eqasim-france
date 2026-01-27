@@ -1,15 +1,14 @@
 import pandas as pd
 import os
 import zipfile
-
+import polars as pl
 """
 This stage loads the raw data from the French service registry.
 """
 
 def configure(context):
     context.config("data_path")
-    context.config("bpe_path", "bpe_2024/BPE24.zip")
-    context.config("bpe_csv", "BPE24.csv")
+    context.config("bpe_path", "bpe_2024/BPE24.parquet")
     context.stage("data.spatial.codes")
 
 def execute(context):
@@ -19,25 +18,18 @@ def execute(context):
     requested_departements = df_codes["departement_id"].unique()
 
     with context.progress(label = "Reading BPE ...") as progress:
-        with zipfile.ZipFile("{}/{}".format(context.config("data_path"), context.config("bpe_path"))) as archive:
-            with archive.open(context.config("bpe_csv")) as f:
-                csv = pd.read_csv(f, usecols = [ "CAPACITE",
+        parquet = pl.read_parquet("{}/{}".format(context.config("data_path"), context.config("bpe_path")), columns = [ "CAPACITE",
                         "DCIRIS", "LAMBERT_X", "LAMBERT_Y",
                         "TYPEQU", "DEPCOM", "DEP"
-                    ], sep = ";",
-                    dtype = dict(DEPCOM = str, DEP = str, DCIRIS = str),
-                    chunksize = 10240
+                    ],
                 )
 
-                for df_chunk in csv:
-                    progress.update(len(df_chunk))
+        parquet = parquet.cast( dict(DEPCOM = str, DEP = str, DCIRIS = str))
+        parquet = parquet.filter(pl.col("DEP").is_in(requested_departements))
 
-                    df_chunk = df_chunk[df_chunk["DEP"].isin(requested_departements)]
+        progress.update(len(parquet))
 
-                    if len(df_chunk) > 0:
-                        df_records.append(df_chunk)
-
-    return pd.concat(df_records)
+    return parquet.to_pandas()
 
 def validate(context):
     if not os.path.exists("%s/%s" % (context.config("data_path"), context.config("bpe_path"))):

@@ -3,15 +3,16 @@ import os.path
 import matsim.runtime.pt2matsim as pt2matsim
 
 def configure(context):
-    context.stage("matsim.runtime.java")
+    pt2matsim.configure(context)
     context.stage("matsim.runtime.pt2matsim")
+    
     context.stage("data.osm.cleaned")
     context.stage("data.spatial.iris")
 
     context.config("export_detailed_network", False)
 
 def execute(context):
-    osm_path = "%s/output.osm.gz" % context.path("data.osm.cleaned")
+    osm_path = "{}/output.osm.gz".format(context.path("data.osm.cleaned"))
     crs = context.stage("data.spatial.iris").crs
 
     pt2matsim.run(context, "org.matsim.pt2matsim.run.CreateDefaultOsmConfig", 
@@ -23,8 +24,13 @@ def execute(context):
 
         content = content.replace(
             '<param name="osmFile" value="null" />',
-            '<param name="osmFile" value="%s" />' % osm_path
+            '<param name="osmFile" value="{}" />'.format(osm_path)
         )
+
+        # content = content.replace(
+        #     '<param name="writeCRS" value="false" />',
+        #     '<param name="writeCRS" value="true" />'
+        # )
 
         content = content.replace(
             '<param name="outputCoordinateSystem" value="null" />',
