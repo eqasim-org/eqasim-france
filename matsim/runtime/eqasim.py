@@ -4,9 +4,9 @@ import matsim.runtime.git as git
 import matsim.runtime.java as java
 import matsim.runtime.maven as maven
 
-DEFAULT_EQASIM_VERSION = "1.5.0"
+DEFAULT_EQASIM_VERSION = "2.0.0"
 DEFAULT_EQASIM_BRANCH = "develop"
-DEFAULT_EQASIM_COMMIT = "ece4932"
+DEFAULT_EQASIM_COMMIT = "1995b11"
 
 def configure(context):
     git.configure(context)
