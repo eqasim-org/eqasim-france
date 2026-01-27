@@ -25,7 +25,7 @@ DEFAULT_MATCHING_ATTRIBUTES = [
 ]
 
 def configure(context):
-    context.config("processes")
+    context.config("processes", volatile = True)
     context.config("random_seed")
     context.config("matching_minimum_observations", 20)
     context.config("matching_attributes", DEFAULT_MATCHING_ATTRIBUTES)

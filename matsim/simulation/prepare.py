@@ -14,14 +14,14 @@ def configure(context):
     context.stage("matsim.scenario.supply.processed")
     context.stage("matsim.scenario.supply.gtfs")
 
-    context.stage("matsim.runtime.java")
+    eqasim.configure(context)
     context.stage("matsim.runtime.eqasim")
 
     context.stage("data.spatial.departments")
     context.stage("data.spatial.codes")
 
     context.config("sampling_rate")
-    context.config("processes")
+    context.config("processes", volatile = True)
     context.config("random_seed")
 
     context.config("output_prefix", "ile_de_france_")

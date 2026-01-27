@@ -1,4 +1,3 @@
-import subprocess as sp
 import os, os.path, shutil
 
 import matsim.runtime.git as git
@@ -10,9 +9,9 @@ DEFAULT_EQASIM_BRANCH = "develop"
 DEFAULT_EQASIM_COMMIT = "ece4932"
 
 def configure(context):
-    context.stage("matsim.runtime.git")
-    context.stage("matsim.runtime.java")
-    context.stage("matsim.runtime.maven")
+    git.configure(context)
+    java.configure(context)
+    maven.configure(context)
 
     context.config("eqasim_version", DEFAULT_EQASIM_VERSION)
     context.config("eqasim_branch", DEFAULT_EQASIM_BRANCH)
@@ -62,6 +61,10 @@ def execute(context):
     return "eqasim-java/ile_de_france/target/ile_de_france-%s.jar" % version
 
 def validate(context):
+    git.validate(context)
+    java.validate(context)
+    maven.validate(context)
+
     path = context.config("eqasim_path")
 
     if path == "":
