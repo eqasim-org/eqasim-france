@@ -9,8 +9,8 @@ def configure(context):
     java.configure(context)
     maven.configure(context)
 
-    context.config("pt2matsim_version", "22.3")
-    context.config("pt2matsim_branch", "v22.3")
+    context.config("pt2matsim_version", "26.1")
+    context.config("pt2matsim_branch", "v26.1")
 
 def run(context, command, arguments, vm_arguments=[]):
     # Make sure there is a dependency

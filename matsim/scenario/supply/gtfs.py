@@ -12,18 +12,18 @@ def configure(context):
     context.config("gtfs_date", "dayWithMostServices")
 
 def execute(context):
-    gtfs_path = "%s/output" % context.path("data.gtfs.cleaned")
+    gtfs_path = "{}/gtfs.zip".format(context.path("data.gtfs.cleaned"))
     crs = context.stage("data.spatial.iris").crs
 
     pt2matsim.run(context, "org.matsim.pt2matsim.run.Gtfs2TransitSchedule", [
         gtfs_path,
         context.config("gtfs_date"), crs,
-        "%s/transit_schedule.xml.gz" % context.path(),
-        "%s/transit_vehicles.xml.gz" % context.path()
+        "{}/transit_schedule.xml.gz".format(context.path()),
+        "{}/transit_vehicles.xml.gz".format(context.path())
     ])
 
-    assert(os.path.exists("%s/transit_schedule.xml.gz" % context.path()))
-    assert(os.path.exists("%s/transit_vehicles.xml.gz" % context.path()))
+    assert(os.path.exists("{}/transit_schedule.xml.gz".format(context.path())))
+    assert(os.path.exists("{}/transit_vehicles.xml.gz".format(context.path())))
 
     return dict(
         schedule_path = "transit_schedule.xml.gz",
