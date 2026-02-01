@@ -65,7 +65,7 @@ report.register(
 
 report.register(
     "Origin-destination data (RP-MOBPRO 2022)",
-    "https://www.insee.fr/fr/statistiques/fichier/8589904/RP2019_mobpro.parquet"
+    "https://www.insee.fr/fr/statistiques/fichier/8589904/RP2022_mobpro.parquet"
 )
 
 report.register(
