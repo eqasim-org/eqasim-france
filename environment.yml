@@ -30,5 +30,5 @@ dependencies:
   - pip:
     - synpp==1.6.1
     - bhepop2==2.0.1
-    - osmium==4.2.0
+    - osmium==4.3.0
     - py7zr==1.1.2
