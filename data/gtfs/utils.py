@@ -60,7 +60,13 @@ def read_feed(path):
                 print("  Loading %s.txt ..." % slot)
 
                 with zip.open("%s%s.txt" % (prefix, slot)) as f:
-                    feed[slot] = pd.read_csv(f, skipinitialspace = True, dtype = DTYPES.get(slot, None))
+                    feed[slot] = pd.read_csv(
+                        f,
+                        skipinitialspace=True,
+                        dtype=DTYPES.get(slot, None),
+                        keep_default_na=False,
+                        na_filter=False
+                    )
             else:
                 print("  Not loading %s.txt" % slot)
 
