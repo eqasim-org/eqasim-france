@@ -31,7 +31,25 @@ def sample_destination_municipalities(context, arguments):
     df_od = df_od[df_od["origin_id"] == origin_id].copy()
 
     # Sample destinations
-    df_od["count"] = random.multinomial(count, df_od["weight"].values)
+    weights = df_od["weight"].to_numpy(dtype=np.float64)
+
+    # Remove negatives just in case
+    weights = np.maximum(weights, 0.0)
+    total = weights.sum()
+
+    if total <= 0 or count == 0:
+        df_od["count"] = 0
+    else:
+        # Normalize to sum ~1.0
+        weights /= total
+
+        # Numerical safety: if rounding made sum slightly > 1, renormalize
+        s = weights.sum()
+        if s > 1.0:
+            weights /= s  # scale all weights down together
+
+        df_od["count"] = np.random.multinomial(count, weights)
+
     df_od = df_od[df_od["count"] > 0]
 
     context.progress.update()
