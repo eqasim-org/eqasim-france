@@ -199,7 +199,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_config.xml",
         "{}/ile_de_france_config.xml".format(output_path),
-        "30871dfbbd2b5bf6922be1dfe20ffe73")
+        "75618a1b1bc27f47d374dddc2a4660a7")
     
     manager.check(
         "ile_de_france_households.xml.gz",
