@@ -49,7 +49,7 @@ The tax data set is available from INSEE:
 The census of services and facilities in France is available from INSEE:
 
 - [Service and facility census](https://www.insee.fr/fr/statistiques/8217525)
-- Download the data set in **csv** format.
+- Download the data set in **parquet** format.
 - Copy the *zip* file into the folder `data/bpe_2024`.
 
 ## 6a) National household travel survey (ENTD 2008)
