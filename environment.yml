@@ -25,7 +25,7 @@ dependencies:
   - sqlite=3.51.2
   - mock=5.2.0
   - pyarrow=23.0.0
-  - polars=1.37.1
+  - polars=1.38.1
 
   - pip:
     - synpp==1.6.1
