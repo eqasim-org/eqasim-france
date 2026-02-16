@@ -50,7 +50,7 @@ The census of services and facilities in France is available from INSEE:
 
 - [Service and facility census](https://www.insee.fr/fr/statistiques/8217525)
 - Download the data set in **parquet** format.
-- Copy the *zip* file into the folder `data/bpe_2024`.
+- Copy the *parquet* file into the folder `data/bpe_2024`.
 
 ## 6a) National household travel survey (ENTD 2008)
 
@@ -163,7 +163,7 @@ Your folder structure should now have at least the following files:
 - `data/rp_2022/base-ic-evol-struct-pop-2022_csv.zip`
 - `data/filosofi_2021/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip`
 - `data/filosofi_2021/indic-struct-distrib-revenu-2021-SUPRA_XLSX.zip`
-- `data/bpe_2024/BPE24.zip`
+- `data/bpe_2024/BPE24.parquet`
 - `data/entd_2008/Q_individu.csv`
 - `data/entd_2008/Q_tcm_individu.csv`
 - `data/entd_2008/Q_menage.csv`
