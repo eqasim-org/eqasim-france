@@ -14,7 +14,7 @@ dependencies:
   - scikit-learn=1.8.0
   - shapely=2.1.2
   - tqdm=4.67.3
-  - pytables=3.10.2
+  - pytables=3.11.0
   - xlrd=2.0.2
   - openpyxl=3.1.5
   - pip=25.3
