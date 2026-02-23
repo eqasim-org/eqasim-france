@@ -60,13 +60,7 @@ def read_feed(path):
                 print("  Loading %s.txt ..." % slot)
 
                 with zip.open("%s%s.txt" % (prefix, slot)) as f:
-                    feed[slot] = pd.read_csv(
-                        f,
-                        skipinitialspace=True,
-                        dtype=DTYPES.get(slot, None),
-                        keep_default_na=False,
-                        na_filter=False
-                    )
+                    feed[slot] = pd.read_csv(f, skipinitialspace = True, dtype = DTYPES.get(slot, None))
             else:
                 print("  Not loading %s.txt" % slot)
 
@@ -89,6 +83,8 @@ def read_feed(path):
         if not "parent_station" in df_stops:
             print("WARNING Missing parent_station in stops, setting to empty string")
             df_stops["parent_station"] = ""
+        else:
+            df_stops["parent_station"] = df_stops["parent_station"].replace("nan", float("nan"))
 
     if "transfers" in feed:
         df_transfers = feed["transfers"]
@@ -131,6 +127,12 @@ def read_feed(path):
 def write_feed(feed, path):
     print("Writing GTFS data to %s ..." % path)
 
+    def clean_slot(df):
+        df = df.copy()
+        for col in df.select_dtypes(include="object").columns:
+            df[col] = df[col].replace("nan", "")
+        return df
+
     if path.endswith(".zip"):
         with zipfile.ZipFile(path, "w") as zip:
             for slot in REQUIRED_SLOTS + OPTIONAL_SLOTS:
@@ -139,12 +141,12 @@ def write_feed(feed, path):
 
                     # We cannot write directly to the file handle as it
                     # is binary, but pandas only writes in text mode.
-                    zip.writestr("%s.txt" % slot, feed[slot].to_csv(index = None, lineterminator = "\n"))
+                    zip.writestr("%s.txt" % slot, clean_slot(feed[slot]).to_csv(index=None, lineterminator="\n", na_rep=""))
 
     else:
         if not os.path.exists(path):
             os.mkdir(path)
-
+            
         if not os.path.isdir(path):
             raise RuntimeError("Should be a directory: %s" % path)
 
@@ -152,7 +154,7 @@ def write_feed(feed, path):
             if slot in feed:
                 with open("%s/%s.txt" % (path, slot), "w+", encoding="utf-8") as f:
                     print("  Writing %s.txt ..." % slot)
-                    feed[slot].to_csv(f, index = None, lineterminator = "\n")
+                    clean_slot(feed[slot]).to_csv(f, index=None, lineterminator="\n", na_rep="")
 
 def cut_feed(feed, df_area, crs = None):
     feed = copy_feed(feed)
