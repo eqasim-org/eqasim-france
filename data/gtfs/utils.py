@@ -130,6 +130,9 @@ def write_feed(feed, path):
             for slot in REQUIRED_SLOTS + OPTIONAL_SLOTS:
                 if slot in feed:
                     print("  Writing %s.txt ..." % slot)
+
+                    # We cannot write directly to the file handle as it
+                    # is binary, but pandas only writes in text mode.
                     zip.writestr("%s.txt" % slot, feed[slot].to_csv(index=None, lineterminator="\n"))
     else:
         if not os.path.exists(path):
@@ -142,9 +145,6 @@ def write_feed(feed, path):
             if slot in feed:
                 with open("%s/%s.txt" % (path, slot), "w+", encoding="utf-8") as f:
                     print("  Writing %s.txt ..." % slot)
-
-                    # We cannot write directly to the file handle as it
-                    # is binary, but pandas only writes in text mode.
                     feed[slot].to_csv(f, index=None, lineterminator="\n")
 
 def cut_feed(feed, df_area, crs = None):
