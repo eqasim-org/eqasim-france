@@ -133,8 +133,7 @@ def write_feed(feed, path):
 
                     # We cannot write directly to the file handle as it
                     # is binary, but pandas only writes in text mode.
-                    zip.writestr("%s.txt" % slot, feed[slot].to_csv(index = None, lineterminator = "\n"))
-
+                    zip.writestr("%s.txt" % slot, feed[slot].to_csv(index=None, lineterminator="\n"))
     else:
         if not os.path.exists(path):
             os.mkdir(path)
@@ -146,7 +145,7 @@ def write_feed(feed, path):
             if slot in feed:
                 with open("%s/%s.txt" % (path, slot), "w+", encoding="utf-8") as f:
                     print("  Writing %s.txt ..." % slot)
-                    feed[slot].to_csv(f, index = None, lineterminator = "\n")
+                    feed[slot].to_csv(f, index=None, lineterminator="\n")
 
 def cut_feed(feed, df_area, crs = None):
     feed = copy_feed(feed)
@@ -297,12 +296,8 @@ def merge_two_feeds(first, second, suffix = "_merged"):
             df_second = second[collision["slot"]]
 
             if collision["identifier"] in df_first and collision["identifier"] in df_second:
-                df_first[collision["identifier"]] = df_first[collision["identifier"]].astype(str)
-                df_second[collision["identifier"]] = df_second[collision["identifier"]].astype(str)
-
                 df_concat = pd.concat([df_first, df_second], sort = True).drop_duplicates()
-                duplicate_ids = list(df_concat[df_concat[collision["identifier"]].duplicated()][
-                    collision["identifier"]].astype(str).unique())
+                duplicate_ids = list(df_concat[df_concat[collision["identifier"]].duplicated()][collision["identifier"]].unique())
 
                 if len(duplicate_ids) > 0:
                     print("   Found %d duplicate identifiers in %s" % (
@@ -316,9 +311,6 @@ def merge_two_feeds(first, second, suffix = "_merged"):
 
                     for ref_slot, ref_identifier in collision["references"]:
                         if ref_slot in first and ref_slot in second:
-                            first[ref_slot][ref_identifier] = first[ref_slot][ref_identifier].astype(str)
-                            second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].astype(str)
-
                             second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].replace(
                                 duplicate_ids, replacement_ids
                             )
