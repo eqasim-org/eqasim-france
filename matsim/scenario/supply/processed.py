@@ -3,7 +3,7 @@ import os.path
 import matsim.runtime.pt2matsim as pt2matsim
 
 def configure(context):
-    context.stage("matsim.runtime.java")
+    pt2matsim.configure(context)
     context.stage("matsim.runtime.pt2matsim")
 
     context.stage("matsim.scenario.supply.osm")

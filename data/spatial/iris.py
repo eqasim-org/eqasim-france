@@ -10,7 +10,7 @@ Loads the IRIS zoning system.
 
 def configure(context):
     context.config("data_path")
-    context.config("iris_path", "iris_2023")
+    context.config("iris_path", "iris_2024")
     context.stage("data.spatial.codes")
 
 def execute(context):
@@ -26,16 +26,16 @@ def execute(context):
 
         archive.extract(context.path(), contour_paths)
     
-    shp_path = [path for path in contour_paths if path.endswith(".shp")]
+    gpkg_path = [path for path in contour_paths if path.endswith(".gpkg")]
 
-    if len(shp_path) != 1:
+    if len(gpkg_path) != 1:
         raise RuntimeError("Cannot find IRIS shapes inside the archive, please report this as an error!")
 
-    df_iris = gpd.read_file("{}/{}".format(context.path(), shp_path[0]))[[
-        "CODE_IRIS", "INSEE_COM", "geometry"
+    df_iris = gpd.read_file("{}/{}".format(context.path(), gpkg_path[0]),dtype={"code_iris":str,"code_insee":str})[[
+        "code_insee", "code_iris", "geometry"
     ]].rename(columns = {
-        "CODE_IRIS": "iris_id",
-        "INSEE_COM": "commune_id"
+        "code_iris": "iris_id",
+        "code_insee": "commune_id"
     })
 
     assert df_iris.crs == "EPSG:2154"

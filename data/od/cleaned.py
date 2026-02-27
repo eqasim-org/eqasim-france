@@ -60,6 +60,7 @@ def execute(context):
     
 
     # Clean age range for education
+    df_education["AGEREV10"] = df_education["AGEREV10"].astype(int)
     df_education["age_range"] = ""
     df_education.loc[df_education["AGEREV10"] <= 6, "age_range"] = "primary_school"
     df_education.loc[df_education["AGEREV10"] == 11, "age_range"] = "middle_school"

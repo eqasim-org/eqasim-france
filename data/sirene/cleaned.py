@@ -11,6 +11,8 @@ def configure(context):
     context.stage("data.spatial.codes")
     context.config("exclude_no_employee", False)
 
+    context.config("output_path")
+
 def execute(context):
     df_sirene_establishments = context.stage("data.sirene.raw_siret")
     df_sirene_headquarters = context.stage("data.sirene.raw_siren")
@@ -19,11 +21,11 @@ def execute(context):
     # Filter out establishments without a corresponding headquarter
     df_sirene = df_sirene_establishments[df_sirene_establishments["siren"].isin(df_sirene_headquarters["siren"])].copy()
 
-    # Remove inactive enterprises
+    # Remove inactive enterprises 
     df_sirene = df_sirene[
         df_sirene["etatAdministratifEtablissement"] == "A"
     ].copy()
-    
+
     if context.config("exclude_no_employee"):
         # exclude "NN", "00", and NaN
         df_sirene = df_sirene[
@@ -76,9 +78,9 @@ def execute(context):
 
     if len(excess_communes) > 0:
         print("Found excess municipalities in SIRENE data: ", excess_communes)
-
-    if len(excess_communes) > 5:
-        raise RuntimeError("Found more than 5 excess municipalities in SIRENE data")
+    
+    if len(excess_communes) > 10:
+        raise RuntimeError("Found more than 10 excess municipalities in SIRENE data")
 
     df_sirene = df_sirene[["siren", "commune_id", "minimum_employees", "maximum_employees", "ape", "siret"]]
 

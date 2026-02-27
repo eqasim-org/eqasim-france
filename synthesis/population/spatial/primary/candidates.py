@@ -31,7 +31,10 @@ def sample_destination_municipalities(context, arguments):
     df_od = df_od[df_od["origin_id"] == origin_id].copy()
 
     # Sample destinations
-    df_od["count"] = random.multinomial(count, df_od["weight"].values)
+    weights = df_od["weight"].values.astype(np.float64) # conversion for multinomial
+    weights = weights / np.sum(weights)
+
+    df_od["count"] = random.multinomial(count, weights)
     df_od = df_od[df_od["count"] > 0]
 
     context.progress.update()
