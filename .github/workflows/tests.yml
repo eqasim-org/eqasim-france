@@ -52,7 +52,7 @@ jobs:
         MKL_CBWR=AUTO pytest tests/
 
     - name: Archive failed tests data
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: ${{ failure() }}
       with:
         name: tests-logs-${{ matrix.os }}-py${{ matrix.python-version }}
