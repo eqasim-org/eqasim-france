@@ -17,6 +17,7 @@ def configure(context):
     context.stage("synthesis.population.matched")
     context.stage("synthesis.population.sampled")
     context.stage("synthesis.population.income.selected")
+    context.config("extra_enriched_attributes", [])
 
     hts = context.config("hts")
     context.stage("data.hts.selected", alias = "hts")
@@ -44,9 +45,11 @@ def execute(context):
     df_hts_persons = df_hts_persons.rename(columns = { "person_id": "hts_id", "household_id": "hts_household_id" })
     df_hts_households = df_hts_households.rename(columns = { "household_id": "hts_household_id" })
 
-    df_population = pd.merge(df_population, df_hts_persons[[
-        "hts_id", "hts_household_id", "has_license", "has_pt_subscription", "is_passenger"
-    ]], on = "hts_id")
+    columns = ["hts_id", "hts_household_id", "has_license", "has_pt_subscription", "is_passenger"]
+    extra_cols = context.config("extra_enriched_attributes")
+    assert isinstance(extra_cols, list), "`extra_enriched_attributes` parameter must be a list"
+    columns += extra_cols
+    df_population = pd.merge(df_population, df_hts_persons[columns], on="hts_id")
 
     df_population = pd.merge(df_population, df_hts_households[[
         "hts_household_id", "number_of_bikes"

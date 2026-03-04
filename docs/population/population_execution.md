@@ -282,3 +282,27 @@ config:
 
 Caution, this method will fail on communes where the Filosofi subpopulation distributions are missing. In this case,
 we fall back to the `uniform` method.
+
+## Enriching person attributes
+
+By default, the pipeline "enriches" generated persons with variables such as
+`has_license` and `has_pt_subscription`.
+These attributes are derived from the Household Travel Survey (HTS) using
+statistical matching.
+
+If you import the HTS using
+[MobiSurvStd](../cases/cases_summary.md#generic-process), you can further
+enrich person attributes with additional variables.
+These variables are specified in the configuration file using the
+`extra_enriched_attributes` parameter.
+
+```yaml
+config:
+  extra_enriched_attributes:
+    - "detailed_education_level"
+    - "detailed_professional_occupation"
+    - "work_only_at_home"
+```
+
+For a complete list of possible attributes, refer to the
+[MobiSurvStd documentation](https://mobisurvstd.github.io/MobiSurvStd/format/persons.html).
