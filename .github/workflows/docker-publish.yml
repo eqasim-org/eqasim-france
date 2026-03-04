@@ -9,11 +9,11 @@ on:
   # schedule:
     # - cron: '35 8 * * *'
   push:
-    branches: [ "develop" ]
+    branches: [ "main" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   # pull_request:
-  #   branches: [ "develop" ]
+  #   branches: [ "main" ]
   workflow_dispatch:
 
 env:
@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer

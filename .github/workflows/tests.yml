@@ -2,9 +2,9 @@ name: Unit and integration tests
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ develop ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -15,18 +15,18 @@ jobs:
         os: [ "ubuntu-latest", "windows-latest" ]
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: actions/setup-java@v5
       with:
-        distribution: "corretto"
-        java-version: "17"
-    - uses: actions/cache@v4
+        distribution: zulu
+        java-version: 25
+    - uses: actions/cache@v5
       with:
         path: ~/conda_pkgs_dir
         key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
     - uses: conda-incubator/setup-miniconda@v3
       with:
-        activate-environment: "ile-de-france"
+        activate-environment: "eqasim"
         environment-file: environment.yml
         python-version: "3.13"
         channels: conda-forge
@@ -50,3 +50,12 @@ jobs:
       shell: bash -el {0}
       run: |
         MKL_CBWR=AUTO pytest tests/
+
+    - name: Archive failed tests data
+      uses: actions/upload-artifact@v7
+      if: ${{ failure() }}
+      with:
+        name: tests-logs-${{ matrix.os }}-py${{ matrix.python-version }}
+        path: |
+          /tmp/pytest-of-runner/pytest-0
+        retention-days: 1

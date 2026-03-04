@@ -17,7 +17,7 @@ def configure(context):
     context.stage("synthesis.locations.secondary")
 
     context.config("random_seed")
-    context.config("processes")
+    context.config("processes", volatile = True)
 
     context.config("secloc_maximum_iterations", np.inf)
 
@@ -95,8 +95,8 @@ def execute(context):
     number_of_persons = len(unique_person_ids)
     unique_person_ids = np.array_split(unique_person_ids, processes)
 
-    random = np.random.RandomState(context.config("random_seed"))
-    random_seeds = random.randint(10000, size = processes)
+    random = np.random.default_rng(context.config("random_seed"))
+    random_seeds = random.integers(10000, size = processes)
 
     # Create batch problems for parallelization
     batches = []
@@ -131,7 +131,7 @@ def process(context, arguments):
   df_trips, df_primary, random_seed, crs = arguments
 
   # Set up RNG
-  random = np.random.RandomState(random_seed)
+  random = np.random.default_rng(random_seed)
   maximum_iterations = context.config("secloc_maximum_iterations")
 
   # Set up discretization solver

@@ -144,7 +144,7 @@ def bootstrap(df, bootstrap_size, random, realization_column = "realization", bo
     if bootstrap_sample_size is None:
         bootstrap_sample_size = len(indices)
 
-    counts = random.randint(len(indices), size = (bootstrap_size, bootstrap_sample_size))
+    counts = random.integers(len(indices), size = (bootstrap_size, bootstrap_sample_size))
 
     for selection in counts:
         selection_indices = []
@@ -221,11 +221,11 @@ def average_subsets(df, subset_size, random, realization_column = "realization",
 
 if __name__ == "__main__":
     def create_sample(random_seed):
-        random = np.random.RandomState(random_seed)
+        random = np.random.default_rng(random_seed)
 
         index = np.arange(100)
-        ages = random.randint(10, size = 100) * 10
-        gender = random.randint(2, size = 100)
+        ages = random.integers(10, size = 100) * 10
+        gender = random.integers(2, size = 100)
 
         df = pd.DataFrame.from_records(zip(index, ages, gender), columns = ["person", "age", "gender"])
         df["gender"] = df["gender"].map({ 0: "male", 1: "female" }).astype("category")
@@ -240,7 +240,7 @@ if __name__ == "__main__":
         { "age": 50, "weight": 60.0, "abc": 60.0, "realization": 1 },
     ])
 
-    random = np.random.RandomState(0)
+    random = np.random.default_rng(0)
 
     statistics = {
         "weight": [("mean", "mean")],
@@ -262,7 +262,7 @@ if __name__ == "__main__":
 
     exit()
 
-    random = np.random.RandomState(0)
+    random = np.random.default_rng(0)
 
     #for df_subset in sample_subsets(df, 3, random):
     #    print(df_subset)
@@ -300,7 +300,7 @@ if __name__ == "__main__":
     exit()
 
     sample = [create_sample(R) for R in range(2)]
-    random = np.random.RandomState(5)
+    random = np.random.default_rng(5)
 
     #marginals = [marginalize(df, [("age",), ("gender",), ("age", "gender"), tuple()]) for df in sample]
     marginals = [marginalize(df, [("gender",)]) for df in sample]

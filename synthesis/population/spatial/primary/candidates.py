@@ -27,11 +27,14 @@ def sample_destination_municipalities(context, arguments):
     df_od = context.data("df_od")
 
     # Prepare state
-    random = np.random.RandomState(random_seed)
+    random = np.random.default_rng(random_seed)
     df_od = df_od[df_od["origin_id"] == origin_id].copy()
 
     # Sample destinations
-    df_od["count"] = random.multinomial(count, df_od["weight"].values)
+    weights = df_od["weight"].values.astype(np.float64) # conversion for multinomial
+    weights = weights / np.sum(weights)
+
+    df_od["count"] = random.multinomial(count, weights)
     df_od = df_od[df_od["count"] > 0]
 
     context.progress.update()
@@ -43,7 +46,7 @@ def sample_locations(context, arguments):
     df_locations, df_flow = context.data("df_locations"), context.data("df_flow")
 
     # Prepare state
-    random = np.random.RandomState(random_seed)
+    random = np.random.default_rng(random_seed)
     df_locations = df_locations[df_locations["commune_id"] == destination_id]
     
     # Determine demand
@@ -80,7 +83,7 @@ def process(context, purpose, random, df_persons, df_od, df_locations,step_name)
 
     # Sample commute flows based on population
     df_demand = df_persons.groupby("commune_id",observed=False).size().reset_index(name = "count")
-    df_demand["random_seed"] = random.randint(0, int(1e6), len(df_demand))
+    df_demand["random_seed"] = random.integers(0, int(1e6), len(df_demand))
     df_demand = df_demand[["commune_id", "count", "random_seed"]]
     df_demand = df_demand[df_demand["count"] > 0]
 
@@ -95,7 +98,7 @@ def process(context, purpose, random, df_persons, df_od, df_locations,step_name)
 
     # Sample destinations based on the obtained flows
     unique_ids = df_flow["destination_id"].unique()
-    random_seeds = random.randint(0, int(1e6), len(unique_ids))
+    random_seeds = random.integers(0, int(1e6), len(unique_ids))
 
     df_result = []
 
@@ -128,7 +131,7 @@ def execute(context):
     df_work_od, df_education_od = context.stage("data.od.weighted")
 
     # Sampling
-    random = np.random.RandomState(context.config("random_seed"))
+    random = np.random.default_rng(context.config("random_seed"))
 
     df_locations = context.stage("synthesis.locations.work")
     df_locations["weight"] = df_locations["employees"]

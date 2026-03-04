@@ -96,7 +96,9 @@ def execute(context):
     df = pd.merge(df, df_size)
 
     # Socioprofessional category
-    df["socioprofessional_class"] = df["CS1"].astype(int)
+    df["socioprofessional_class"] = df["GS"].apply(
+        lambda x: str(x).replace("Z", "0").replace("X", "0")
+    ).astype(int)
 
     # Consumption units
     df = pd.merge(df, hts.calculate_consumption_units(df), on = "household_id")
