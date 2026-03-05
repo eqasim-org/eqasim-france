@@ -4,7 +4,7 @@ import numpy as np
 """
 Clean the SIRENE enterprise census.
 """
-
+ 
 def configure(context):
     context.stage("data.sirene.raw_siren", ephemeral = True)
     context.stage("data.sirene.raw_siret", ephemeral = True)
@@ -21,7 +21,7 @@ def execute(context):
     # Filter out establishments without a corresponding headquarter
     df_sirene = df_sirene_establishments[df_sirene_establishments["siren"].isin(df_sirene_headquarters["siren"])].copy()
 
-    # Remove inactive enterprises
+    # Remove inactive enterprises 
     df_sirene = df_sirene[
         df_sirene["etatAdministratifEtablissement"] == "A"
     ].copy()
@@ -78,7 +78,7 @@ def execute(context):
 
     if len(excess_communes) > 0:
         print("Found excess municipalities in SIRENE data: ", excess_communes)
-
+    
     if len(excess_communes) > 10:
         raise RuntimeError("Found more than 10 excess municipalities in SIRENE data")
 
