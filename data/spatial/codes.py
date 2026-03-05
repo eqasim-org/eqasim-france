@@ -30,8 +30,6 @@ def execute(context):
                 "REG": "region_id"
             }).fillna('0')
 
-    df_codes = df_codes.dropna()
-
     df_codes["iris_id"] = df_codes["iris_id"].astype("category")
     df_codes["commune_id"] = df_codes["commune_id"].astype("category")
     df_codes["departement_id"] = df_codes["departement_id"].astype("category")
