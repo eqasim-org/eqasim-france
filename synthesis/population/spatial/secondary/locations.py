@@ -79,6 +79,9 @@ def execute(context):
     df_trips["travel_time"] = df_trips["arrival_time"] - df_trips["departure_time"]
     df_primary, crs = prepare_locations(context)
 
+    # in case it exists, replace motorcycle mode by car for this location algorithm where we don't need the distinction
+    df_trips.loc[df_trips["mode"] == "motorcycle", "mode"] = "car"
+
     # Prepare data
     distance_distributions = context.stage("synthesis.population.spatial.secondary.distance_distributions")
     destinations = prepare_destinations(context)

@@ -162,7 +162,7 @@ def create(output_path):
 
     df = pd.DataFrame.from_records(df)
     df = gpd.GeoDataFrame(df, crs = "EPSG:2154")
-   
+
     # Dataset: IRIS zones
     # Required attributes: CODE_IRIS, INSEE_COM, geometry
     print("Creating IRIS zones ...")
@@ -182,7 +182,7 @@ def create(output_path):
         for source in glob.glob("%s/iris_2024/CONTOURS-IRIS.*" % output_path):
             archive.write(source, "LAMB93/{}".format(source.split("/")[-1]))
             os.remove(source)
-    
+
     # Dataset: Codes
     # Required attributes: CODE_IRIS, DEPCOM, DEP, REG
     print("Creating codes ...")
@@ -315,7 +315,7 @@ def create(output_path):
         ]
         for i, column in enumerate(columns):
             value["df"][column] = value["data"][i]
-        
+
     for value in income_data["family_comp"]:
         value["df"] = df_income.copy()
         col_pattern = value["col_pattern"]
@@ -333,7 +333,7 @@ def create(output_path):
 
     with zipfile.ZipFile("%s/filosofi_2021/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip" % output_path, "w") as archive:
         with archive.open("FILO2021_DISP_COM.xlsx", "w") as f:
-            with pd.ExcelWriter(f) as writer:  
+            with pd.ExcelWriter(f) as writer:
                 df_income_ensemble.to_excel(
                     writer, sheet_name = "ENSEMBLE", startrow = 5, index = False
                 )
@@ -454,7 +454,7 @@ def create(output_path):
     pd.DataFrame.from_records(data["Q_INDIVIDU"]).to_csv("%s/entd_2008/Q_individu.csv" % output_path, index = False, sep = ";")
     pd.DataFrame.from_records(data["Q_TCM_INDIVIDU"]).to_csv("%s/entd_2008/Q_tcm_individu.csv" % output_path, index = False, sep = ";")
     pd.DataFrame.from_records(data["K_DEPLOC"]).to_csv("%s/entd_2008/K_deploc.csv" % output_path, index = False, sep = ";")
-    
+
     hashes = {
         "Q_MENAGE": 13747765506488913060,
         "Q_TCM_MENAGE": 11743608538769824299,
@@ -614,7 +614,7 @@ def create(output_path):
 
     print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
     assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 2179663752841856527
-    
+
     df_persons.to_parquet("%s/rp_2022/RP2022_indcvi.parquet" % output_path)
 
     # Data set: commute flows
@@ -670,9 +670,9 @@ def create(output_path):
     z = random.integers(100, 400, observations) # Not used but keeping unit test hashes constant
 
     ids = [
-        "BATIMENT{:016d}".format(n) for n in random.integers(1000, 1000000, observations) 
+        "BATIMENT{:016d}".format(n) for n in random.integers(1000, 1000000, observations)
     ]
-    
+
     ids[0] = ids[1] # setting multiple adresses for 1 building usecase
 
     df_bdtopo = gpd.GeoDataFrame({
@@ -698,13 +698,13 @@ def create(output_path):
     with py7zr.SevenZipFile("{}/bdtopo_idf/bdtopo.7z".format(output_path), "w") as archive:
         archive.write("{}/bdtopo_idf/content.gpkg".format(output_path), "content/content.gpkg")
         os.remove("{}/bdtopo_idf/content.gpkg".format(output_path))
-    
+
     for department in bdtopo_departments:
         shutil.copyfile(
-            "{}/bdtopo_idf/bdtopo.7z".format(output_path), 
+            "{}/bdtopo_idf/bdtopo.7z".format(output_path),
             "{}/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D0{}_{}.7z".format(
                 output_path, department, bdtopo_date))
-        
+
     os.remove("{}/bdtopo_idf/bdtopo.7z".format(output_path))
 
     # Data set: BAN
@@ -878,9 +878,9 @@ def create(output_path):
     building_y = cutter_miny + (cutter_maxy - cutter_miny) / 2 - building_size / 2  # Centered, 10m high
 
     building_polygon = geo.Polygon([
-        (building_x, building_y), 
-        (building_x + building_size, building_y), 
-        (building_x + building_size, building_y + building_size), 
+        (building_x, building_y),
+        (building_x + building_size, building_y),
+        (building_x + building_size, building_y + building_size),
         (building_x, building_y + building_size)
     ])
 
@@ -1014,11 +1014,13 @@ def create(output_path):
 
     # Somehow doesn't produce valid hash on Windows CI
     # Falling back to the individual file validation above
-    
+
     # print("Hash", "GTFS", hash_zip("%s/gtfs_idf/IDFM-gtfs.zip" % output_path))
     # assert hash_zip("%s/gtfs_idf/IDFM-gtfs.zip" % output_path) == "4dc21e7134e51ed093075207ce3a917e"
 
     # Dataset: Parc automobile
+    print("Creating CRIT'AIR ...")
+
     df_vehicles_region = pd.DataFrame(index = pd.MultiIndex.from_product([
         df["region"].unique(),
         np.arange(20),
@@ -1065,15 +1067,36 @@ def create(output_path):
     print("Hash", "df_vehicles_commune", pd.util.hash_pandas_object(df_vehicles_commune, index = True).sum())
     assert pd.util.hash_pandas_object(df_vehicles_commune, index = True).sum() == 9918836920028610943
 
-    os.mkdir("%s/vehicles" % output_path)
-    
-    with zipfile.ZipFile("%s/vehicles/parc_vp_regions.zip" % output_path, "w") as archive:
+    os.mkdir("%s/critair" % output_path)
+
+    with zipfile.ZipFile("%s/critair/parc_vp_regions.zip" % output_path, "w") as archive:
         with archive.open("Parc_VP_Regions_2021.xlsx", "w") as f:
             df_vehicles_region.to_excel(f)
 
-    with zipfile.ZipFile("%s/vehicles/parc_vp_communes.zip" % output_path, "w") as archive:
+    with zipfile.ZipFile("%s/critair/parc_vp_communes.zip" % output_path, "w") as archive:
         with archive.open("Parc_VP_Communes_2021.xlsx", "w") as f:
             df_vehicles_commune.to_excel(f)
+
+    # add 2rm dataset
+    print("Creating 2RM dataset ...")
+
+    os.mkdir("%s/2rm" % output_path)
+
+    df_2rm = pd.DataFrame.from_records([dict(
+        IDENTIFIANT = i,
+        PF = random.integers(20),
+        ENDURO = 2,
+        AGEVEHICULE = random.integers(10),
+        MOTEUR = random.integers(3),
+        KMANNUEL = random.integers(1, 10000),
+        AGECONDUCTEUR = random.integers(18, 90),
+        SEXE = random.choice([1, 2]),
+        POIDSVEHICULE = random.integers(100),
+        POIDSCONDUCTEUR = random.integers(100)
+    ) for i in range(1, 300)])
+
+    df_2rm.to_csv("%s/2rm/2rm-detail-diffusion.csv" % output_path, sep = ";", encoding="cp1252", index = False)
+
 
 def hash_file(file):
     hash = hashlib.md5()

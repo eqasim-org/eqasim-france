@@ -1,4 +1,5 @@
 import shutil
+import gzip
 import geopandas as gpd
 import pandas as pd
 import shapely.geometry as geo
@@ -136,7 +137,7 @@ def execute(context):
         "iris_id", "commune_id","departement_id","region_id"]].drop_duplicates("household_id"),how="left")
     df_households = df_households[[
         "household_id","iris_id", "commune_id", "departement_id","region_id",
-        "car_availability", "bike_availability",
+        "car_availability", "bike_availability", "use_motorcycle",
         "number_of_vehicles", "number_of_bikes",
         "income",
         "census_household_id"
@@ -166,8 +167,12 @@ def execute(context):
     ]]
 
     if context.config("mode_choice"):
+        trips_path = "%s/mode_choice/output_trips.csv" % context.path("matsim.simulation.prepare")
+        if not os.path.exists(trips_path):
+            trips_path = "%s/mode_choice/output_trips.csv.gz" % context.path("matsim.simulation.prepare")
+
         df_mode_choice = pd.read_csv(
-            "{}/mode_choice/output_trips.csv".format(context.path("matsim.simulation.prepare"), output_prefix),
+            trips_path,
             delimiter = ";")
 
         df_mode_choice = df_mode_choice.rename(columns={"person_trip_id": "trip_index"})
@@ -177,10 +182,19 @@ def execute(context):
         df_trips = pd.merge(df_trips, df_mode_choice, on = [
             "person_id", "trip_index"], how="left", validate = "one_to_one")
 
-        shutil.copy("%s/mode_choice/output_pt_legs.csv" % (context.path("matsim.simulation.prepare")),
-                    "%s/%spt_legs.csv" % (output_path, output_prefix))
+        pt_legs_path = "%s/mode_choice/output_pt_legs.csv" % context.path("matsim.simulation.prepare")
+        if not os.path.exists(pt_legs_path):
+            pt_legs_path = "%s/mode_choice/output_pt_legs.csv.gz" % context.path("matsim.simulation.prepare")
 
-        assert not np.any(df_trips["mode"].isna())                                 
+        output_pt_legs_path = "%s/%spt_legs.csv" % (output_path, output_prefix)
+        if pt_legs_path.endswith(".gz"):
+            with gzip.open(pt_legs_path, "rb") as f_in:
+                with open(output_pt_legs_path, "wb") as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+        else:
+            shutil.copy(pt_legs_path, output_pt_legs_path)
+
+        assert not np.any(df_trips["mode"].isna())
 
     if "csv" in output_formats:
         df_trips.to_csv("%s/%strips.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
