@@ -25,15 +25,17 @@ SECONDARY_FIELDS = [
 def execute(context):
     output_path = "%s/facilities.xml.gz" % context.path()
 
+    df_homes = context.stage("synthesis.population.spatial.home.locations")
+    df_homes = df_homes[HOME_FIELDS]
+    
     with gzip.open(output_path, 'wb+') as writer:
         with io.BufferedWriter(writer, buffer_size = 2 * 1024**3) as writer:
             writer = writers.FacilitiesWriter(writer)
-            writer.start_facilities()
+            writer.start_facilities({
+                "coordinateReferenceSystem": df_homes.crs
+            })
 
             # Write home
-
-            df_homes = context.stage("synthesis.population.spatial.home.locations")
-            df_homes = df_homes[HOME_FIELDS]
 
             with context.progress(total = len(df_homes), label = "Writing home facilities ...") as progress:
                 for item in df_homes.itertuples(index = False):

@@ -15,24 +15,24 @@ config:
   ##############################
   # Some general configuration #
   ##############################
-  
+
   ## Number of CPUs to use
   processes: 4
 
   ################
   # Random seeds #
   ################
-  
+
   ## global random seed for the output population
   random_seed: 1234
 
   ## bpe specific random seed when impute missing coordinates for known IRIS
   # bpe_random_seed: 0
-  
+
   ##################################################
   # Define sampling rate for the output population #
   ##################################################
-  
+
   sampling_rate: 0.001
 
   #################################
@@ -40,7 +40,7 @@ config:
   #################################
 
   ## Define whether to use ENTD or EGT as the HTS
-  hts: entd # entd, egt, edgt_lyon, edgt_44
+  hts: entd # entd, egt, edgt_lyon, edgt_44, mobisurvstd
 
   ## Whether to filter people going outside of the area and other filters
   # filter_hts: true
@@ -48,20 +48,25 @@ config:
   ## if selected, chose the source for edgt_lyon
   # edgt_lyon_source: unchosen # unchosen, adisp, cerema
 
+  ## path to the zipfile / directory where the HTS to be read by MobiSurvStd is located
+  ## path is relative to `data_path`
+  # mobisurvstd:
+  #   path: my_survey.zip
+
   ##################
   # Zone selection #
   ##################
 
   ## select regions by region_id
   # regions: [11]
-  
+
   ## select departments by department_id
   # departments: []
-    
+
   #######################
   #     Output paths    #
   #######################
-  
+
   ## output folder
   output_path: /path/to/my/output
 
@@ -82,18 +87,26 @@ config:
   mode_choice: true
 
   ## Statistical matching configuration
- 
+
   ## Minimum number of observation to sample from
   # matching_minimum_observations: 20
 
   ## list of attributes to use for matching
   # matching_attributes: ["sex", "any_cars", "age_class", "socioprofessional_class", "departement_id"]
-  
+
   ## Use INSEE's urban type in statistical matching
   # use_urban_type: true
   # urban_type_path: urban_type/UU2020_au_01-01-2023.zip
   # matching_attributes: ["urban_type", "*default*"]
-  
+
+  ## list of attributes to enrich the persons from hts data
+  ## this only work with hts: mobisurvstd
+  ## the list of possible keys can be found here: https://mobisurvstd.github.io/MobiSurvStd/format/persons.html
+  # extra_enriched_attributes:
+    # - "detailed_education_level"
+    # - "detailed_professional_occupation"
+    # - "work_only_at_home"
+
   ## Exclude entreprise without any employee (trancheEffectifsEtablissement is NA, "NN" or "00")
   # exclude_no_employee: true
 
@@ -108,7 +121,7 @@ config:
 
   ## How sample homes, using weights or not
   # home_location_weight: housing # "uniform", "housing"
-  
+
   # home_location_source: addresses # "addresses", "buildings", "tiles"
 
   ## When running matsim
@@ -121,16 +134,16 @@ config:
 
   ## Cutter settings: Used to define a specific area for analysis or simulation
   # cutter:
-  
+
     ## Path to the directory containing the cutter geojson file
     # path: cutter
-    
+
     ## Name of the cutter file (e.g., GeoJSON file defining the area)
     # file: cutter.geojson
-    
+
     ## Name of the cutter (used for output file naming)
     # name: paris
-    
+
     ## Whether to apply the cutter after the full simulation (True/False)
     # after_full_simulation: True
 
@@ -142,10 +155,10 @@ config:
 
     ## Size of the time bins for noise computation, in seconds (e.g., 3600 for hourly bins)
     # time_bin_size: 3600
-    
+
     ## Start time for noise computation, in seconds (e.g., 0 for midnight)
     # time_bin_min: 0
-    
+
     ## End time for noise computation, in seconds (e.g., 86400 for 24 hours)
     # time_bin_max: 86400
 
@@ -174,7 +187,7 @@ config:
 
   ## Mostly interesting if you run the simulation, or you activate the `mode_choice` option,
 
-  ## Binaries paths  
+  ## Binaries paths
   # git_binary: git
   # java_binary: java
   # maven_binary: mvn
@@ -183,7 +196,7 @@ config:
   ## Binaries parameters
   # java_memory: 14G
   # maven_skip_tests: false
-  
+
   ## eqasim-java parameters
   # eqasim_version: 1.5.0
   # eqasim_branch: develop
@@ -191,7 +204,7 @@ config:
   # eqasim_repository: https://github.com/eqasim-org/eqasim-java.git
   # eqasim_path: ""
   # eqasim_tag:
-  
+
 
   ## pt2matsim parameters
   # pt2matsim_version: 22.3
@@ -227,7 +240,7 @@ config:
   # income_reg_path: filosofi_2019/indic-struct-distrib-revenu-2019-SUPRA.zip
   # income_reg_xlsx: FILO2019_DISP_REG.xlsx
   # income_year: 19
-  
+
   # tiles_path: tiles_2019/Filosofi2019_carreaux_200m_gpkg.zip
   # tiles_file: carreaux_200m_met.gpkg
 
@@ -235,7 +248,7 @@ config:
   # od_sco_path: rp_2019/RP2019_MOBSCO_csv.zip
   # od_pro_csv: FD_MOBPRO_2019.csv
   # od_sco_csv: FD_MOBSCO_2019.csv
-  
+
   ## external education locations file
   # education_file: education/education_addresses.geojson
 

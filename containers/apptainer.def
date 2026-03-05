@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: ghcr.io/eqasim-org/ile-de-france:latest
+From: ghcr.io/eqasim-org/eqasim-france:latest
 
 %environment
     source /opt/conda/bin/activate eqasim

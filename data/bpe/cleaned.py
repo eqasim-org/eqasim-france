@@ -98,7 +98,7 @@ def execute(context):
     print("Excess IRIS without valid code:", excess_iris)
 
     # Impute missing coordinates for known IRIS
-    random = np.random.RandomState(context.config("bpe_random_seed"))
+    random = np.random.default_rng(context.config("bpe_random_seed"))
 
     f_undefined = df["iris_id"] == "undefined"
     f_missing = df["x"].isna()

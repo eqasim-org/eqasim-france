@@ -25,6 +25,7 @@ def configure(context):
     context.config("output_prefix", "ile_de_france_")
     context.config("output_formats", ["csv", "gpkg"])
     context.config("sampling_rate")
+    context.config("extra_enriched_attributes", [])
 
     if context.config("mode_choice", False):
         context.stage("matsim.simulation.prepare")
@@ -70,12 +71,13 @@ def execute(context):
         columns = { "has_license": "has_driving_license" }
     )
 
-    df_persons = df_persons[[
+    columns = [
         "person_id", "household_id",
         "age", "employed", "sex", "socioprofessional_class",
         "has_driving_license", "has_pt_subscription",
         "census_person_id", "hts_id"
-    ]]
+    ] + context.config("extra_enriched_attributes")
+    df_persons = df_persons[columns]
     if "csv" in output_formats:
         df_persons.to_csv("%s/%spersons.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
     if "parquet" in output_formats:
@@ -224,10 +226,10 @@ def execute(context):
         df_spatial[df_spatial["purpose"] == "work"].drop_duplicates("person_id")[["person_id", "geometry"]].rename(columns = { "geometry": "work_geometry" })
     )
 
-    df_spatial["geometry"] = [
+    df_spatial["geometry"] = gpd.GeoSeries([
         geo.LineString(od)
         for od in zip(df_spatial["home_geometry"], df_spatial["work_geometry"])
-    ]
+    ], crs = df_locations.crs)
 
     df_spatial = df_spatial.drop(columns = ["home_geometry", "work_geometry"])
     if "gpkg" in output_formats:
