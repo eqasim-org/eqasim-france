@@ -159,8 +159,19 @@ def execute(context):
         ])
 
         assert os.path.exists("%s/mode_choice/output_plans.xml.gz" % context.path())
-        assert os.path.exists("%s/mode_choice/output_trips.csv" % context.path())
-        assert os.path.exists("%s/mode_choice/output_pt_legs.csv" % context.path())
+
+        # Newer standalone mode choice versions write compressed CSVs.
+        trips_exists = (
+            os.path.exists("%s/mode_choice/output_trips.csv" % context.path()) or
+            os.path.exists("%s/mode_choice/output_trips.csv.gz" % context.path())
+        )
+        pt_legs_exists = (
+            os.path.exists("%s/mode_choice/output_pt_legs.csv" % context.path()) or
+            os.path.exists("%s/mode_choice/output_pt_legs.csv.gz" % context.path())
+        )
+
+        assert trips_exists
+        assert pt_legs_exists
 
         shutil.copy("%s/mode_choice/output_plans.xml.gz" % context.path(),
                     "%s/%spopulation.xml.gz" % (context.path(), context.config("output_prefix")))
