@@ -96,9 +96,27 @@ def execute(context):
     df = pd.merge(df, df_size)
 
     # Socioprofessional category
-    df["socioprofessional_class"] = df["GS"].apply(
-        lambda x: str(x).replace("Z", "0").replace("X", "0")
-    ).astype(int)
+
+    # Starting with RP 2022, INSEE does not provide the variable CS8 anymore,
+    # which corresponded to the socioprofessional category in 8 classes (PCS2003).
+    # Instead, the PCS2020 is provided now, in 6 classes. The first 6 classes are
+    # equivalent, but class 7 (retired people) and class 8 (others) is removed.
+
+    # there are two ways: we can backfit the data here (currently the case) so that
+    # the matching with the older HTS later in the pipeline stays coherent
+
+    # or we construct a new matching variable both here and in the surveys, which would
+    # be the preferred way but is a TODO for now
+    
+    df["socioprofessional_class"] = df["GS"].replace({ "Z": "8" }).astype(int)
+
+    # reconstruct retired people from STAT_GSEC variable (32 = retired)
+    df.loc[df["GS"].eq(8) & df["STAT_GSEC"].eq("32"), "socioprofessional_class"] = 7
+
+    # TODO: in the future matching variable, would be good to treat students / pupils separately
+
+    print(df["socioprofessional_class"].value_counts() / len(df))
+    exit()
 
     # Consumption units
     df = pd.merge(df, hts.calculate_consumption_units(df), on = "household_id")
