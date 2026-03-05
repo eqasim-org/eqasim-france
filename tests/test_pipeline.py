@@ -63,9 +63,9 @@ def run_population(tmpdir, hts, update = {}):
     assert os.path.isfile("%s/ile_de_france_trips.gpkg" % output_path)
     assert os.path.isfile("%s/ile_de_france_meta.json" % output_path)
 
-    expected_activities = 2235
-    expected_persons = 447
-    expected_households = 149
+    expected_activities = 2400
+    expected_persons = 480
+    expected_households = 160
     expected_vehicles = expected_persons * 2
     expected_vehicle_types = 2
 

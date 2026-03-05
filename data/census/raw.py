@@ -19,6 +19,7 @@ COLUMNS_DTYPES = {
     "AGED":"str",
     "COUPLE":"str", 
     "GS":"str",
+    "STAT_GSEC":"str",
     "DEPT":"str", 
     "ETUD":"str",
     "IPONDI":"str", 
