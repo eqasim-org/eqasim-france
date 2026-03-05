@@ -111,12 +111,9 @@ def execute(context):
     df["socioprofessional_class"] = df["GS"].replace({ "Z": "8" }).astype(int)
 
     # reconstruct retired people from STAT_GSEC variable (32 = retired)
-    df.loc[df["GS"].eq(8) & df["STAT_GSEC"].eq("32"), "socioprofessional_class"] = 7
+    df.loc[df["STAT_GSEC"].eq("32"), "socioprofessional_class"] = 7
 
     # TODO: in the future matching variable, would be good to treat students / pupils separately
-
-    print(df["socioprofessional_class"].value_counts() / len(df))
-    exit()
 
     # Consumption units
     df = pd.merge(df, hts.calculate_consumption_units(df), on = "household_id")
