@@ -10,6 +10,10 @@ This stage duplicates trips and attaches them to the synthetic population.
 def configure(context):
     context.stage("synthesis.population.matched")
     context.config("random_seed")
+    
+    with_motorcycles = context.config("with_motorcycles", False)
+    if with_motorcycles:
+        context.stage("synthesis.population.enriched")
 
     hts = context.config("hts")
     context.stage("data.hts.selected", alias = "hts")
@@ -22,6 +26,12 @@ def execute(context):
     df_matching = context.stage("synthesis.population.matched")
     df_trips = df_trips.rename(columns = { "person_id": "hts_id" })
     df_trips = pd.merge(df_matching, df_trips, on = "hts_id")
+
+    if context.config("with_motorcycles"):
+        df_population = context.stage("synthesis.population.enriched")[["person_id", "use_motorcycle"]]
+        df_trips["mode"] = df_trips["mode"].cat.add_categories("motorcycle")
+        df_trips = pd.merge(df_population, df_trips, on = "person_id")
+        
     df_trips = df_trips.sort_values(by = ["person_id", "trip_id"])
 
     # Define trip index
@@ -46,6 +56,9 @@ def execute(context):
 
     assert (df_trips["departure_time"] >= 0.0).all()
     assert (df_trips["arrival_time"] >= 0.0).all()
+
+    if "use_motorcycle" in df_trips:
+        df_trips.loc[df_trips["use_motorcycle"], "mode"] = "motorcycle"
 
     return df_trips[[
         "person_id", "trip_index",
