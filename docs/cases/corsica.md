@@ -104,7 +104,7 @@ for Corsica.
 
 ## Running the simulation
 
-To prepare the pipeline for a simulation of Lyon, the paths to the OSM data sets and to the GTFS schedule must be adjusted explicitly:
+To prepare the pipeline for a simulation of Corsica, the paths to the OSM data sets and to the GTFS schedule must be adjusted explicitly:
 
 ```yaml
 config:

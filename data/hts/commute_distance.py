@@ -39,7 +39,7 @@ def get_commuting_distance(df_persons, df_trips, activity_type, random):
 
     indices = [
         np.searchsorted(cdf, r)
-        for r in random.random_sample(size = np.count_nonzero(f_missing))
+        for r in random.random(size = np.count_nonzero(f_missing))
     ]
 
     df_persons.loc[f_missing, "commute_distance"] = values[indices]
@@ -58,7 +58,7 @@ def get_commuting_distance(df_persons, df_trips, activity_type, random):
 
 def execute(context):
     df_households, df_persons, df_trips = context.stage("data.hts.selected")
-    random = np.random.RandomState(context.config("random_seed"))
+    random = np.random.default_rng(context.config("random_seed"))
 
     return dict(
         work = get_commuting_distance(df_persons, df_trips, "work", random),
