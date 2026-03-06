@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.0](https://github.com/eqasim-org/eqasim-france/compare/v1.4.0...v1.5.0) (2026-03-06)
+
+
+### Features
+
+* add motorcycles ([#384](https://github.com/eqasim-org/eqasim-france/issues/384)) ([5f1796b](https://github.com/eqasim-org/eqasim-france/commit/5f1796ba0b10d9fa973c7b8338ab54caecdb9004))
+* add output generation for primary and secondary locations ([#390](https://github.com/eqasim-org/eqasim-france/issues/390)) ([d78e8f9](https://github.com/eqasim-org/eqasim-france/commit/d78e8f9b9b1302124dd17ad8c76b50c71ff4e775))
+* add support for HTS import with MobiSurvStd ([#346](https://github.com/eqasim-org/eqasim-france/issues/346)) ([5cd2196](https://github.com/eqasim-org/eqasim-france/commit/5cd2196051375b463417b51b1cc2e117c06b8d33))
+
+
+### Bug Fixes
+
+* numerical errors in gtfs treatment and multinomial sampling for primary locations ([#447](https://github.com/eqasim-org/eqasim-france/issues/447)) ([61cbb7f](https://github.com/eqasim-org/eqasim-france/commit/61cbb7fbec9b8f38880adb9cca9cc7321512cf5f))
+* properly treat PCS2020 in census data ([#466](https://github.com/eqasim-org/eqasim-france/issues/466)) ([16a9f84](https://github.com/eqasim-org/eqasim-france/commit/16a9f843af23320df8fc1694b1f9868b637fd762))
+
 ## [1.4.0](https://github.com/eqasim-org/eqasim-france/compare/v1.3.0...v1.4.0) (2026-02-19)
 
 
