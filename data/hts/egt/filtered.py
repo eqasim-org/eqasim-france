@@ -44,7 +44,7 @@ def execute(context):
     household_columns = hts.HOUSEHOLD_COLUMNS + ["income_class"] + ["egt_household_id"]
     df_households = df_households[household_columns]
     
-    person_columns = hts.PERSON_COLUMNS + ["egt_household_id", "egt_person_id"]
+    person_columns = hts.PERSON_COLUMNS + ["egt_household_id", "egt_person_id", "weekday"]
     if "urban_type" in df_persons: person_columns.append("urban_type")
     df_persons = df_persons[person_columns]
     

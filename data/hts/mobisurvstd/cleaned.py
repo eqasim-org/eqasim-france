@@ -52,15 +52,18 @@ def execute(context):
         departement_id="home_dep",
     )
 
+    use_weekday = False
     if df_households["trips_weekday"].is_not_null().mean() > 0.95:
         # The weekday at which the trips took place is known (for almost all households).
         # We select only the households for which the trips were surveyed for a weekday.
         # We also keep the NULL values for `trips_weekday` (for EMP 2019, `trips_weekday`
         # is NULL for persons who did not traveled at all).
+        use_weekday = True
+
         df_households = df_households.filter(
             pl.col("trips_weekday").is_null()
             | pl.col("trips_weekday").is_in(("saturday", "sunday")).not_()
-        ).drop("trips_weekday")
+        ).rename({ "trips_weekday": "weekday" })
 
     extra_cols = context.config("extra_enriched_attributes")
     assert isinstance(extra_cols, list), "`extra_enriched_attributes` parameter must be a list"
@@ -153,8 +156,11 @@ def execute(context):
     df_persons = df_persons.drop("age_class")
 
     # Add home département to persons.
+    columns = ["household_id", "departement_id"]
+    if use_weekday: columns += ["weekday"]
+
     df_persons = df_persons.join(
-        df_households.select("household_id", "departement_id"), on="household_id", how="left"
+        df_households.select(columns), on="household_id", how="left"
     )
     # Flag persons with at least one trip as car passenger.
     df_persons = df_persons.with_columns(
