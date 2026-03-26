@@ -49,6 +49,8 @@ def prepare_destinations(context):
 
     identifiers = df_locations["location_id"].values
     locations = np.vstack(df_locations["geometry"].apply(lambda x: np.array([x.x, x.y])).values)
+    type_act = df_locations["type_act"].values
+    weight = df_locations["weight"].values
 
     data = {}
 
@@ -57,7 +59,9 @@ def prepare_destinations(context):
 
         data[purpose] = dict(
             identifiers = identifiers[f],
-            locations = locations[f]
+            locations = locations[f],
+            type_act= type_act[f],
+            weight = weight[f]
         )
 
     return data
@@ -149,7 +153,7 @@ def process(context, arguments):
 
   # Set up discretization solver
   destinations = context.data("destinations")
-  candidate_index = CandidateIndex(destinations)
+  candidate_index = CandidateIndex(destinations,random=random)
   discretization_solver = CustomDiscretizationSolver(candidate_index)
 
   # Set up distance sampler
@@ -200,9 +204,9 @@ def process(context, arguments):
 
       starting_activity_index = problem["activity_index"]
 
-      for index, (identifier, location) in enumerate(zip(result["discretization"]["identifiers"], result["discretization"]["locations"])):
+      for index, (identifier, location,type_act) in enumerate(zip(result["discretization"]["identifiers"], result["discretization"]["locations"],result["discretization"]["type_acts"])):
           df_locations.append((
-              problem["person_id"], starting_activity_index + index, identifier, geo.Point(location)
+              problem["person_id"], starting_activity_index + index, type_act, identifier, geo.Point(location)
           ))
 
       df_convergence.append((
@@ -213,7 +217,7 @@ def process(context, arguments):
           last_person_id = problem["person_id"]
           context.progress.update()
 
-  df_locations = pd.DataFrame.from_records(df_locations, columns = ["person_id", "activity_index", "location_id", "geometry"])
+  df_locations = pd.DataFrame.from_records(df_locations, columns = ["person_id", "activity_index","type_act", "location_id", "geometry"])
   df_locations = gpd.GeoDataFrame(df_locations, crs = crs)
   assert not df_locations["geometry"].isna().any()
 

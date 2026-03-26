@@ -94,18 +94,18 @@ def execute(context):
     df_activities["preceding_trip_index"] = df_activities["preceding_trip_index"].astype(int)
     # Prepare spatial data sets
     df_locations = context.stage("synthesis.population.spatial.locations")[[
-        "person_id",  "iris_id", "commune_id","departement_id","region_id","activity_index", "geometry"
+        "person_id",  "iris_id", "commune_id","departement_id","region_id","activity_index","type_act","geometry"
     ]]
 
     df_activities = pd.merge(df_activities, df_locations[[
-        "person_id", "iris_id", "commune_id","departement_id","region_id","activity_index", "geometry"
+        "person_id", "iris_id", "commune_id","departement_id","region_id","activity_index","type_act", "geometry"
     ]], how = "left", on = ["person_id", "activity_index"])
 
     # Prepare spatial activities
     df_spatial = gpd.GeoDataFrame(df_activities[[
             "person_id", "household_id", "activity_index",
             "iris_id", "commune_id","departement_id","region_id",
-            "preceding_trip_index", "following_trip_index",
+            "preceding_trip_index", "following_trip_index","type_act",
             "purpose", "start_time", "end_time",
             "is_first", "is_last", "geometry"
         ]], crs = df_locations.crs)

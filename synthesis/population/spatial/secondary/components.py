@@ -25,25 +25,35 @@ class CustomDistanceSampler(rda.FeasibleDistanceSampler):
         return distances
 
 class CandidateIndex:
-    def __init__(self, data):
+    def __init__(self, data,random):
         self.data = data
         self.indices = {}
+        self.random = random
 
         for purpose, data in self.data.items():
             print("Constructing spatial index for %s ..." % purpose)
             self.indices[purpose] = sklearn.neighbors.KDTree(data["locations"])
 
     def query(self, purpose, location):
-        index = self.indices[purpose].query(location.reshape(1, -1), return_distance = False)[0][0]
+        index = self.indices[purpose].query(location.reshape(1, -1),k=20, return_distance = False)[0]#[0]
+        if purpose == "shop" : # choose location while taking count of weight of closest locations
+            weight= self.data[purpose]["weight"][index]
+            weight = weight /np.sum(weight,dtype=float)
+            rng = np.random.default_rng(self.random)
+            index = rng.choice(index,p=weight)
+        else :
+            index = index[0]
         identifier = self.data[purpose]["identifiers"][index]
         location = self.data[purpose]["locations"][index]
-        return identifier, location
+        type_act = self.data[purpose]["type_act"][index]
+        return identifier, location,type_act
 
     def sample(self, purpose, random):
         index = random.randint(0, len(self.data[purpose]["locations"]))
         identifier = self.data[purpose]["identifiers"][index]
         location = self.data[purpose]["locations"][index]
-        return identifier, location
+        type_act = self.data[purpose]["type_act"][index]
+        return identifier, location,type_act
 
 class CustomDiscretizationSolver(rda.DiscretizationSolver):
     def __init__(self, index):
@@ -52,17 +62,19 @@ class CustomDiscretizationSolver(rda.DiscretizationSolver):
     def solve(self, problem, locations):
         discretized_locations = []
         discretized_identifiers = []
+        discretized_type_acts = []
 
         for location, purpose in zip(locations, problem["purposes"]):
-            identifier, location = self.index.query(purpose, location.reshape(1, -1))
+            identifier, location,type_act = self.index.query(purpose, location.reshape(1, -1))
 
             discretized_identifiers.append(identifier)
             discretized_locations.append(location)
+            discretized_type_acts.append(type_act)
 
         assert len(discretized_locations) == problem["size"]
 
         return dict(
-            valid = True, locations = np.vstack(discretized_locations), identifiers = discretized_identifiers
+            valid = True, locations = np.vstack(discretized_locations), identifiers = discretized_identifiers,type_acts= discretized_type_acts
         )
 
 class CustomFreeChainSolver(rda.RelaxationSolver):
@@ -71,7 +83,7 @@ class CustomFreeChainSolver(rda.RelaxationSolver):
         self.index = index
 
     def solve(self, problem, distances):
-        identifier, anchor = self.index.sample(problem["purposes"][0], self.random)
+        identifier, anchor,type_act = self.index.sample(problem["purposes"][0], self.random)
         locations = rda.sample_tail(self.random, anchor, distances)
         locations = np.vstack((anchor, locations))
 
