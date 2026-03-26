@@ -135,14 +135,6 @@ def execute(context):
     f = df_trips_pd["activity_duration"].isna() & ~df_trips_pd["is_last_trip"]
     df_trips_pd.loc[f, "activity_duration"] = df_trips_pd.loc[f, "updated_activity_duration"]
 
-
-
-    #f = df_trips_pd["activity_duration"].isna()
-    #f &= ~df_trips_pd["is_last_trip"]
-    #f = df_trips_pd["person_id"] == 273
-    #print(df_trips_pd[f][["person_id", "trip_id", "trip_weekday", "departure_time", "arrival_time", "activity_duration"]])
-    #exit()
-
     hts.check(df_households_pd, df_persons_pd, df_trips_pd)
 
     return df_households_pd, df_persons_pd, df_trips_pd
