@@ -194,11 +194,11 @@ def execute(context):
         else:
             shutil.copy(pt_legs_path, output_pt_legs_path)
 
-        legs_path = "%s/mode_choice/output_pt_legs.csv" % context.path("matsim.simulation.prepare")
+        legs_path = "%s/mode_choice/output_legs.csv" % context.path("matsim.simulation.prepare")
         if not os.path.exists(legs_path):
-            legs_path = "%s/mode_choice/output_pt_legs.csv.gz" % context.path("matsim.simulation.prepare")
+            legs_path = "%s/mode_choice/output_legs.csv.gz" % context.path("matsim.simulation.prepare")
 
-        output_legs_path = "%s/%spt_legs.csv" % (output_path, output_prefix)
+        output_legs_path = "%s/%slegs.csv" % (output_path, output_prefix)
         if legs_path.endswith(".gz"):
             with gzip.open(legs_path, "rb") as f_in:
                 with open(output_legs_path, "wb") as f_out:
