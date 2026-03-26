@@ -60,9 +60,15 @@ def execute(context):
 
     df["activity_type"] = df["activity_type"].astype("category")
 
-    #Add 
+    #Add weight for education locations
     df = df.rename(columns={"TYPEQU":"education_type"})
     df["weight"] = df["CAPACITE"].fillna(500) if context.config("education_location_source") != "bpe" else 500
+
+    # Add weight for shopping locations 
+    df.loc[df["activity_type"]!="education","weight"] = 1.0
+    df.loc[(df["activity_type"]=="shop")&(df["education_type"].isin(["B201", "B202", "B204", "B205", "B206","B207","B208","B209","B210"])),"weight"] = 3.0**1.5 
+    df.loc[(df["activity_type"]=="shop")&(df["education_type"].isin(["B105", "B302", "B304", "B306", "B307"])),"weight"] = 10.0**1.5
+    df.loc[(df["activity_type"]=="shop")&(df["education_type"].isin(["B103", "B104"])),"weight"] = 100.0**1.5
     # Clean coordinates
     df["x"] = df["LAMBERT_X"].astype(str).str.replace(",", ".").astype(float)
     df["y"] = df["LAMBERT_Y"].astype(str).str.replace(",", ".").astype(float)
