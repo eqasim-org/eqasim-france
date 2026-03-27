@@ -96,7 +96,7 @@ def execute(context):
 
     eqasim.run(context, "org.eqasim.core.tools.schedule.RunExtendSchedule", [
         "--input-schedule-path", schedule_path,
-        "--input-vehilces-path", vehicles_path,
+        "--input-vehicles-path", vehicles_path,
         "--output-schedule-path", "{}/{}transit_schedule.xml.gz".format(context.cache_path, context.config("output_prefix")),
         "--output-vehicles-path", "{}/{}transit_vehicles.xml.gz".format(context.cache_path, context.config("output_prefix")),
         "--days", "7", "--hours", "5"
