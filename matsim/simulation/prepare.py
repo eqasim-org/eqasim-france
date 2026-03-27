@@ -65,23 +65,42 @@ def execute(context):
     )
     shutil.copy(households_path, "%s/%shouseholds.xml.gz" % (context.cache_path, context.config("output_prefix")))
 
-    transit_schedule_path = "%s/%s" % (
-        context.path("matsim.scenario.supply.processed"),
-        context.stage("matsim.scenario.supply.processed")["schedule_path"]
-    )
-    shutil.copy(transit_schedule_path, "%s/%stransit_schedule.xml.gz" % (context.cache_path, context.config("output_prefix")))
+    #transit_schedule_path = "%s/%s" % (
+    #    context.path("matsim.scenario.supply.processed"),
+    #    context.stage("matsim.scenario.supply.processed")["schedule_path"]
+    #)
+    #shutil.copy(transit_schedule_path, "%s/%stransit_schedule.xml.gz" % (context.cache_path, context.config("output_prefix")))
 
-    transit_vehicles_path = "%s/%s" % (
-        context.path("matsim.scenario.supply.gtfs"),
-        context.stage("matsim.scenario.supply.gtfs")["vehicles_path"]
-    )
-    shutil.copy(transit_vehicles_path, "%s/%stransit_vehicles.xml.gz" % (context.cache_path, context.config("output_prefix")))
+    # transit_vehicles_path = "%s/%s" % (
+    #     context.path("matsim.scenario.supply.gtfs"),
+    #     context.stage("matsim.scenario.supply.gtfs")["vehicles_path"]
+    # )
+    # shutil.copy(transit_vehicles_path, "%s/%stransit_vehicles.xml.gz" % (context.cache_path, context.config("output_prefix")))
 
     vehicles_path = "%s/%s" % (
         context.path("matsim.scenario.vehicles"),
         context.stage("matsim.scenario.vehicles")
     )
     shutil.copy(vehicles_path, "%s/%svehicles.xml.gz" % (context.cache_path, context.config("output_prefix")))
+
+    # extend schedule
+    schedule_path = "%s/%s" % (
+        context.path("matsim.scenario.supply.processed"),
+        context.stage("matsim.scenario.supply.processed")["schedule_path"]
+    )
+
+    vehicles_path = "%s/%s" % (
+        context.path("matsim.scenario.supply.gtfs"),
+        context.stage("matsim.scenario.supply.gtfs")["vehicles_path"]
+    )
+
+    eqasim.run(context, "org.eqasim.core.tools.schedule.RunExtendSchedule", [
+        "--input-schedule-path", schedule_path,
+        "--input-vehilces-path", vehicles_path,
+        "--output-schedule-path", "{}/{}transit_schedule.xml.gz".format(context.cache_path, context.config("output_prefix")),
+        "--output-vehicles-path", "{}/{}transit_vehicles.xml.gz".format(context.cache_path, context.config("output_prefix")),
+        "--days", "7", "--hours", "5"
+    ])
 
     # Generate base configuration
     eqasim.run(context, "org.eqasim.core.scenario.config.RunGenerateConfig", [
@@ -164,6 +183,10 @@ def execute(context):
         trips_exists = (
             os.path.exists("%s/mode_choice/output_trips.csv" % context.path()) or
             os.path.exists("%s/mode_choice/output_trips.csv.gz" % context.path())
+        )
+        legs_exists = (
+            os.path.exists("%s/mode_choice/output_legs.csv" % context.path()) or
+            os.path.exists("%s/mode_choice/output_legs.csv.gz" % context.path())
         )
         pt_legs_exists = (
             os.path.exists("%s/mode_choice/output_pt_legs.csv" % context.path()) or

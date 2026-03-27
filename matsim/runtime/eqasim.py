@@ -5,8 +5,8 @@ import matsim.runtime.java as java
 import matsim.runtime.maven as maven
 
 DEFAULT_EQASIM_VERSION = "2.1.0"
-DEFAULT_EQASIM_BRANCH = "develop"
-DEFAULT_EQASIM_COMMIT = "6bf0131"
+DEFAULT_EQASIM_BRANCH = "feat/extend-schedule-days"
+DEFAULT_EQASIM_COMMIT = "689321d7a"
 
 def configure(context):
     git.configure(context)
