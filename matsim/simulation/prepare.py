@@ -174,7 +174,8 @@ def execute(context):
             "--skip-scenario-check", "true",
             "--config:plans.inputPlansFile", "prepared_population.xml.gz",
             "--eqasim-configurator-class", "org.eqasim.ile_de_france.IDFConfigurator",
-            "--mode-choice-configurator-class", "org.eqasim.ile_de_france.IDFStandaloneModeChoiceConfigurator"
+            "--mode-choice-configurator-class", "org.eqasim.ile_de_france.IDFStandaloneModeChoiceConfigurator",
+            "--config:controller.compressionType", "gzip"
         ])
 
         assert os.path.exists("%s/mode_choice/output_plans.xml.gz" % context.path())
@@ -193,6 +194,7 @@ def execute(context):
             os.path.exists("%s/mode_choice/output_pt_legs.csv.gz" % context.path())
         )
 
+        assert legs_exists
         assert trips_exists
         assert pt_legs_exists
 
