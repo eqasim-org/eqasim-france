@@ -118,6 +118,7 @@ def execute(context):
         "trip_id",
         "person_id",
         "household_id",
+        "trip_weekday",
         # Convert departure / arrival time from minutes to seconds.
         departure_time=pl.col("departure_time").cast(pl.UInt32) * 60,
         arrival_time=pl.col("arrival_time").cast(pl.UInt32) * 60,
@@ -132,6 +133,7 @@ def execute(context):
         destination_departement_id="destination_dep",
         # Distance is converted from km to meters.
         euclidean_distance=pl.col("trip_euclidean_distance_km") * 1000.0,
+        routed_distance=pl.col("trip_travel_distance_km") * 1000.0,
     )
 
     # Add households consumption units (1 for 1st person, +0.5 for any other person 14+, +0.3 for
@@ -189,4 +191,16 @@ def execute(context):
             )
         )
     df_households = df_households.drop("home_insee_density")
+    
+    df = df_trips.to_pandas()
+
+    weekday_sorter = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    df["weekday_index"] = df["trip_weekday"].apply(weekday_sorter.index).astype(int)
+
+    df = df.sort_values(by = ["person_id", "weekday_index", "trip_id"])
+    df["departure_time"] += df["weekday_index"] * 24 * 3600
+    df["arrival_time"] += df["weekday_index"] * 24 * 3600
+
+    df_trips = pl.DataFrame(df)
+
     return df_households, df_persons, df_trips

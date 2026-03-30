@@ -24,7 +24,10 @@ def execute(context):
     # Remove persons for which at least 1 trip has NULL euclidean_distance.
     # Usually, the trips with NULL euclidean_distance are trips that go outside of the survey
     # area and represent only a very small share of the trips.
-    remove_ids |= set(df_trips.filter(pl.col("euclidean_distance").is_null())["person_id"])
+    remove_ids |= set(df_trips.filter(
+        pl.col("euclidean_distance").is_null() &
+        pl.col("routed_distance").is_null()
+    )["person_id"])
 
     # Remove persons for which at least 1 trip has NULL departure or arrival time.
     remove_ids |= set(
@@ -100,6 +103,37 @@ def execute(context):
     df_households_pd = df_households.to_pandas()
     df_persons_pd = df_persons.to_pandas()
     df_trips_pd = df_trips.to_pandas()
+
+    f_arrival_after_next_departure = df_trips_pd["person_id"].eq(df_trips_pd["person_id"].shift(-1))
+    f_arrival_after_next_departure &= df_trips_pd["arrival_time"] > df_trips_pd["departure_time"].shift(-1)
+
+    f_departure_after_next_arrival = df_trips_pd["person_id"].eq(df_trips_pd["person_id"].shift(-1))
+    f_departure_after_next_arrival &= df_trips_pd["departure_time"] > df_trips_pd["arrival_time"].shift(-1)
+
+    remove_ids = set(df_trips_pd.loc[
+        f_arrival_after_next_departure | f_departure_after_next_arrival, "person_id"])
+    
+    df_persons_pd = df_persons_pd[~df_persons_pd["person_id"].isin(remove_ids)]
+    
+    df_trips_pd = df_trips_pd[df_trips_pd["person_id"].isin(df_persons_pd["person_id"])]
+    df_households_pd = df_households_pd[df_households_pd["household_id"].isin(df_persons_pd["household_id"])]
+
+    del df_trips_pd["euclidean_distance"]
+
+    # need to fix these attributes because we shuffled them up in the previous stage"]
+    df_trips_pd["is_first_trip"] = df_trips_pd["person_id"].ne(df_trips_pd["person_id"].shift(1))
+    df_trips_pd["is_last_trip"] = df_trips_pd["person_id"].ne(df_trips_pd["person_id"].shift(-1))
+
+    # need to fill overnight activity duratioins
+    f = df_trips_pd["person_id"].eq(df_trips_pd["person_id"].shift(-1))
+    f &= df_trips_pd["trip_weekday"].ne(df_trips_pd["trip_weekday"].shift(-1))
+    df_trips_pd["updated_activity_duration"] = df_trips_pd["departure_time"].shift(-1) - df_trips_pd["arrival_time"]
+    df_trips_pd.loc[f, "activity_duration"] = df_trips_pd.loc[f, "updated_activity_duration"]
+
+    # fixes one agent
+    f = df_trips_pd["person_id"].eq(df_trips_pd["person_id"].shift(-1))
+    f = df_trips_pd["activity_duration"].isna() & ~df_trips_pd["is_last_trip"]
+    df_trips_pd.loc[f, "activity_duration"] = df_trips_pd.loc[f, "updated_activity_duration"]
 
     hts.check(df_households_pd, df_persons_pd, df_trips_pd)
 
