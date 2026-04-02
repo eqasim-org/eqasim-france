@@ -210,7 +210,6 @@ def execute(context):
         if not column in df_target:
             raise RuntimeError("Attribute not available in target (census) for matching: {}".format(column))
 
-    breakpoint()
     df_assignment, levels = parallel_statistical_matching(
         context,
         df_source, "hts_id", "person_weight",
