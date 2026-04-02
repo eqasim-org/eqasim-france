@@ -84,14 +84,12 @@ def execute(context):
         "12": "unemployed",
         "21": "retired",
         "22": "student",
-        "23": "under14",  # Persons below 14 are assumed to be students.
+        "23": "under14",
         "24": "homemaker",
         "25": "other",
     })
     # Flag part-time workers.
     df.loc[(df["TACT"] == "11") & (df["TP"] == "2"), "professional_activity"] = "part_time_worker"
-    # Note that young children (< 3 y.o.) are set to "student", even though they are likely not at
-    # school yet.
 
     # Clean employment
     df["employed"] = df["TACT"] == "11"
