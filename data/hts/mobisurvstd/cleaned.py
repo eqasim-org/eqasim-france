@@ -93,6 +93,21 @@ def execute(context):
         .then(True)
         .otherwise(pl.col("professional_occupation") == "student")
         .fill_null(False),
+        professional_activity=pl.col("detailed_professional_occupation")
+        .cast(pl.String)
+        .replace_strict({
+            "worker:full_time": "full_time_worker",
+            "worker:part_time": "part_time_worker",
+            "worker:unspecified": "full_time_worker",
+            "student:primary_or_secondary": "student",
+            "student:higher": "student",
+            "student:apprenticeship": "full_time_worker",  # Consistent with Census.
+            "student:unspecified": "student",
+            "other:unemployed": "unemployed",
+            "other:retired": "retired",
+            "other:homemaker": "homemaker",
+            "other:unspecified": "other",
+        }),
         has_license=(
             pl.col("has_driving_license").eq_missing("yes")
             | pl.col("has_motorcycle_driving_license").eq_missing("yes")
@@ -113,6 +128,11 @@ def execute(context):
         .then(8)
         .otherwise("pcs_group_code")
         .fill_null(8),
+    )
+    df_persons = df_persons.with_columns(
+        professional_activity=pl.when(pl.col("age") <= 14)
+        .then(pl.lit("under14"))
+        .otherwise("professional_activity")
     )
     if df_persons["person_weight"].is_null().all():
         # For EMP 2019, person weight is unknown, we use trip weight instead.

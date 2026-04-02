@@ -74,7 +74,8 @@ def execute(context):
 
     columns = [
         "person_id", "household_id",
-        "age", "employed", "sex", "socioprofessional_class",
+        "age", "employed", "studies", "sex", "socioprofessional_class",
+        "professional_activity",
         "has_driving_license", "has_pt_subscription",
         "census_person_id", "hts_id"
     ] + context.config("extra_enriched_attributes")

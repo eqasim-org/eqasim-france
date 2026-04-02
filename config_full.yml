@@ -94,6 +94,9 @@ config:
   ## list of attributes to use for matching
   # matching_attributes: ["sex", "any_cars", "age_class", "socioprofessional_class", "departement_id"]
 
+  ## Match based on professional occupation
+  # matching_attributes: ["detailed_professional_occupation", "*default*"]
+
   ## Use INSEE's urban type in statistical matching
   # use_urban_type: true
   # urban_type_path: urban_type/UU2020_au_01-01-2023.zip
@@ -104,7 +107,6 @@ config:
   ## the list of possible keys can be found here: https://mobisurvstd.github.io/MobiSurvStd/format/persons.html
   # extra_enriched_attributes:
     # - "detailed_education_level"
-    # - "detailed_professional_occupation"
     # - "work_only_at_home"
 
   ## Exclude entreprise without any employee (trancheEffectifsEtablissement is NA, "NN" or "00")

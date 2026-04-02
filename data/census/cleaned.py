@@ -78,10 +78,30 @@ def execute(context):
     df.loc[df["SEXE"] == "2", "sex"] = "female"
     df["sex"] = df["sex"].astype("category")
 
+    # Clean professional occupation
+    df["professional_activity"] = df["TACT"].replace({
+        "11": "full_time_worker",
+        "12": "unemployed",
+        "21": "retired",
+        "22": "student",
+        "23": "under14",  # Persons below 14 are assumed to be students.
+        "24": "homemaker",
+        "25": "other",
+    })
+    # Flag part-time workers.
+    df.loc[(df["TACT"] == "11") & (df["TP"] == "2"), "professional_activity"] = "part_time_worker"
+    # Note that young children (< 3 y.o.) are set to "student", even though they are likely not at
+    # school yet.
+
     # Clean employment
     df["employed"] = df["TACT"] == "11"
 
     # Studies
+    # Note that some persons can have "professional_activity" != "student" and "studies" == True
+    # (interns, apprenticeship, unemployed with trainings).
+    # They represent about 13% of all "studies" == True.
+    # Note that some persons can have "professional_activity" == "student" and "studies" == False
+    # (probably representing at home education).
     df["studies"] = df["ETUD"] == "1"
 
     # Number of vehicles
@@ -117,11 +137,11 @@ def execute(context):
 
     # or we construct a new matching variable both here and in the surveys, which would
     # be the preferred way but is a TODO for now
-    
+
     df["socioprofessional_class"] = df["GS"].replace({ "Z": "8" }).astype(int)
 
-    # reconstruct retired people from STAT_GSEC variable (32 = retired)
-    df.loc[df["STAT_GSEC"].eq("32"), "socioprofessional_class"] = 7
+    # reconstruct retired people from "professional_activity"
+    df.loc[df["professional_activity"] == "retired", "socioprofessional_class"] = 7
 
     # TODO: in the future matching variable, would be good to treat students / pupils separately
 
@@ -132,6 +152,7 @@ def execute(context):
         "person_id", "household_id", "weight",
         "iris_id", "commune_id", "departement_id",
         "age", "sex", "couple",
+        "professional_activity",
         "commute_mode", "employed", "studies",
         "number_of_cars", "number_of_motorcycles", "number_of_vehicles", "use_motorcycle",
         "household_size", "consumption_units", "socioprofessional_class"
@@ -141,11 +162,11 @@ def execute(context):
         df_urban_type = context.stage("data.spatial.urban_type")[[
             "commune_id", "urban_type"
         ]]
-        
+
         # Impute urban type
         df = pd.merge(df, df_urban_type, on = "commune_id", how = "left")
         df.loc[df["commune_id"] == "undefined", "urban_type"] = "none"
         df["commune_id"] = df["commune_id"].astype("category")
-        assert ~np.any(df["urban_type"].isna()) 
+        assert ~np.any(df["urban_type"].isna())
 
     return df
