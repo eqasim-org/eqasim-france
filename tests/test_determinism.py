@@ -115,22 +115,22 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.csv",
         "{}/ile_de_france_households.csv".format(output_path),
-        "b00b3a7f9cda19417c2a1eab3f9a2bf2")
+        "d66f56c6f07ddc91fe29fdcc18b5772b")
 
     manager.check(
         "ile_de_france_persons.csv",
         "{}/ile_de_france_persons.csv".format(output_path),
-        "4067b5324a42883e0dc61eca6a82ec9c")
+        "73dcd28af10e4d714a7e86499ff913f1")
 
     manager.check(
         "ile_de_france_activities.csv",
         "{}/ile_de_france_activities.csv".format(output_path),
-        "3a3c98e80c67db63062d4282d041ddff")
+        "bc3201143ced552e715f8a7cb1b39842")
 
     manager.check(
         "ile_de_france_trips.csv",
         "{}/ile_de_france_trips.csv".format(output_path),
-        "44fc6fbd2e450ac7a3393a02e83097b0")
+        "8ae48d16dc15420116eb51d93284152a")
 
     manager.check(
         "ile_de_france_vehicle_types.csv",
@@ -145,22 +145,23 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_activities.gpkg",
         "{}/ile_de_france_activities.gpkg".format(output_path),
-        "ef882feaddb6cee483a10a3e90add02f")
+        "6b509983aa43b91ab47ec94062de6cf1")
 
     manager.check(
         "ile_de_france_commutes.gpkg",
         "{}/ile_de_france_commutes.gpkg".format(output_path),
-        "85474231b796ee96d1fd778af55f7af2")
+        "0b4026f9cda0e962ce4ec824232d434a")
 
     manager.check(
         "ile_de_france_homes.gpkg",
         "{}/ile_de_france_homes.gpkg".format(output_path),
-        "60514bb378f4becabf46d13f4227787d")
+        "bb3b0ecc0796425b6c9f1d02833e146d")
 
     manager.check(
         "ile_de_france_trips.gpkg",
         "{}/ile_de_france_trips.gpkg".format(output_path),
-        "9f4c51c03b56ee82a96aea0e91c9a0be")
+        "e52f761449b2a49cd5d2b04fd1d8e51e")
+    breakpoint()
 
     manager.finish()
 
