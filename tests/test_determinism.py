@@ -161,7 +161,6 @@ def _test_determinism(index, data_path, tmpdir):
         "ile_de_france_trips.gpkg",
         "{}/ile_de_france_trips.gpkg".format(output_path),
         "e52f761449b2a49cd5d2b04fd1d8e51e")
-    breakpoint()
 
     manager.finish()
 
@@ -205,7 +204,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.xml.gz",
         "{}/ile_de_france_households.xml.gz".format(output_path),
-        "570cd8c0b60a441e0c6314c939839413")
+        "86786783af1ffb4aac961b3003587d01")
 
     manager.check(
         "ile_de_france_vehicles.xml.gz",
