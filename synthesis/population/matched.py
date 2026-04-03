@@ -29,6 +29,7 @@ def configure(context):
     context.config("random_seed")
     context.config("matching_minimum_observations", 20)
     context.config("matching_attributes", DEFAULT_MATCHING_ATTRIBUTES)
+    context.config("matching_weekday", "any")
 
     context.stage("synthesis.population.sampled")
     context.stage("synthesis.population.income.selected")
@@ -177,6 +178,16 @@ def execute(context):
     df_target = context.stage("synthesis.population.sampled")
 
     columns = context.config("matching_attributes")
+
+    weekday = context.config("matching_weekday")
+    if weekday != "any":
+        if not "weekday" in df_source:
+            raise RuntimeError("The weekday attribute has not been implemented yet for your selected survey. Cannot perform chain matching by weekday.")
+        
+        if isinstance(weekday, str):
+            df_source = df_source[df_source["weekday"] == weekday].copy()
+        else:
+            df_source = df_source[df_source["weekday"].isin(weekday)].copy()
 
     try:
         default_index = columns.index("*default*")

@@ -45,7 +45,7 @@ def convert_time(x):
     return np.dot(np.array(x.split(":"), dtype = float), [3600.0, 60.0, 1.0])
 
 def execute(context):
-    df_individu, df_tcm_individu, df_menage, df_tcm_menage, df_deploc = context.stage("data.hts.entd.raw")
+    df_individu, df_tcm_individu, df_menage, df_tcm_menage, df_deploc, df_mobilite = context.stage("data.hts.entd.raw")
 
     # Make copies
     df_persons = pd.DataFrame(df_tcm_individu, copy = True)
@@ -247,6 +247,16 @@ def execute(context):
 
     # Socioprofessional class
     df_persons["socioprofessional_class"] = df_persons["CS24"].fillna(80).astype(int) // 10
+
+    # Weekday
+    df_weekday = df_mobilite.copy()
+    df_weekday = df_weekday.rename(columns = { "IDENT_IND": "entd_person_id" })
+    df_weekday["weekday"] = df_weekday["V2_JOURSEMMOB"].replace({
+        2: "monday", 3: "tuesday", 4: "wednesday", 5: "thursday", 6: "friday"
+    }).astype("category")
+    df_weekday = df_weekday.drop(columns = ["V2_JOURSEMMOB"])
+
+    df_persons = pd.merge(df_persons, df_weekday, how = "left", on = "entd_person_id")
 
     # Fix activity types (because of 1 inconsistent ENTD data)
     hts.fix_activity_types(df_trips)
