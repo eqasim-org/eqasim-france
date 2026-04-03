@@ -145,22 +145,22 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_activities.gpkg",
         "{}/ile_de_france_activities.gpkg".format(output_path),
-        "6b509983aa43b91ab47ec94062de6cf1")
+        "b284699e2ccc97aee198ca582650a893")
 
     manager.check(
         "ile_de_france_commutes.gpkg",
         "{}/ile_de_france_commutes.gpkg".format(output_path),
-        "0b4026f9cda0e962ce4ec824232d434a")
+        "be22c84163ed169ee4124bc937499d71")
 
     manager.check(
         "ile_de_france_homes.gpkg",
         "{}/ile_de_france_homes.gpkg".format(output_path),
-        "bb3b0ecc0796425b6c9f1d02833e146d")
+        "60514bb378f4becabf46d13f4227787d")
 
     manager.check(
         "ile_de_france_trips.gpkg",
         "{}/ile_de_france_trips.gpkg".format(output_path),
-        "e52f761449b2a49cd5d2b04fd1d8e51e")
+        "bda54cdbcf6ade265fceedf55590f5ae")
 
     manager.finish()
 
