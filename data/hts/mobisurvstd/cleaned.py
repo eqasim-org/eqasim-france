@@ -44,12 +44,15 @@ def execute(context):
     df_households = std_survey.households.select(
         "household_id",
         "trips_weekday",
-        "home_insee_density",
         household_weight="sample_weight",
         household_size="nb_persons",
         number_of_vehicles=pl.col("nb_cars") + pl.col("nb_motorcycles"),
         number_of_bikes="nb_bicycles",
         departement_id="home_dep",
+        urban_type=pl.col("home_insee_urban_type")
+        .cast(pl.String)
+        .replace({"outside_urban_unit": "none"})
+        .fill_null("none"),
     )
 
     if df_households["trips_weekday"].is_not_null().mean() > 0.95:
@@ -65,9 +68,9 @@ def execute(context):
     extra_cols = context.config("extra_enriched_attributes")
     assert isinstance(extra_cols, list), "`extra_enriched_attributes` parameter must be a list"
     for col in extra_cols:
-        assert (
-            col in std_survey.persons.columns
-        ), f"Column {col} is not a valid column name for MobiSurvStd persons"
+        assert col in std_survey.persons.columns, (
+            f"Column {col} is not a valid column name for MobiSurvStd persons"
+        )
 
     df_persons = std_survey.persons.select(
         "person_id",
@@ -84,7 +87,8 @@ def execute(context):
         .otherwise(pl.col("professional_occupation") == "worker")
         # If `professional_occupation` is NULL but a `pcs_group_code` is defined, then assume
         # that the person is working.
-        .fill_null(pl.col("pcs_group_code") <= 6).fill_null(False),
+        .fill_null(pl.col("pcs_group_code") <= 6)
+        .fill_null(False),
         studies=pl.when(pl.col("age") < 5)
         .then(True)
         .otherwise(pl.col("professional_occupation") == "student")
@@ -123,11 +127,15 @@ def execute(context):
         arrival_time=pl.col("arrival_time").cast(pl.UInt32) * 60,
         trip_duration=pl.col("travel_time").cast(pl.UInt32) * 60,
         activity_duration=pl.col("destination_activity_duration").cast(pl.UInt32) * 60,
-        preceding_purpose=pl.col("origin_purpose_group").replace_strict(PURPOSE_MAP),
-        following_purpose=pl.col("destination_purpose_group").replace_strict(PURPOSE_MAP),
+        preceding_purpose=pl.col("origin_purpose_group")
+        .cast(pl.String)
+        .replace_strict(PURPOSE_MAP),
+        following_purpose=pl.col("destination_purpose_group")
+        .cast(pl.String)
+        .replace_strict(PURPOSE_MAP),
         is_first_trip="first_trip",
         is_last_trip="last_trip",
-        mode=pl.col("main_mode_group").replace_strict(MODE_MAP),
+        mode=pl.col("main_mode_group").cast(pl.String).replace_strict(MODE_MAP),
         origin_departement_id="origin_dep",
         destination_departement_id="destination_dep",
         # Distance is converted from km to meters.
@@ -172,21 +180,6 @@ def execute(context):
     df_trips = df_trips.join(df_households, on="household_id", how="semi")
 
     # Impute urban type.
-    if context.config("use_urban_type"):
-        df_households = df_households.with_columns(
-            # Read `urban_type` (3 levels) from `home_insee_density` (7 levels).
-            urban_type=pl.col("home_insee_density").replace_strict(
-                {
-                    1: "central_city",
-                    2: "suburb",
-                    3: "suburb",
-                    4: "suburb",
-                    5: "isolated_city",
-                    6: "isolated_city",
-                    7: "isolated_city",
-                },
-                default="none",
-            )
-        )
-    df_households = df_households.drop("home_insee_density")
+    if not context.config("use_urban_type"):
+        df_households = df_households.drop("urban_type")
     return df_households, df_persons, df_trips
