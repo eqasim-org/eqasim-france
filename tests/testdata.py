@@ -500,7 +500,8 @@ def create(output_path):
                 NQUEST = household_id, SEXE = random.choice([1, 2]),
                 AGE = random.integers(90), PERMVP = random.choice([1, 2]),
                 ABONTC = random.choice([1, 2]), OCCP = 3 if studies else 2,
-                PERM2RM = random.choice([1, 2]), NBDEPL = 2, CS8 = random.integers(9)
+                PERM2RM = random.choice([1, 2]), NBDEPL = 2, CS8 = random.integers(9),
+                NONDEPL = 1
             ))
 
             home_department = department
@@ -561,7 +562,7 @@ def create(output_path):
 
     hashes = {
         "households": 9610947733268415162,
-        "persons": 13109131857344238946,
+        "persons": 4225414291640515394,
         "trips": 3642532006631400738,
     }
 
@@ -592,7 +593,7 @@ def create(output_path):
         for person_index in range(CENSUS_HOUSEHOLD_MEMBERS):
             persons.append(dict(
                 CANTVILLE = "ABCE", NUMMI = household_id,
-                AGED = "%03d" % random.integers(90), COUPLE = random.choice([1, 2]),
+                AGED = "%03d" % random.integers(5, 90), COUPLE = random.choice([1, 2]),
                 GS = random.choice(["1", "2", "3", "4", "5", "6", "Z"]),
                 STAT_GSEC = random.choice(["", "32"], p = [0.85, 0.15]),
                 DEPT = department, IRIS = iris, REGION = region, ETUD = random.choice([1, 2]),
@@ -614,8 +615,8 @@ def create(output_path):
     df_persons.columns = columns
 
     print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
-    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 12884913747671829065
-    
+    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 8548685267793117615
+
     df_persons.to_parquet("%s/rp_2022/RP2022_indcvi.parquet" % output_path)
 
     # Data set: commute flows
