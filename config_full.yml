@@ -99,7 +99,7 @@ config:
   ## - 5: persons below 5 are generated but have no trip and no enriched attributes
   ## - 0: persons below 5 have trips and enriched attributed corresponding to those of a persons
   #    between 5 and 14
-  ## - 16: for EMG 2023 (which only surey persons over 16), persons below 16 are generated but have
+  ## - 16: for EMG 2023 (which only survey persons over 16), persons below 16 are generated but have
   #    no trip and no enriched attributes
   # matching_minimum_age: 5
 
