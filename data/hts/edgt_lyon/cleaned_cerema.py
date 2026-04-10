@@ -15,7 +15,8 @@ PURPOSE_MAP = {
     "education": [21, 22, 23, 24, 25, 26, 27, 28, 29],
     "shop": [30, 31, 32, 33, 34, 35, 82],
     "leisure": [51, 52, 53, 54],
-    "other": [41, 42, 43, 61, 62, 63, 64, 71, 72, 73, 74, 91]
+    "escort": [61, 62, 63, 64, 71, 72, 73, 74],
+    "other": [41, 42, 43, 91],
 }
 
 MODES_MAP = {
@@ -115,7 +116,7 @@ def execute(context):
     # Has subscription
     df_persons["has_pt_subscription"] = df_persons["P10"].isin(["1", "2", "3"])
 
-    # Survey respondents 
+    # Survey respondents
     # PENQ 1 : fully awnsered the travel questionary section, having a chain or non-movers
     # PENQ 2 : nonrespondent of travel questionary section
     df_persons["PENQ"] = df_persons["PENQ"].fillna("2").astype(int)
@@ -173,7 +174,7 @@ def execute(context):
 
     # People with at least one trip (number_of_trips > 0)
     df_persons = pd.merge(df_persons, df_count, on = "person_id", how = "left")
-    
+
     # People that awnsered the travel questionary section but stayed at home (number_of_trips = 0)
     df_persons.loc[df_persons["travel_respondent"] & df_persons["number_of_trips"].isna(), "number_of_trips"] = 0
 

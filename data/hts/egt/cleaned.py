@@ -21,7 +21,7 @@ PURPOSE_MAP = {
     3 : "work",
     4 : "education",
     5 : "shop",
-    6 : "other",
+    6 : "escort",
     7 : "other",
     8 : "leisure"
     # 9 : "other" # default
@@ -124,7 +124,7 @@ def execute(context):
         df_households["commune_id"] = df_households["RESCOMM"].astype(str)
         df_persons = pd.merge(df_persons, df_households[["household_id", "commune_id"]], how = "left")
         assert np.all(~df_persons["commune_id"].isna())
-        
+
         # Impute urban type
         df_persons = pd.merge(df_persons, df_urban_type, on = "commune_id", how = "left")
         df_persons["urban_type"] = df_persons["urban_type"].fillna("none").astype("category")

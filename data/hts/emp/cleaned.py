@@ -18,7 +18,7 @@ PURPOSE_MAP = [
     ("3", "other"),
     ("4", "other"),
     ("5", "leisure"),
-    ("6", "other"),
+    ("6", "escort"),
     ("7", "leisure"),
     ("8", "leisure"),
     ("9", "work")
