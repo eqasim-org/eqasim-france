@@ -39,6 +39,10 @@ def prepare_locations(context):
     return df_locations[["person_id", "home", "work", "education"]].sort_values(by = "person_id"), crs
 
 def prepare_destinations(context):
+    # Find all unique secondary activity purposes.
+    df_trips = context.stage("synthesis.population.trips")
+    sec_purposes = set(df_trips["following_purpose"].unique()) - {"home", "work", "education"}
+
     df_locations = context.stage("synthesis.locations.secondary")
 
     identifiers = df_locations["location_id"].values
@@ -46,7 +50,7 @@ def prepare_destinations(context):
 
     data = {}
 
-    for purpose in ("shop", "leisure", "other", "escort"):
+    for purpose in sec_purposes:
         f = df_locations["offers_%s" % purpose].values
 
         data[purpose] = dict(

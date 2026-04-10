@@ -45,6 +45,9 @@ config:
   ## Whether to filter people going outside of the area and other filters
   # filter_hts: true
 
+  ## Whether to consider "escort" as a dedicated purpose or to include it in the "other" purpose.
+  # escort_purpose: false
+
   ## if selected, chose the source for edgt_lyon
   # edgt_lyon_source: unchosen # unchosen, adisp, cerema
 

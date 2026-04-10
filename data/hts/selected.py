@@ -1,4 +1,5 @@
 def configure(context):
+    context.config("escort_purpose", False)
     hts = context.config("hts")
 
     if hts == "mobisurvstd":
@@ -17,4 +18,8 @@ def configure(context):
         raise RuntimeError("Unknown HTS: %s" % hts)
 
 def execute(context):
-    return context.stage("hts")
+    df_households, df_persons, df_trips = context.stage("hts")
+    if not context.config("escort_purpose"):
+        df_trips.loc[df_trips["preceding_purpose"] == "escort", "preceding_purpose"] = "other"
+        df_trips.loc[df_trips["following_purpose"] == "escort", "following_purpose"] = "other"
+    return df_households, df_persons, df_trips
