@@ -46,7 +46,7 @@ def prepare_destinations(context):
 
     data = {}
 
-    for purpose in ("shop", "leisure", "other"):
+    for purpose in ("shop", "leisure", "other", "escort"):
         f = df_locations["offers_%s" % purpose].values
 
         data[purpose] = dict(

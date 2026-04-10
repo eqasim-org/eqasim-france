@@ -26,7 +26,7 @@ PURPOSE_MAP = {
     "shopping": "shop",
     "task": "other",
     "leisure": "leisure",
-    "escort": "other",
+    "escort": "escort",
     "other": "other",
     None: "other",
 }
