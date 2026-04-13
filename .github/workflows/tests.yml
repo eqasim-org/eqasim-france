@@ -39,13 +39,17 @@ jobs:
         git config --global user.email "you@example.com"
         git config --global user.name "Your Name"
         git config --system core.longpaths true
-    - name: Test versions
+    - name: Test versions and print environment
       shell: bash -el {0}
       run: |
         java -version
         mvn -v
         python --version
         git --version
+    - name: Export mamba environment
+      shell: bash -el {0}
+      run: |
+        mamba env export
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
