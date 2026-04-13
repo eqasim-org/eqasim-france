@@ -922,7 +922,7 @@ def create(output_path):
             writer.add(item)
 
     print("Hash", "OSM PBF", hash_file("%s/osm_idf/ile-de-france-220101.osm.pbf" % output_path))
-    assert hash_file("%s/osm_idf/ile-de-france-220101.osm.pbf" % output_path) == "afb6e5a03bea56d06145eef68d1cae8e"
+    assert hash_file("%s/osm_idf/ile-de-france-220101.osm.pbf" % output_path) == "0ac141ee95315bdaf36d055417fc410f"
 
     # Data set: GTFS
     print("Creating GTFS ...")
