@@ -46,10 +46,10 @@ jobs:
         mvn -v
         python --version
         git --version
-    - name: Export mamba environment
+    - name: Export conda environment
       shell: bash -el {0}
       run: |
-        mamba env export
+        conda env export
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
