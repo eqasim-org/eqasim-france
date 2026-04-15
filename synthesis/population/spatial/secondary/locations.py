@@ -17,7 +17,7 @@ def configure(context):
     context.stage("synthesis.locations.secondary")
 
     context.config("random_seed")
-    context.config("processes")
+    context.config("processes", volatile = True)
 
     context.config("secondary_activities.maximum_iterations", np.inf)
 
@@ -90,6 +90,9 @@ def execute(context):
     df_trips["travel_time"] = df_trips["arrival_time"] - df_trips["departure_time"]
     df_primary, crs = prepare_locations(context)
 
+    # in case it exists, replace motorcycle mode by car for this location algorithm where we don't need the distinction
+    df_trips.loc[df_trips["mode"] == "motorcycle", "mode"] = "car"
+
     # Prepare data
     distance_distributions = context.stage("synthesis.population.spatial.secondary.distance_distributions")
     destinations = prepare_destinations(context)
@@ -111,8 +114,8 @@ def execute(context):
     number_of_persons = len(unique_person_ids)
     unique_person_ids = np.array_split(unique_person_ids, processes)
 
-    random = np.random.RandomState(context.config("random_seed"))
-    random_seeds = random.randint(10000, size = processes)
+    random = np.random.default_rng(context.config("random_seed"))
+    random_seeds = random.integers(10000, size = processes)
 
     # Create batch problems for parallelization
     batches = []

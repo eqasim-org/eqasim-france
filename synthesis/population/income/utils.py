@@ -14,15 +14,15 @@ def income_uniform_sample(random_state, deciles, size):
     For the first interval, lower bound is 0.
     For the last interval, upper bound is MAXIMUM_INCOME_FACTOR*lower_bound.
 
-    :param random_state: numpy.random.RandomState
+    :param random_state: numpy.random.Generator
     :param deciles: deciles values
     :param size: income sample size
     """
     deciles = np.array([0] + deciles + [np.max(deciles) * MAXIMUM_INCOME_FACTOR])
 
-    indices = random_state.randint(10, size=size)
+    indices = random_state.integers(10, size=size)
     lower_bounds, upper_bounds = deciles[indices], deciles[indices + 1]
 
-    incomes = lower_bounds + random_state.random_sample(size=size) * (upper_bounds - lower_bounds)
+    incomes = lower_bounds + random_state.random(size=size) * (upper_bounds - lower_bounds)
 
     return incomes

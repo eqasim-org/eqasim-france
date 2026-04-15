@@ -8,7 +8,7 @@ def configure(context: ConfigurationContext):
     context.config("output_prefix", "ile_de_france_")
     context.config("force_full_rerun", False)
 
-    context.stage("matsim.runtime.java")
+    eqasim.configure(context)
     context.stage("matsim.runtime.eqasim")
 
     context.stage("matsim.output")

@@ -54,7 +54,7 @@ def test_simulation(tmpdir):
 
     if not test_noise:
         return
-    
+
     config.update({
         "noise.time_bin_size": 3600,
         "noise.time_bin_min": 8*3600,

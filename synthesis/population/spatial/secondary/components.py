@@ -19,7 +19,7 @@ class CustomDistanceSampler(rda.FeasibleDistanceSampler):
             mode_distribution = mode_distribution["distributions"][bound_index]
 
             distances[index] = mode_distribution["values"][
-                np.count_nonzero(self.random.random_sample() > mode_distribution["cdf"])
+                np.count_nonzero(self.random.random() > mode_distribution["cdf"])
             ]
 
         return distances
@@ -49,7 +49,7 @@ class CandidateIndex:
         return identifier, location,type_act
 
     def sample(self, purpose, random):
-        index = random.randint(0, len(self.data[purpose]["locations"]))
+        index = random.integers(0, len(self.data[purpose]["locations"]))
         identifier = self.data[purpose]["identifiers"][index]
         location = self.data[purpose]["locations"][index]
         type_act = self.data[purpose]["type_act"][index]

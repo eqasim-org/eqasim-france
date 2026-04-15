@@ -1,24 +1,24 @@
-import subprocess as sp
 import os, os.path, shutil
 
 import matsim.runtime.git as git
 import matsim.runtime.java as java
 import matsim.runtime.maven as maven
 
-DEFAULT_EQASIM_VERSION = "1.5.0"
+DEFAULT_EQASIM_VERSION = "2.1.0"
 DEFAULT_EQASIM_BRANCH = "develop"
-DEFAULT_EQASIM_COMMIT = "ece4932"
+DEFAULT_EQASIM_COMMIT = "6bf0131"
 
 def configure(context):
-    context.stage("matsim.runtime.git")
-    context.stage("matsim.runtime.java")
-    context.stage("matsim.runtime.maven")
+    git.configure(context)
+    java.configure(context)
+    maven.configure(context)
 
     context.config("eqasim_version", DEFAULT_EQASIM_VERSION)
     context.config("eqasim_branch", DEFAULT_EQASIM_BRANCH)
     context.config("eqasim_commit", DEFAULT_EQASIM_COMMIT)
     context.config("eqasim_repository", "https://github.com/eqasim-org/eqasim-java.git")
     context.config("eqasim_path", "")
+    context.config("eqasim_tag", None)
 
 def run(context, command, arguments, cwd = None):
     # Make sure there is a dependency
@@ -56,12 +56,18 @@ def execute(context):
     # creating input to unit tests of the eqasim-java package.
     else:
         os.makedirs("%s/eqasim-java/ile_de_france/target" % context.path())
-        shutil.copy(context.config("eqasim_path"),
-            "%s/eqasim-java/ile_de_france/target/ile_de_france-%s.jar" % (context.path(), version))
+        shutil.copy(
+            "%s/ile_de_france/target/ile_de_france-%s.jar" % (context.config("eqasim_path"), version),
+            "%s/eqasim-java/ile_de_france/target/ile_de_france-%s.jar" % (context.path(), version)
+        )
 
     return "eqasim-java/ile_de_france/target/ile_de_france-%s.jar" % version
 
 def validate(context):
+    git.validate(context)
+    java.validate(context)
+    maven.validate(context)
+
     path = context.config("eqasim_path")
 
     if path == "":
@@ -69,11 +75,11 @@ def validate(context):
 
     if not os.path.exists(path):
         raise RuntimeError("Cannot find eqasim at: %s" % path)
-    
+
     if context.config("eqasim_tag") is None:
         if context.config("eqasim_commit") is None:
             raise RuntimeError("Either eqasim commit or tag must be defined")
-        
+
     if (context.config("eqasim_tag") is None) == (context.config("eqasim_commit") is None):
         raise RuntimeError("Eqasim commit and tag must not be defined at the same time")
 
