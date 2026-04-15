@@ -615,7 +615,7 @@ def create(output_path):
 
     print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
     assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 12884913747671829065
-    
+
     df_persons.to_parquet("%s/rp_2022/RP2022_indcvi.parquet" % output_path)
 
     # Data set: commute flows
@@ -917,12 +917,12 @@ def create(output_path):
     assert hash_file("%s/osm_idf/ile-de-france-220101.osm.gz" % output_path) == "8ca19248d3e8016326673be2019947fc"
 
     import osmium
-    with osmium.SimpleWriter("{}/osm_idf/ile-de-france-220101.osm.pbf".format(output_path)) as writer:
+    with osmium.SimpleWriter("{}/osm_idf/ile-de-france-220101.osm".format(output_path)) as writer:
         for item in osmium.FileProcessor("{}/osm_idf/ile-de-france-220101.osm.gz".format(output_path)):
             writer.add(item)
 
-    print("Hash", "OSM PBF", hash_file("%s/osm_idf/ile-de-france-220101.osm.pbf" % output_path))
-    assert hash_file("%s/osm_idf/ile-de-france-220101.osm.pbf" % output_path) == "0ac141ee95315bdaf36d055417fc410f"
+    print("Hash", "OSM PBF", hash_file("%s/osm_idf/ile-de-france-220101.osm" % output_path))
+    assert hash_file("%s/osm_idf/ile-de-france-220101.osm" % output_path) == "9e6874274798dcc180ff16c179d61230"
 
     # Data set: GTFS
     print("Creating GTFS ...")
