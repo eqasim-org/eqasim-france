@@ -9,7 +9,7 @@ def configure(context):
 
 def execute(context):
     df_locations = context.stage("data.bpe.cleaned")[[
-        "enterprise_id", "activity_type", "commune_id", "geometry"
+        "enterprise_id", "activity_type","education_type", "commune_id", "weight","geometry"
     ]].copy()
     df_locations["destination_id"] = np.arange(len(df_locations))
 
@@ -22,4 +22,4 @@ def execute(context):
     df_locations["location_id"] = np.arange(len(df_locations))
     df_locations["location_id"] = "sec_" + df_locations["location_id"].astype(str)
 
-    return df_locations
+    return df_locations.rename(columns={"education_type":"type_act"})

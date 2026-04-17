@@ -23,27 +23,30 @@ def execute(context):
     df_home_locations = df_locations[df_locations["purpose"] == "home"]
     df_home_locations = pd.merge(df_home_locations, df_persons, on = "person_id")
     df_home_locations = pd.merge(df_home_locations, df_home[["household_id", "geometry"]], on = "household_id")
+    df_home_locations["type_act"] = "house"
     df_home_locations["location_id"] = -1
-    df_home_locations = df_home_locations[["person_id", "activity_index", "location_id", "geometry"]]
+    df_home_locations = df_home_locations[["person_id", "activity_index","type_act", "location_id", "geometry"]]
 
     # Work locations
     df_work_locations = df_locations[df_locations["purpose"] == "work"]
-    df_work_locations = pd.merge(df_work_locations, df_work[["person_id", "location_id", "geometry"]], on = "person_id")
-    df_work_locations = df_work_locations[["person_id", "activity_index", "location_id", "geometry"]]
+    df_work_locations = pd.merge(df_work_locations, df_work[["person_id", "location_id", "geometry"]], on = "person_id") 
+    df_work_locations["type_act"] = "work"
+    df_work_locations = df_work_locations[["person_id", "activity_index","type_act", "location_id", "geometry"]]
     assert not df_work_locations["geometry"].isna().any()
 
     # Education locations
     df_education_locations = df_locations[df_locations["purpose"] == "education"]
-    df_education_locations = pd.merge(df_education_locations, df_education[["person_id", "location_id", "geometry"]], on = "person_id")
-    df_education_locations = df_education_locations[["person_id", "activity_index", "location_id", "geometry"]]
+    df_education_locations = pd.merge(df_education_locations, df_education[["person_id", "location_id", "geometry"]], on = "person_id")  
+    df_education_locations["type_act"] = "education"
+    df_education_locations = df_education_locations[["person_id", "activity_index","type_act", "location_id", "geometry"]]
     assert not df_education_locations["geometry"].isna().any()
 
     # Secondary locations
     df_secondary_locations = df_locations[~df_locations["purpose"].isin(("home", "work", "education"))].copy()
     df_secondary_locations = pd.merge(df_secondary_locations, df_secondary[[
-        "person_id", "activity_index", "location_id", "geometry"
-    ]], on = ["person_id", "activity_index"], how = "left")
-    df_secondary_locations = df_secondary_locations[["person_id", "activity_index", "location_id", "geometry"]]
+        "person_id", "activity_index", "location_id","type_act", "geometry"
+    ]], on = ["person_id", "activity_index"], how = "left")    
+    df_secondary_locations = df_secondary_locations[["person_id", "activity_index","type_act", "location_id", "geometry"]]
     assert not df_secondary_locations["geometry"].isna().any()
 
     # Validation
