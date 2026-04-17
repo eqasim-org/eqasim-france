@@ -13,6 +13,8 @@ def configure(context):
     context.stage("data.census.raw")
     context.stage("data.spatial.codes")
 
+    context.config("with_motorcycles", False)
+
     if context.config("use_urban_type", False):
         context.stage("data.spatial.urban_type")
 
@@ -62,7 +64,7 @@ def execute(context):
     df.loc[df["TRANS"] == "1", "commute_mode"] = np.nan
     df.loc[df["TRANS"] == "2", "commute_mode"] = "walk"
     df.loc[df["TRANS"] == "3", "commute_mode"] = "bike"
-    df.loc[df["TRANS"] == "4", "commute_mode"] = "car"
+    df.loc[df["TRANS"] == "4", "commute_mode"] = "motorcycle"
     df.loc[df["TRANS"] == "5", "commute_mode"] = "car"
     df.loc[df["TRANS"] == "6", "commute_mode"] = "pt"
     df.loc[df["TRANS"] == "Z", "commute_mode"] = np.nan
@@ -83,20 +85,45 @@ def execute(context):
     df["studies"] = df["ETUD"] == "1"
 
     # Number of vehicles
-    df["number_of_vehicles"] = df["VOIT"].apply(
+    df["number_of_cars"] = df["VOIT"].apply(
         lambda x: str(x).replace("Z", "0").replace("X", "0")
     ).astype(int)
 
-    df["number_of_vehicles"] += df["DEROU"].apply(
+    df["number_of_motorcycles"] = df["DEROU"].apply(
         lambda x: str(x).replace("U", "0").replace("Z", "0").replace("X", "0")
     ).astype(int)
+    # DEROU is often not known, if commute by motorcycle, at least one motorcycle in the household
+    df["number_of_motorcycles"] += ((df["number_of_motorcycles"] == 0) & (df["commute_mode"] == "motorcycle")).astype(int)
+    df["number_of_vehicles"] = df["number_of_cars"] + df["number_of_motorcycles"]
+
+    # Force the use of motorcycle if commute by motorcycle
+    df["use_motorcycle"] = False
+    if context.config("with_motorcycles"):
+        df.loc[(df["commute_mode"] == "motorcycle"), "use_motorcycle"] = True
 
     # Household size
     df_size = df[["household_id"]].groupby("household_id").size().reset_index(name = "household_size")
     df = pd.merge(df, df_size)
 
     # Socioprofessional category
-    df["socioprofessional_class"] = df["CS1"].astype(int)
+
+    # Starting with RP 2022, INSEE does not provide the variable CS8 anymore,
+    # which corresponded to the socioprofessional category in 8 classes (PCS2003).
+    # Instead, the PCS2020 is provided now, in 6 classes. The first 6 classes are
+    # equivalent, but class 7 (retired people) and class 8 (others) is removed.
+
+    # there are two ways: we can backfit the data here (currently the case) so that
+    # the matching with the older HTS later in the pipeline stays coherent
+
+    # or we construct a new matching variable both here and in the surveys, which would
+    # be the preferred way but is a TODO for now
+    
+    df["socioprofessional_class"] = df["GS"].replace({ "Z": "8" }).astype(int)
+
+    # reconstruct retired people from STAT_GSEC variable (32 = retired)
+    df.loc[df["STAT_GSEC"].eq("32"), "socioprofessional_class"] = 7
+
+    # TODO: in the future matching variable, would be good to treat students / pupils separately
 
     # Consumption units
     df = pd.merge(df, hts.calculate_consumption_units(df), on = "household_id")
@@ -105,9 +132,9 @@ def execute(context):
         "person_id", "household_id", "weight",
         "iris_id", "commune_id", "departement_id",
         "age", "sex", "couple",
-        "commute_mode", "employed",
-        "studies", "number_of_vehicles", "household_size",
-        "consumption_units", "socioprofessional_class"
+        "commute_mode", "employed", "studies",
+        "number_of_cars", "number_of_motorcycles", "number_of_vehicles", "use_motorcycle",
+        "household_size", "consumption_units", "socioprofessional_class"
     ]]
 
     if context.config("use_urban_type"):

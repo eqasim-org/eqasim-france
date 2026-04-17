@@ -36,12 +36,10 @@ Unfortunately, there is no consolidated GTFS schedule avaiable for the Occitanie
 it is necessary to collect all relevant GTFS schedules one by one. Here, we
 provide a selection of links, which is not necessarily exhaustive:
 
-- [TISSEO (Toulouse)](https://data.toulouse-metropole.fr/explore/dataset/tisseo-gtfs/information/)
-- [TAM (Montpellier)](http://data.montpellier3m.fr/dataset/offre-de-transport-tam-en-gtfs)
-- [Arc-en-Ciel (Busses Occitanie)](https://www.data.gouv.fr/fr/datasets/offre-de-transport-du-reseau-lio-arc-en-ciel-gtfs/)
-- [SNCF TER](https://ressources.data.sncf.com/explore/dataset/sncf-ter-gtfs/information/)
-- [SNCF Intercités](https://ressources.data.sncf.com/explore/dataset/sncf-intercites-gtfs/information/)
-- [SNCF TGV](https://ressources.data.sncf.com/explore/dataset/horaires-des-train-voyages-tgvinouiouigo/information/)
+- [TISSEO (Toulouse)](https://transport.data.gouv.fr/datasets/tisseo-reseau-transport-urbain-toulousain/)
+- [TAM (Montpellier)](https://transport.data.gouv.fr/datasets/offre-de-transport-de-montpellier-mediterranee-metropole-tam-gtfs/)
+- [Arc-en-Ciel (Busses Occitanie)](https://transport.data.gouv.fr/datasets/reseau-lio-occitanie/)
+- [SNCF TGV, Intercités et TER](https://transport.data.gouv.fr/datasets/horaires-sncf) (save as `sncf-tgv-intercite-ter.gtfs.zip`)
 
 Download all the *zip*'d GTFS schedules and put them into the folder `data/gtfs_toulouse`.
 
@@ -75,12 +73,10 @@ Afterwards, you should have the following additional files in your directory str
 
 - `data/osm_toulouse/midi-pyrenees-latest.osm.pbf`
 - `data/osm_toulouse/languedoc-roussillon-latest.osm.pbf`
-- `data/gtfs_toulouse/tisseo.zip`
+- `data/gtfs_toulouse/tisseo_gtfs_v2.zip`
 - `data/gtfs_toulouse/TAM_MMM_GTFS.zip`
-- `data/gtfs_toulouse/RESEAU_LR_GTFS_20200706.zip`
-- `data/gtfs_toulouse/export_gtfs_voyages.zip`
-- `data/gtfs_toulouse/export-intercites-gtfs-last.zip`
-- `data/gtfs_toulouse/export-ter-gtfs-last.zip`
+- `data/gtfs_toulouse/lio.zip`
+- `data/gtfs_toulouse/sncf-tgv-intercite-ter.gtfs.zip`
 
 Note that the file names may change slightly over time as GTFS schedule are
 updated continuously.

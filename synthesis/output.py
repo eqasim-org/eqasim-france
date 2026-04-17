@@ -1,4 +1,5 @@
 import shutil
+import gzip
 import geopandas as gpd
 import pandas as pd
 import shapely.geometry as geo
@@ -25,6 +26,7 @@ def configure(context):
     context.config("output_prefix", "ile_de_france_")
     context.config("output_formats", ["csv", "gpkg"])
     context.config("sampling_rate")
+    context.config("extra_enriched_attributes", [])
 
     if context.config("mode_choice", False):
         context.stage("matsim.simulation.prepare")
@@ -70,12 +72,13 @@ def execute(context):
         columns = { "has_license": "has_driving_license" }
     )
 
-    df_persons = df_persons[[
+    columns = [
         "person_id", "household_id",
         "age", "employed", "sex", "socioprofessional_class",
         "has_driving_license", "has_pt_subscription",
         "census_person_id", "hts_id"
-    ]]
+    ] + context.config("extra_enriched_attributes")
+    df_persons = df_persons[columns]
     if "csv" in output_formats:
         df_persons.to_csv("%s/%spersons.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
     if "parquet" in output_formats:
@@ -134,7 +137,7 @@ def execute(context):
         "iris_id", "commune_id","departement_id","region_id"]].drop_duplicates("household_id"),how="left")
     df_households = df_households[[
         "household_id","iris_id", "commune_id", "departement_id","region_id",
-        "car_availability", "bike_availability",
+        "car_availability", "bike_availability", "use_motorcycle",
         "number_of_vehicles", "number_of_bikes",
         "income",
         "census_household_id"
@@ -164,8 +167,12 @@ def execute(context):
     ]]
 
     if context.config("mode_choice"):
+        trips_path = "%s/mode_choice/output_trips.csv" % context.path("matsim.simulation.prepare")
+        if not os.path.exists(trips_path):
+            trips_path = "%s/mode_choice/output_trips.csv.gz" % context.path("matsim.simulation.prepare")
+
         df_mode_choice = pd.read_csv(
-            "{}/mode_choice/output_trips.csv".format(context.path("matsim.simulation.prepare"), output_prefix),
+            trips_path,
             delimiter = ";")
 
         df_mode_choice = df_mode_choice.rename(columns={"person_trip_id": "trip_index"})
@@ -175,10 +182,31 @@ def execute(context):
         df_trips = pd.merge(df_trips, df_mode_choice, on = [
             "person_id", "trip_index"], how="left", validate = "one_to_one")
 
-        shutil.copy("%s/mode_choice/output_pt_legs.csv" % (context.path("matsim.simulation.prepare")),
-                    "%s/%spt_legs.csv" % (output_path, output_prefix))
+        pt_legs_path = "%s/mode_choice/output_pt_legs.csv" % context.path("matsim.simulation.prepare")
+        if not os.path.exists(pt_legs_path):
+            pt_legs_path = "%s/mode_choice/output_pt_legs.csv.gz" % context.path("matsim.simulation.prepare")
 
-        assert not np.any(df_trips["mode"].isna())                                 
+        output_pt_legs_path = "%s/%spt_legs.csv" % (output_path, output_prefix)
+        if pt_legs_path.endswith(".gz"):
+            with gzip.open(pt_legs_path, "rb") as f_in:
+                with open(output_pt_legs_path, "wb") as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+        else:
+            shutil.copy(pt_legs_path, output_pt_legs_path)
+
+        legs_path = "%s/mode_choice/output_legs.csv" % context.path("matsim.simulation.prepare")
+        if not os.path.exists(legs_path):
+            legs_path = "%s/mode_choice/output_legs.csv.gz" % context.path("matsim.simulation.prepare")
+
+        output_legs_path = "%s/%slegs.csv" % (output_path, output_prefix)
+        if legs_path.endswith(".gz"):
+            with gzip.open(legs_path, "rb") as f_in:
+                with open(output_legs_path, "wb") as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+        else:
+            shutil.copy(legs_path, output_legs_path)
+
+        assert not np.any(df_trips["mode"].isna())
 
     if "csv" in output_formats:
         df_trips.to_csv("%s/%strips.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
@@ -224,10 +252,10 @@ def execute(context):
         df_spatial[df_spatial["purpose"] == "work"].drop_duplicates("person_id")[["person_id", "geometry"]].rename(columns = { "geometry": "work_geometry" })
     )
 
-    df_spatial["geometry"] = [
+    df_spatial["geometry"] = gpd.GeoSeries([
         geo.LineString(od)
         for od in zip(df_spatial["home_geometry"], df_spatial["work_geometry"])
-    ]
+    ], crs = df_locations.crs)
 
     df_spatial = df_spatial.drop(columns = ["home_geometry", "work_geometry"])
     if "gpkg" in output_formats:

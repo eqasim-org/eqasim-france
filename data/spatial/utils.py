@@ -24,7 +24,7 @@ def sample_from_shape(shape, count, random, sample_size = None):
 
     while len(points) < count:
         minx, miny, maxx, maxy = shape.bounds
-        candidates = random.random_sample(size = (sample_size, 2))
+        candidates = random.random(size = (sample_size, 2))
         candidates[:,0] = minx + candidates[:,0] * (maxx - minx)
         candidates[:,1] = miny + candidates[:,1] * (maxy - miny)
         candidates = [geo.Point(*point) for point in candidates]
@@ -40,7 +40,7 @@ def _sample_from_zones(context, args):
     df = context.data("df")
     attribute = context.data("attribute")
 
-    random = np.random.RandomState(random_seed)
+    random = np.random.default_rng(random_seed)
     zone = df_zones[df_zones[attribute] == attribute_value]["geometry"].values[0]
 
     f = df[attribute] == attribute_value
@@ -53,7 +53,7 @@ def sample_from_zones(context, df_zones, df, attribute, random, label = "Samplin
     assert attribute in df_zones
 
     unique_values = df[attribute].unique()
-    random_seeds = random.randint(0, int(1e6), len(unique_values))
+    random_seeds = random.integers(0, int(1e6), len(unique_values))
 
     df_result = []
 
