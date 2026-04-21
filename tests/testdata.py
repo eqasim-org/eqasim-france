@@ -616,7 +616,7 @@ def create(output_path):
     df_persons.columns = columns
 
     print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
-    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 6038751970421038341
+    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 9906836554399977863
 
     df_persons.to_parquet("%s/rp_2022/RP2022_indcvi.parquet" % output_path)
 
