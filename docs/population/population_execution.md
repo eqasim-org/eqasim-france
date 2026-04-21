@@ -281,7 +281,6 @@ These variables are specified in the configuration file using the
 config:
   extra_enriched_attributes:
     - "detailed_education_level"
-    - "detailed_professional_occupation"
     - "work_only_at_home"
 ```
 

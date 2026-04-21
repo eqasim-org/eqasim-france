@@ -14,21 +14,22 @@ def configure(context):
     context.config("census_path", "rp_2022/RP2022_indcvi.parquet")
 
 COLUMNS_DTYPES = {
-    "CANTVILLE":"str", 
-    "NUMMI":"str", 
+    "CANTVILLE":"str",
+    "NUMMI":"str",
     "AGED":"str",
-    "COUPLE":"str", 
+    "COUPLE":"str",
     "GS":"str",
     "STAT_GSEC":"str",
-    "DEPT":"str", 
+    "DEPT":"str",
     "ETUD":"str",
-    "IPONDI":"str", 
+    "IPONDI":"str",
     "IRIS":"str",
-    "REGION":"str", 
+    "REGION":"str",
     "SEXE":"str",
-    "TACT":"str", 
+    "TACT":"str",
+    "TP":"str",
     "TRANS":"str",
-    "VOIT":"str", 
+    "VOIT":"str",
     "DEROU":"str"
 }
 
@@ -42,12 +43,12 @@ def execute(context):
     with context.progress(label = "Reading census ...") as progress:
         parquet = pl.read_parquet( "{}/{}".format(context.config("data_path"), context.config("census_path")),
                         columns=  COLUMNS_DTYPES.keys())
-        
+
         parquet = parquet.cast(pl.String)
         parquet = parquet.filter(pl.col("DEPT").is_in(requested_departements))
 
         progress.update(len(parquet))
-                    
+
 
     return parquet.to_pandas()
 
