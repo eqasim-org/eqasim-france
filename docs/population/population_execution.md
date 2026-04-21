@@ -29,26 +29,14 @@ which will create the `/project/code` folder containing the pipeline code.
 
 ## Preparing the environment
 
-To set up all dependencies, the easiest way is to use `conda` / `mamba`. An open way of setting up such an environment is setting up [miniforge](https://github.com/conda-forge/miniforge). Once it is installed and you are able to call `mamba` from the command line, execute the following code to automatically download all dependencies:
+We use `uv` for dependency management. [Here](https://docs.astral.sh/uv/getting-started/) is a guide for getting started. Make sure that you can call `uv` from your working environment. You can set-up all dependencies by calling:
 
 ```bash
 cd /project/code
-mamba env create -f environment.yml -n eqasim
+uv sync
 ```
 
-It will create a new `mamba` environment called `eqasim`. It, in particular, contains the [synpp](https://github.com/eqasim-org/synpp) package, which is the computational backbone of the pipeline.
-
-:::{tip} 
-
-**Windows:** You can also set up the environment using a graphical user interface for `conda`. You simply need to create a new environment and select `environment.yml` as the dependency definition file.
-
-:::
-
-Whenever you run the processing pipeline, make sure to do so from inside the `eqasim` environment (or whatever name you have given to it). You can enter the environment either though a GUI or by calling
-
-```bash
-mamba activate eqasim
-```
+In particular, the dependencies contain the [synpp](https://github.com/eqasim-org/synpp) package, which is the computational backbone of the pipeline.
 
 ## Preparing the configuration
 
@@ -70,14 +58,7 @@ To run the pipeline, go to the `/project/code` directory, enter the `mamba` envi
 
 ```bash
 cd /project/code
-mamba activate eqasim
-python3 -m synpp config.yml
-```
-
-A shortcut for running the script when not already inside the environment is to call
-
-```bash
-mamba run -n eqasim python3 -m synpp config.yml
+uv run -m synpp config.yml
 ```
 
 It will read the configuration file, run the processing pipeline and eventually create the synthetic population inside the output directory.
@@ -121,7 +102,7 @@ All output files will then be prepended by the given prefix instead of the defau
 Note that the `synpp` script allows you to pass any configuration option via the command line, for instance:
 
 ```bash
-python3 -m synpp config.yml --output_prefix my_prefix_ --output_path /alternative/path
+uv run -m synpp config.yml --output_prefix my_prefix_ --output_path /alternative/path
 ```
 
 In the following, various configuration options will be presented.
@@ -300,7 +281,6 @@ These variables are specified in the configuration file using the
 config:
   extra_enriched_attributes:
     - "detailed_education_level"
-    - "detailed_professional_occupation"
     - "work_only_at_home"
 ```
 
