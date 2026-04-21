@@ -1,5 +1,5 @@
 def configure(context):
-    context.config("escort_purpose", False)
+    context.config("activity_purposes", ["leisure", "shop", "escort", "task"])
     hts = context.config("hts")
 
     if hts == "mobisurvstd":
@@ -19,7 +19,11 @@ def configure(context):
 
 def execute(context):
     df_households, df_persons, df_trips = context.stage("hts")
-    if not context.config("escort_purpose"):
-        df_trips.loc[df_trips["preceding_purpose"] == "escort", "preceding_purpose"] = "other"
-        df_trips.loc[df_trips["following_purpose"] == "escort", "following_purpose"] = "other"
+    # Set purpose to `other` for HTS purposes which are not primary purposes or declared secondary
+    # purposes.
+    all_purposes = {"home", "work", "education"} | set(context.config("activity_purposes"))
+    df_trips.loc[~df_trips["preceding_purpose"].isin(all_purposes), "preceding_purpose"] = "other"
+    df_trips.loc[~df_trips["following_purpose"].isin(all_purposes), "following_purpose"] = "other"
+    df_trips["following_purpose"] = df_trips["following_purpose"].astype("category")
+    df_trips["preceding_purpose"] = df_trips["preceding_purpose"].astype("category")
     return df_households, df_persons, df_trips

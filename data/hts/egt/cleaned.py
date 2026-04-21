@@ -22,7 +22,7 @@ PURPOSE_MAP = {
     4 : "education",
     5 : "shop",
     6 : "escort",
-    7 : "other",
+    7 : "task",
     8 : "leisure"
     # 9 : "other" # default
 }
@@ -139,9 +139,6 @@ def execute(context):
     for category, purpose in PURPOSE_MAP.items():
         df_trips.loc[df_trips["DESTMOT_H9"] == category, "following_purpose"] = purpose
         df_trips.loc[df_trips["ORMOT_H9"] == category, "preceding_purpose"] = purpose
-
-    df_trips["following_purpose"] = df_trips["following_purpose"].astype("category")
-    df_trips["preceding_purpose"] = df_trips["preceding_purpose"].astype("category")
 
     # Trip mode
     df_trips["mode"] = "pt"

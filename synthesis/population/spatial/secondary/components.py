@@ -46,15 +46,22 @@ class CandidateIndex:
         return identifier, location
 
 class CustomDiscretizationSolver(rda.DiscretizationSolver):
-    def __init__(self, index):
+    def __init__(self, index, random, escort_activities, escort_weights):
         self.index = index
+        self.random = random
+        self.escort_activities = np.array(escort_activities)
+        self.escort_probs = np.array(escort_weights) / np.sum(escort_weights)
 
     def solve(self, problem, locations):
         discretized_locations = []
         discretized_identifiers = []
 
         for location, purpose in zip(locations, problem["purposes"]):
-            identifier, location = self.index.query(purpose, location.reshape(1, -1))
+            if purpose == "escort":
+                loc_purpose = str(self.random.choice(self.escort_activities, p=self.escort_probs))
+            else:
+                loc_purpose = purpose
+            identifier, location = self.index.query(loc_purpose, location.reshape(1, -1))
 
             discretized_identifiers.append(identifier)
             discretized_locations.append(location)

@@ -6,7 +6,6 @@ import geopandas as gpd
 def configure(context):
     context.stage("data.bpe.cleaned")
     context.stage("data.spatial.municipalities")
-    context.config("escort_purpose", False)
 
 def execute(context):
     df_locations = context.stage("data.bpe.cleaned")[[
@@ -17,15 +16,10 @@ def execute(context):
     # Attach attributes for activity types
     df_locations["offers_leisure"] = df_locations["activity_type"] == "leisure"
     df_locations["offers_shop"] = df_locations["activity_type"] == "shop"
-    if context.config("escort_purpose"):
-        # "other" purpose consists mostly of administrative tasks and healthcare
-        # so this matches well all "other" BPE types.
-        df_locations["offers_other"] = df_locations["activity_type"] == "other"
-    else:
-        # "other" purpose includes escort activities (often to education)
-        # so it is best to also include "education" BPE type.
-        df_locations["offers_other"] = ~(df_locations["offers_leisure"] | df_locations["offers_shop"])
+    df_locations["offers_task"] = df_locations["activity_type"] == "task"
+    # All locations are supposed to offer the "escort" and "other" activity purposes.
     df_locations["offers_escort"] = True
+    df_locations["offers_other"] = True
 
     # Define new IDs
     df_locations["location_id"] = np.arange(len(df_locations))

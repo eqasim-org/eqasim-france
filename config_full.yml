@@ -45,8 +45,9 @@ config:
   ## Whether to filter people going outside of the area and other filters
   # filter_hts: true
 
-  ## Whether to consider "escort" as a dedicated purpose or to include it in the "other" purpose.
-  # escort_purpose: false
+  ## Activity purposes included in the generated activities.
+  ## Purposes not present in the list below is put in the "other" category.
+  # activity_purposes: ["leisure", "shop", "escort", "task"]
 
   ## if selected, chose the source for edgt_lyon
   # edgt_lyon_source: unchosen # unchosen, adisp, cerema
@@ -121,6 +122,13 @@ config:
   ## max iterations for the secondary location selection algorithm
   # secondary_activities:
   #   maximum_iterations: .inf
+
+  # Locations for escort activities are drawn from the activity types below, with the given weights.
+  # By default, there is a 71% probability that a escort activity is drawn from "education" locations.
+  # The default weights were derived from observed escort activities in an aggregation of travel surveys.
+  # Possible activity types: "education", "shop", "leisure", "task", "transport", "other".
+  # escort_locations_activities: ["education", "leisure", "task", "transport", "shop"]
+  # escort_locations_weights: [0.71, 0.16, 0.07, 0.05, 0.01]
 
   ## Buffer arround buildings to capture adresses in their vicinity
   # home_address_buffer: 5.0
