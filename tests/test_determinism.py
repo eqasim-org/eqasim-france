@@ -96,7 +96,7 @@ def _test_determinism(index, data_path, tmpdir):
         data_path = data_path, output_path = output_path,
         regions = [10, 11], sampling_rate = 1.0, hts = "entd",
         random_seed = 1000, processes = 1,
-        secloc_maximum_iterations = 10,
+        secondary_activities = dict(maximum_iterations = 10),
         maven_skip_tests = True,
         matching_attributes = [
             "sex", "any_cars", "age_class", "socioprofessional_class",
@@ -155,7 +155,7 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_homes.gpkg",
         "{}/ile_de_france_homes.gpkg".format(output_path),
-        "60514bb378f4becabf46d13f4227787d")
+        "bb3b0ecc0796425b6c9f1d02833e146d")
 
     manager.check(
         "ile_de_france_trips.gpkg",
@@ -180,7 +180,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
         data_path = data_path, output_path = output_path,
         regions = [10, 11], sampling_rate = 1.0, hts = "entd",
         random_seed = 1000, processes = 1,
-        secloc_maximum_iterations = 10,
+        secondary_activities = dict(maximum_iterations = 10),
         maven_skip_tests = True,
         matching_attributes = [
             "sex", "any_cars", "age_class", "socioprofessional_class",

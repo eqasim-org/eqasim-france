@@ -10,19 +10,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
-    - uses: actions/cache@v5
-      with:
-        path: ~/conda_pkgs_dir
-        key: ubuntu-latest-conda-${{ hashFiles('environment.yml') }}
-    - uses: conda-incubator/setup-miniconda@v3
-      with:
-        activate-environment: "eqasim"
-        environment-file: environment.yml
-        python-version: "3.13"
-        channels: conda-forge
-        pkgs-dirs: ~/conda_pkgs_dir
-        conda-remove-defaults: true
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+    - name: Set up Python
+      uses: actions/setup-python@v6
     - name: Verify availability of open data
       shell: bash -el {0}
       run: |
-        python scripts/verify_data.py
+        uv run scripts/verify_data.py
