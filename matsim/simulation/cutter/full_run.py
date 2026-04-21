@@ -36,5 +36,5 @@ def execute(context: ExecuteContext):
     )
 
     assert os.path.exists(
-        "%s/%s/simulation_output/output_events.xml.gz" % (context.config("output_path"), cutter_name)
+        "%s/%s/simulation_output/output_events.xml.zst" % (context.config("output_path"), cutter_name)
     )
