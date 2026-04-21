@@ -1,6 +1,7 @@
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
+from itertools import product
 
 """
 Transforms absolute OD flows from French census into a weighted destination
@@ -16,14 +17,14 @@ def configure(context):
     context.config("education_location_source","bpe")
 
 def fix_origins(df, commune_ids, purpose,category): 
-    existing_ids = set(np.unique(df["origin_id"]))
-    missing_ids = commune_ids - existing_ids
-    categories = set(np.unique(df[category]))
+    df_existing = df.groupby(['origin_id',category])["weight"].sum()
+    existing_ids = set(df_existing[df_existing>0].index)
+     
+    missing_ids = set(product(commune_ids,np.unique(df[category]))) - existing_ids
 
     rows = []
-    for origin_id in missing_ids:
+    for origin_id,category_name in missing_ids:
         for destination_id in commune_ids:
-            for category_name in categories :
                 rows.append((origin_id, destination_id, category_name, 1.0 if origin_id == destination_id else 0.0))
 
     print("Fixing %d origins for %s" % (len(missing_ids), purpose))
@@ -62,6 +63,5 @@ def execute(context):
 
     del df_work["total"]
     del df_education["total"]
-    df_education = df_education.fillna({"weight":0.0})
     
     return df_work, df_education

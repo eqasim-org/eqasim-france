@@ -1,36 +1,33 @@
 # Containers
 
-Containers for running the Eqasim pipeline are located in the `containers` folder
+You can run the eqasim pipeline as a container. This means that all dependencies will be pre-packaged and you only need to provide (1) the config file, (2) the data directory, (3) the output directory, and optionally the cache directory.
 
-## Docker container
+## Running
 
-To build the container :
-`docker build -t eqasim .`
+You can run the prebuilt Docker container like so:
 
-This will pull the conda environment from the current repo.
-
-To build using your own environment.yml file :
-`docker build --build-arg env_path=/path/to/my/environment.yml -t eqasim .`
-
-To run the pipeline : 
 ```bash
 docker run --rm -it \
-    --mount type=bind,src=/path/to/eqasim-france,target=/usr/local/eqasim \
-    --mount type=bind,src=/path/to/eqasim-data,target=/usr/local/eqasim-data \
-    ghcr.io/eqasim-org/eqasim-france:latest /bin/bash -l -c "cd /usr/local/eqasim && python -m synpp"`
+    -v /path/to/local/config.yml:/eqasim/config.yml \
+    -v /path/to/local/data:/eqasim-data \
+    -v /path/to/local/output:/eqasim-data \
+    ghcr.io/eqasim-org/eqasim-france:latest
 ```
 
-where :
+Note the following requirements:
+- The `data_path` in your `config.yml` must point to `/eqasim-data`.
+- The `output_path` in your `config.yml` must point to `/eqasim-output`.
 
-- `/path/to/eqasim-france` is the path of the [eqasim pipline](https://github.com/eqasim-org/eqasim-france) on your *host* machine.
-- `/usr/local/eqasim` is going to be the path of the eqasim pipeline inside the container.
-- `/path/to/eqasim-data` is the path of the data (bdtopo, hts, sirene, etc.) folder on your *host* machine.
-- `/usr/local/eqasim-data` is the path of the data folder in the container. **This is the path you need to put in your `congif.yml` file**
+Furthermore, you can override the cache directroy, otherwise all cache data will be generated on the fly inside the container and deleted after execution:
 
-## Apptainer 
+```bash
+-v /path/to/local/cache:/eqasim-cache
+```
 
-To build the container : 
-`apptainer -v -d build eqasim.sif apptainer.def`
+## Building
 
-To run the pipeline : 
-`apptainer run eqasim.sif`
+In case you want to build the container on your own, use the following command:
+
+```bash
+docker build -t eqasim .
+```
