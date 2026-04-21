@@ -3,49 +3,82 @@ import os
 import hashlib, gzip
 from . import testdata
 import sqlite3
+import shutil, json
 
-def hash_sqlite_db(path):
-    """
-    Hash SQLite database file from its dump.
+class HashManager:
+    def __init__(self):
+        self.valid = True
+        self.information = []
 
-    As binary files of SQLite can be a different between OS (maybe due to a
-    difference between the implementations of the driver) and only content
-    matter, hashing the dump of the database is more relevant.
-    """
-    con = sqlite3.connect(path)
+    def check(self, name, path, expected):
+        actual = self._hash(path)
 
-    data = []
-    for line in con.iterdump():
-        if not "rtree" in line: # Fix for compatibilit between Linux and Windows
-            line = line.replace("MEDIUMINT", "INTEGER") # Fix for compatibilit between Linux and Windows
-            data.append(line.encode())
+        valid = actual == expected
+        self.valid &= valid
 
-    con.close()
+        self.information.append({
+            "name": name, "path": path,
+            "expected": expected, "actual": actual,
+            "valid": valid
+        })
 
-    data = sorted(data)
+        if valid:
+            print("HashManager :: ", " OK", name, expected)
 
-    hash = hashlib.md5()
-    for item in data:
-        hash.update(item)
-    
-    return hash.hexdigest()
+        else:
+            print("HashManager :: ", "NOK", name, "ac:" + actual, "!=", "ex:" + expected)
 
+    def finish(self):
+        errors = [
+            dict(name = item["name"], expected = item["expected"], actual = item["actual"])
+            for item in self.information if not item["valid"]
+        ]
 
-def hash_file(file):
-    hash = hashlib.md5()
+        assert self.valid, errors
 
-    # Gzip saves time stamps, so the gzipped files are NOT the same!
-    opener = lambda: open(file, "rb")
+    def _hash(self, path):
+        if not os.path.exists(path):
+            return "MISSING FILE"
+        elif path.endswith(".gpkg"):
+            return self._hash_db(path)
+        else:
+            return self._hash_file(path)
 
-    if file.endswith(".gz"):
-        opener = lambda: gzip.open(file)
+    def _hash_file(self, path):
+        hash = hashlib.md5()
 
-    with opener() as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash.update(chunk)
+        # Gzip saves time stamps, so the gzipped files are NOT the same!
+        opener = lambda: open(path, "rb")
 
-    f.close()
-    return hash.hexdigest()
+        if path.endswith(".gz"):
+            opener = lambda: gzip.open(path)
+
+        with opener() as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash.update(chunk)
+
+        f.close()
+
+        return hash.hexdigest()
+
+    def _hash_db(self, path):
+        con = sqlite3.connect(path)
+
+        data = []
+        for line in con.iterdump():
+            if not "rtree" in line: # Fix for compatibilit between Linux and Windows
+                line = line.replace("MEDIUMINT", "INTEGER") # Fix for compatibilit between Linux and Windows
+                data.append(line.encode())
+
+        con.close()
+
+        data = sorted(data)
+
+        hash = hashlib.md5()
+        for item in data:
+            hash.update(item)
+
+        return hash.hexdigest()
 
 def test_determinism(tmpdir):
     data_path = str(tmpdir.mkdir("data"))
@@ -63,7 +96,7 @@ def _test_determinism(index, data_path, tmpdir):
         data_path = data_path, output_path = output_path,
         regions = [10, 11], sampling_rate = 1.0, hts = "entd",
         random_seed = 1000, processes = 1,
-        secloc_maximum_iterations = 10,
+        secondary_activities = dict(maximum_iterations = 10),
         maven_skip_tests = True,
         matching_attributes = [
             "sex", "any_cars", "age_class", "socioprofessional_class",
@@ -77,40 +110,59 @@ def _test_determinism(index, data_path, tmpdir):
 
     synpp.run(stages, config, working_directory = cache_path)
 
-    REFERENCE_CSV_HASHES = {
-        "ile_de_france_activities.csv":     "3bf2f0cb0214f9d243936a608bd48f8b",
-        "ile_de_france_households.csv":     "e1e805d7f2f5af1c058df7432318e596",
-        "ile_de_france_persons.csv":        "14331fd23121c64ba1494a7c1d356702",
-        "ile_de_france_trips.csv":          "153a48d6df448af9b32acfe99221fe90",
-        "ile_de_france_vehicle_types.csv":  "af7578c363ed4e7a23163b4ab554a0e1",
-        "ile_de_france_vehicles.csv":       "1151d40b07c612b62ec40ff40d3e9272",
-    }
+    manager = HashManager()
 
-    REFERENCE_GPKG_HASHES = {
-      
-        "ile_de_france_activities.gpkg":    "97f1fab92105dc2e67a7b3b9ac56ea0f",
-        "ile_de_france_commutes.gpkg":      "ba92179202c40e6754d47351eb640786",
-        "ile_de_france_homes.gpkg":         "8da4fb16e569dddc063ee72e227adc01",
-        "ile_de_france_trips.gpkg":         "d23697c9ea2906a5c9debb7fcf5ad250",
+    manager.check(
+        "ile_de_france_households.csv",
+        "{}/ile_de_france_households.csv".format(output_path),
+        "9786ff8f41d031752f6dae84950806df")
 
-    }
+    manager.check(
+        "ile_de_france_persons.csv",
+        "{}/ile_de_france_persons.csv".format(output_path),
+        "73dcd28af10e4d714a7e86499ff913f1")
 
-    generated_csv_hashes = {
-        file: hash_file("%s/%s" % (output_path, file)) for file in REFERENCE_CSV_HASHES.keys()
-    }
+    manager.check(
+        "ile_de_france_activities.csv",
+        "{}/ile_de_france_activities.csv".format(output_path),
+        "b98eb80d1384defb0d342ad329cbef75")
 
-    generated_gpkg_hashes = {
-        file: hash_sqlite_db("%s/%s" % (output_path, file)) for file in REFERENCE_GPKG_HASHES.keys()
-    }
+    manager.check(
+        "ile_de_france_trips.csv",
+        "{}/ile_de_france_trips.csv".format(output_path),
+        "8ae48d16dc15420116eb51d93284152a")
 
-    print("Generated CSV hashes: ", generated_csv_hashes)
-    print("Generated GPKG hashes: ", generated_gpkg_hashes)
+    manager.check(
+        "ile_de_france_vehicle_types.csv",
+        "{}/ile_de_france_vehicle_types.csv".format(output_path),
+        "e35f237b15dbd76b1fa137f01f54d1c1")
 
-    for file in REFERENCE_CSV_HASHES.keys():
-        assert REFERENCE_CSV_HASHES[file] == generated_csv_hashes[file]
+    manager.check(
+        "ile_de_france_vehicles.csv",
+        "{}/ile_de_france_vehicles.csv".format(output_path),
+        "4ceb5f779a32236859735219eebc45ad")
 
-    for file in REFERENCE_GPKG_HASHES.keys():
-        assert REFERENCE_GPKG_HASHES[file] == generated_gpkg_hashes[file]
+    manager.check(
+        "ile_de_france_activities.gpkg",
+        "{}/ile_de_france_activities.gpkg".format(output_path),
+        "ff0be27f9b3e50a10c46be62eb5dedb7")
+
+    manager.check(
+        "ile_de_france_commutes.gpkg",
+        "{}/ile_de_france_commutes.gpkg".format(output_path),
+        "ae7857ec45338d35651be9d5afa84fda")
+
+    manager.check(
+        "ile_de_france_homes.gpkg",
+        "{}/ile_de_france_homes.gpkg".format(output_path),
+        "bb3b0ecc0796425b6c9f1d02833e146d")
+
+    manager.check(
+        "ile_de_france_trips.gpkg",
+        "{}/ile_de_france_trips.gpkg".format(output_path),
+        "23351a95b561ff968bfc6422b67fd160")
+
+    manager.finish()
 
 def test_determinism_matsim(tmpdir):
     data_path = str(tmpdir.mkdir("data"))
@@ -128,7 +180,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
         data_path = data_path, output_path = output_path,
         regions = [10, 11], sampling_rate = 1.0, hts = "entd",
         random_seed = 1000, processes = 1,
-        secloc_maximum_iterations = 10,
+        secondary_activities = dict(maximum_iterations = 10),
         maven_skip_tests = True,
         matching_attributes = [
             "sex", "any_cars", "age_class", "socioprofessional_class",
@@ -142,27 +194,21 @@ def _test_determinism_matsim(index, data_path, tmpdir):
 
     synpp.run(stages, config, working_directory = cache_path)
 
-    REFERENCE_HASHES = {
-        #"ile_de_france_population.xml.gz":  "e1407f918cb92166ebf46ad769d8d085",
-        #"ile_de_france_network.xml.gz":     "5f10ec295b49d2bb768451c812955794",
-        "ile_de_france_households.xml.gz":  "42fee71fe5ad5906d76c6cf87a354a3f",
-        #"ile_de_france_facilities.xml.gz":  "5ad41afff9ae5c470082510b943e6778",
-        "ile_de_france_config.xml":         "30871dfbbd2b5bf6922be1dfe20ffe73",
-        "ile_de_france_vehicles.xml.gz":    "1f3c393ea69b557798ab0915581e33a4"
-    }
+    manager = HashManager()
 
-    # activities.gpkg, trips.gpkg, meta.json,
-    # ile_de_france_transit_schedule.xml.gz, ile_de_france_transit_vehicles.xml.gz
+    manager.check(
+        "ile_de_france_config.xml",
+        "{}/ile_de_france_config.xml".format(output_path),
+        "844c610f2e02d1bcd9b3f14b69893e75")
 
-    # TODO: Output of the Java part is not deterministic, probably because of
-    # the ordering of persons / facilities. Fix that! Same is true for GPKG. A
-    # detailed inspection of meta.json would make sense!
+    manager.check(
+        "ile_de_france_households.xml.gz",
+        "{}/ile_de_france_households.xml.gz".format(output_path),
+        "86786783af1ffb4aac961b3003587d01")
 
-    generated_hashes = {
-        file: hash_file("%s/%s" % (output_path, file)) for file in REFERENCE_HASHES.keys()
-    }
+    manager.check(
+        "ile_de_france_vehicles.xml.gz",
+        "{}/ile_de_france_vehicles.xml.gz".format(output_path),
+        "63d2f2c7c8096d4f881a9a16c4e406e7")
 
-    print("Generated hashes: ", generated_hashes)
-
-    for file in REFERENCE_HASHES.keys():
-        assert REFERENCE_HASHES[file] == generated_hashes[file]
+    manager.finish()

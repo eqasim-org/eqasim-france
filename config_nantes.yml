@@ -2,7 +2,7 @@
 ## based on the synpp package
 
 # This is the path to a directory where the pipeline can store temporary data
-working_directory: cache
+working_directory: /path/to/my/cache
 
 # This section defines which parts of the pipeline should be run
 run:
@@ -23,7 +23,7 @@ config:
 
   # Paths to the input data and where the output should be stored
   data_path: /path/to/my/data
-  output_path: output
+  output_path: /path/to/my/output
   output_prefix: nantes_
 
   # Only interesting if you run the simulation

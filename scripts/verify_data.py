@@ -54,23 +54,23 @@ class Report:
 report = Report()
 
 report.register(
-    "Census data (RP 2019)",
-    "https://www.insee.fr/fr/statistiques/fichier/6544333/RP2019_INDCVI_csv.zip"
+    "Census data (RP 2022)",
+    "https://www.insee.fr/fr/statistiques/fichier/8647104/RP2022_indcvi.parquet"
 )
 
 report.register(
-    "Population totals (RP 2019)",
-    "https://www.insee.fr/fr/statistiques/fichier/6543200/base-ic-evol-struct-pop-2019.zip"
+    "Population totals (RP 2022)",
+    "https://www.insee.fr/fr/statistiques/fichier/8647014/base-ic-evol-struct-pop-2022_csv.zip"
 )
 
 report.register(
-    "Origin-destination data (RP-MOBPRO 2019)",
-    "https://www.insee.fr/fr/statistiques/fichier/6456056/RP2019_mobpro_csv.zip"
+    "Origin-destination data (RP-MOBPRO 2022)",
+    "https://www.insee.fr/fr/statistiques/fichier/8589904/RP2022_mobpro.parquet"
 )
 
 report.register(
-    "Origin-destination data (RP-MOBSCO 2019)",
-    "https://www.insee.fr/fr/statistiques/fichier/6456052/RP2019_mobsco_csv.zip"
+    "Origin-destination data (RP-MOBSCO 2022)",
+    "https://www.insee.fr/fr/statistiques/fichier/8589945/RP2022_mobsco.parquet"
 )
 
 report.register(
@@ -84,8 +84,8 @@ report.register(
 )
 
 report.register(
-    "Service and facility census (BPE 2023)",
-    "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE23.zip"
+    "Service and facility census (BPE 2024)",
+    "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE24.parquet"
 )
 
 entd_sources = [
@@ -104,28 +104,28 @@ for identifier, name in entd_sources:
     )
 
 report.register(
-    "IRIS zoning system (2021)",
-    "https://data.geopf.fr/telechargement/download/CONTOURS-IRIS/CONTOURS-IRIS_2-1__SHP__FRA_2021-01-01/CONTOURS-IRIS_2-1__SHP__FRA_2021-01-01.7z"
+    "IRIS zoning system (2024)",
+    "https://data.geopf.fr/telechargement/download/CONTOURS-IRIS/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01.7z"
 )
 
 report.register(
-    "Zoning registry (2021)",
-    "https://www.insee.fr/fr/statistiques/fichier/7708995/reference_IRIS_geo2021.zip"
+    "Zoning registry (2024)",
+    "https://www.insee.fr/fr/statistiques/fichier/7708995/reference_IRIS_geo2024.zip"
 )
 
 report.register(
     "Enterprise census (SIRENE), Etablissement",
-    "https://files.data.gouv.fr/insee-sirene/StockEtablissement_utf8.zip"
+    "https://object.files.data.gouv.fr/data-pipeline-open/siren/stock/StockEtablissement_utf8.parquet"
 )
 
 report.register(
     "Enterprise census (SIRENE), Unité Legale",
-    "https://files.data.gouv.fr/insee-sirene/StockUniteLegale_utf8.zip"
+    "https://object.files.data.gouv.fr/data-pipeline-open/siren/stock/StockUniteLegale_utf8.parquet"
 )
 
 report.register(
     "Enterprise census (SIRENE), Géolocalisé",
-    "https://files.data.gouv.fr/insee-sirene-geo/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.zip"
+    "https://object.files.data.gouv.fr/data-pipeline-open/siren/geoloc/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet"
 )
 
 for department in (75, 77, 78, 91, 92, 93, 94, 95):

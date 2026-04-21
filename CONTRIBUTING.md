@@ -6,7 +6,7 @@ This document aims to help _Eqasim_ users sharing improvements and new features 
 _Eqasim_ is highly supported by a community of researchers and developers, so contributions are an important part of its lifecycle.
 
 Every contribution is welcome. If you don't know if your feature is relevant or already implemented, 
-you can use the [issue tracker](https://github.com/eqasim-org/ile-de-france/issues/new) to ask the project maintainers. 
+you can use the [issue tracker](https://github.com/eqasim-org/eqasim-france/issues/new) to ask the project maintainers. 
 
 The following sections take a closer look on how to make your contributions available to all, and how to format them. 
 However, if you're not comfortable with our development tools, please reach out to us, we will figure out a way together.
@@ -24,7 +24,7 @@ If you need any help in this process, please reach out to the code maintainers.
 
 ### Fork the _Eqasim_ repository
 
-First, go to the [_Eqasim_ repository homepage](https://github.com/eqasim-org/ile-de-france) and [fork it](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
+First, go to the [_Eqasim_ repository homepage](https://github.com/eqasim-org/eqasim-france) and [fork it](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
 by clicking the `Fork` button. This will create a copy of the repository on your GitHub account.
 
 ### Clone your fork
@@ -75,7 +75,7 @@ Alternatively, click the `Pull requests` tab and the `New pull request` button.
 
 On top of the page, selectors allow you to choose what is merged into what.
 
-- On the left side, make sure that the `base repository` is set to `eqasim-org/ile-de-france` and `base` is set to `develop`.
+- On the left side, make sure that the `base repository` is set to `eqasim-org/eqasim-france` and `base` is set to `main`.
 On the 
 - On the right side, `head repository` should be your repository name, and `compare` should be set to your branch name
 
@@ -84,7 +84,7 @@ Click `Create pull request`, give it a title and a description to explain your c
 #### Pull request title
 
 The PR title should comply with [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
-This ensures that once the PR contents are squashed and merged in the `develop` branch,
+This ensures that once the PR contents are squashed and merged in the `main` branch,
 its history is readable and can be used for things like generating the [Changelog](CHANGELOG.md).
 
 **Commits of the branch don't have to be conventional commits !**
@@ -113,9 +113,9 @@ _Eqasim_ uses [Release Please](https://github.com/googleapis/release-please) to 
 
 > Release Please automates CHANGELOG generation, the creation of GitHub releases, and version bumps
 
-**Release Please will create and update a release PR** (named `chore(develop): release <new-version-number>`) when the `develop` branch receives pushes.
+**Release Please will create and update a release PR** (named `chore(develop): release <new-version-number>`) when the `main` branch receives pushes.
 
-This requires commits **on the `develop` branch** to follow the Conventional commits convention (see #pull-request-title).
+This requires commits **on the `main` branch** to follow the Conventional commits convention (see #pull-request-title).
 
 #### Version number
 
@@ -130,7 +130,7 @@ The new version number is defined according to the [SemVer](https://semver.org/)
 **When we are ready to release, simply merge the release PR.** 
 Release Please will then do the following:
 
-- Merge the changes contained in the release PR into the `develop` branch, creating a commit with the same name as the branch. These changes include:
+- Merge the changes contained in the release PR into the `main` branch, creating a commit with the same name as the branch. These changes include:
   - Updating the version number in all relevant places of the code
   - Update the Changelog based on the contents of the commits added since the last release
 - Create a git tag on this commit with the new version number
@@ -146,7 +146,7 @@ The documentation pages and generation scripts are located in the `docs/` folder
 #### Hosting
 
 The documentation is hosted by [Readthedocs](https://docs.readthedocs.com/platform/stable/index.html) which automatically
-builds a new instance when the `develop` branch is pushed and when a new git tag is created.
+builds a new instance when the `main` branch is pushed and when a new git tag is created.
 
 #### How to generate the Sphinx documentation locally
 

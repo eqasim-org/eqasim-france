@@ -12,9 +12,6 @@ def run(context, entry_point, arguments = [], class_path = None, vm_arguments = 
         - output: Returns the output of the Java call
         - raise (default): Raises an exception if the return code is not zero
     """
-    # Make sure there is a dependency
-    context.stage("matsim.runtime.java")
-
     # Prepare temp folder
     temp_path = "%s/__java_temp" % context.path()
     if not os.path.exists(temp_path):
@@ -25,7 +22,7 @@ def run(context, entry_point, arguments = [], class_path = None, vm_arguments = 
     vm_arguments = [
         "-Xmx" + memory,
         "-Djava.io.tmpdir=%s" % temp_path,
-        "-Dmatsim.useLocalDtds=true"
+        "-Dmatsim.preferLocalDtds=true"
     ] + vm_arguments
 
     # Prepare classpath
@@ -73,6 +70,3 @@ def validate(context):
     
     if int(major) < 17:
         raise RuntimeError("A Java JDK of at least version 17 is needed. A Java SDK with version %s was found" % version_number)  
-
-def execute(context):
-    pass

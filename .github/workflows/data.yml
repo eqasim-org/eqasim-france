@@ -9,15 +9,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: conda-incubator/setup-miniconda@v2
-      with:
-        activate-environment: "ile-de-france"
-        environment-file: environment.yml
-        python-version: "3.10"
-        channels: conda-forge
-
+    - uses: actions/checkout@v6
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+    - name: Set up Python
+      uses: actions/setup-python@v6
     - name: Verify availability of open data
       shell: bash -el {0}
       run: |
-        python scripts/verify_data.py
+        uv run scripts/verify_data.py

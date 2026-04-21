@@ -22,7 +22,7 @@ def configure(context):
     context.config("random_seed")
 
 def execute(context):
-    random = np.random.RandomState(context.config("random_seed"))
+    random = np.random.default_rng(context.config("random_seed"))
 
     df_households = context.stage("synthesis.population.sampled").drop_duplicates("household_id")[[
         "household_id", "commune_id", "iris_id", "departement_id"

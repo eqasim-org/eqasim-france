@@ -48,7 +48,7 @@ def execute(context):
 
             else:
                 print("  Extracting ...")
-                archive.extract(context.path(), internal_path[0])
+                archive.extract(context.path(), [internal_path[0]])
                 geometry_path = "{}/{}".format(context.path(), internal_path[0])
 
         if geometry_path is not None:

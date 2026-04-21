@@ -8,9 +8,6 @@ def run(context, arguments = [], cwd = None, catch_output = False):
     """
         This function calls git.
     """
-    # Make sure there is a dependency
-    context.stage("matsim.runtime.git")
-
     if cwd is None:
         cwd = context.path()
 
@@ -36,6 +33,3 @@ def validate(context):
         "--version"
     ], stderr = sp.STDOUT):
         print("WARNING! Git of at least version 2.x.x is recommended!")
-
-def execute(context):
-    pass
