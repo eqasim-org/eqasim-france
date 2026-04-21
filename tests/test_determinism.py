@@ -96,7 +96,7 @@ def _test_determinism(index, data_path, tmpdir):
         data_path = data_path, output_path = output_path,
         regions = [10, 11], sampling_rate = 1.0, hts = "entd",
         random_seed = 1000, processes = 1,
-        secloc_maximum_iterations = 10,
+        secondary_activities = dict(maximum_iterations = 10),
         maven_skip_tests = True,
         matching_attributes = [
             "sex", "any_cars", "age_class", "socioprofessional_class",
@@ -115,22 +115,22 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.csv",
         "{}/ile_de_france_households.csv".format(output_path),
-        "64292a08507ba48790f510fb64c39c15")
+        "9786ff8f41d031752f6dae84950806df")
 
     manager.check(
         "ile_de_france_persons.csv",
         "{}/ile_de_france_persons.csv".format(output_path),
-        "1cc92de5fad70d3c1f678acd2b9bb779")
+        "73dcd28af10e4d714a7e86499ff913f1")
 
     manager.check(
         "ile_de_france_activities.csv",
         "{}/ile_de_france_activities.csv".format(output_path),
-        "7eb0211003617218f49cc0c5af872928")
+        "b98eb80d1384defb0d342ad329cbef75")
 
     manager.check(
         "ile_de_france_trips.csv",
         "{}/ile_de_france_trips.csv".format(output_path),
-        "841473db5e446b942265fb9480d381ce")
+        "8ae48d16dc15420116eb51d93284152a")
 
     manager.check(
         "ile_de_france_vehicle_types.csv",
@@ -145,22 +145,22 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_activities.gpkg",
         "{}/ile_de_france_activities.gpkg".format(output_path),
-        "ff3bb135ff496b4d4b99aa14004cc832")
+        "ff0be27f9b3e50a10c46be62eb5dedb7")
 
     manager.check(
         "ile_de_france_commutes.gpkg",
         "{}/ile_de_france_commutes.gpkg".format(output_path),
-        "e2bad413d835915723404c442d6ba4e6")
+        "ae7857ec45338d35651be9d5afa84fda")
 
     manager.check(
         "ile_de_france_homes.gpkg",
         "{}/ile_de_france_homes.gpkg".format(output_path),
-        "60514bb378f4becabf46d13f4227787d")
+        "bb3b0ecc0796425b6c9f1d02833e146d")
 
     manager.check(
         "ile_de_france_trips.gpkg",
         "{}/ile_de_france_trips.gpkg".format(output_path),
-        "99f37ad46d5d1149aab78255ffa2a8b6")
+        "23351a95b561ff968bfc6422b67fd160")
 
     manager.finish()
 
@@ -180,7 +180,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
         data_path = data_path, output_path = output_path,
         regions = [10, 11], sampling_rate = 1.0, hts = "entd",
         random_seed = 1000, processes = 1,
-        secloc_maximum_iterations = 10,
+        secondary_activities = dict(maximum_iterations = 10),
         maven_skip_tests = True,
         matching_attributes = [
             "sex", "any_cars", "age_class", "socioprofessional_class",
@@ -204,7 +204,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.xml.gz",
         "{}/ile_de_france_households.xml.gz".format(output_path),
-        "6ea4c9aed4ccc5d2abcbd119c969c9a1")
+        "86786783af1ffb4aac961b3003587d01")
 
     manager.check(
         "ile_de_france_vehicles.xml.gz",
