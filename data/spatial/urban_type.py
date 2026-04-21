@@ -32,7 +32,7 @@ def execute(context):
         with archive.open(archive.filelist[0]) as f:
             df = pd.read_excel(f, sheet_name = "Composition_communale", skiprows = 5)
 
-    df = df[["CODGEO", "STATUT_COM_UU"]].copy()
+    df = df[["CODGEO", "STATUT_2017"]].copy()
     df = df.set_axis(["commune_id", "urban_type"], axis = "columns")
 
     # Cities that have districts are not detailed in the UU file, only the whole city is mentioned
