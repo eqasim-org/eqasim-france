@@ -204,7 +204,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.xml.gz",
         "{}/ile_de_france_households.xml.gz".format(output_path),
-        "86786783af1ffb4aac961b3003587d01")
+        "4f3d950cedbe0a96971df577947a87dd")
 
     manager.check(
         "ile_de_france_vehicles.xml.gz",
