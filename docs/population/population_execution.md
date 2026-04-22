@@ -172,8 +172,8 @@ The `*default*` trigger will be replaced by the default list of matching attribu
 Note that not all HTS implement the urban type, so matching may not work with some implementations. Most of them, however, contain the data, we just need to update the code to read them in.
 
 To make use of the urban type, the following data is needed:
-- [Download the urban type data from INSEE](https://www.insee.fr/fr/information/4802589). The pipeline is currently compatible with the 2023 data set (referencing 2020 boundaries). 
-- Put the downloaded *zip* file into `data/urban_type`, so you will have the file `data/urban_type/UU2020_au_01-01-2023.zip`
+- [Download the urban type data from INSEE](https://www.insee.fr/fr/information/4802589). The pipeline is currently compatible with the 2024 data set (referencing 2020 boundaries). 
+- Put the downloaded *zip* file into `data/urban_type`, so you will have the file `data/urban_type/UU2020_au_01-01-2024.zip`
 
 Then, you should be able to run the pipeline with the configuration explained above.
 
@@ -192,6 +192,18 @@ config:
 
 For validation, a table of person volumes by age range and trip purpose can be generated from the `analysis.synthesis.population` stage, as explained at the end of this documentation. 
 
+### Assigning activities to children
+
+By default, the pipeline excludes children under 5 years old from activity and trip assignments, as household travel surveys rarely include data for this age group.
+
+To override this behavior, use the `matching_minimum_age` parameter in the configuration.
+Setting it to `0` ensures activities and trips are assigned to all persons, including children under 5, by matching them to older surveyed children.
+
+```yaml
+config:
+  # [...]
+  matching_minimum_age: 0
+```
 
 ### Exclude entreprise with no employee
 
@@ -264,7 +276,7 @@ config:
 Caution, this method will fail on communes where the Filosofi subpopulation distributions are missing. In this case,
 we fall back to the `uniform` method.
 
-## Enriching person attributes
+### Enriching person attributes
 
 By default, the pipeline "enriches" generated persons with variables such as
 `has_license` and `has_pt_subscription`.

@@ -500,7 +500,8 @@ def create(output_path):
                 NQUEST = household_id, SEXE = random.choice([1, 2]),
                 AGE = random.integers(90), PERMVP = random.choice([1, 2]),
                 ABONTC = random.choice([1, 2]), OCCP = 3 if studies else 2,
-                PERM2RM = random.choice([1, 2]), NBDEPL = 2, CS8 = random.integers(9)
+                PERM2RM = random.choice([1, 2]), NBDEPL = 2, CS8 = random.integers(9),
+                NONDEPL = 1
             ))
 
             home_department = department
@@ -561,7 +562,7 @@ def create(output_path):
 
     hashes = {
         "households": 9610947733268415162,
-        "persons": 13109131857344238946,
+        "persons": 4225414291640515394,
         "trips": 3642532006631400738,
     }
 
@@ -592,7 +593,7 @@ def create(output_path):
         for person_index in range(CENSUS_HOUSEHOLD_MEMBERS):
             persons.append(dict(
                 CANTVILLE = "ABCE", NUMMI = household_id,
-                AGED = "%03d" % random.integers(90), COUPLE = random.choice([1, 2]),
+                AGED = "%03d" % random.integers(5, 90), COUPLE = random.choice([1, 2]),
                 GS = random.choice(["1", "2", "3", "4", "5", "6", "Z"]),
                 STAT_GSEC = random.choice(["", "32"], p = [0.85, 0.15]),
                 DEPT = department, IRIS = iris, REGION = region, ETUD = random.choice([1, 2]),
@@ -615,7 +616,7 @@ def create(output_path):
     df_persons.columns = columns
 
     print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
-    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 6038751970421038341
+    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 9906836554399977863
 
     df_persons.to_parquet("%s/rp_2022/RP2022_indcvi.parquet" % output_path)
 
@@ -791,19 +792,19 @@ def create(output_path):
     print("Creating urban type ...")
     df_urban_type = df_codes[["DEPCOM"]].copy().rename(columns = { "DEPCOM": "CODGEO" })
     df_urban_type = df_urban_type.drop_duplicates()
-    df_urban_type["STATUT_2017"] = [["B", "C", "I", "H"][k % 4] for k in range(len(df_urban_type))]
+    df_urban_type["STATUT_COM_UU"] = [["B", "C", "I", "H"][k % 4] for k in range(len(df_urban_type))]
 
     df_urban_type = pd.concat([df_urban_type, pd.DataFrame({
         "CODGEO": ["75056", "69123", "13055"],
-        "STATUT_2017": ["C", "C", "C"]
+        "STATUT_COM_UU": ["C", "C", "C"]
     })])
 
     print("Hash", "df_urban_type", pd.util.hash_pandas_object(df_urban_type, index = True).sum())
     assert pd.util.hash_pandas_object(df_urban_type, index = True).sum() == 15662019550405027472
 
     os.mkdir("%s/urban_type" % output_path)
-    with zipfile.ZipFile("%s/urban_type/UU2020_au_01-01-2023.zip" % output_path, "w") as archive:
-        with archive.open("UU2020_au_01-01-2023.xlsx", "w") as f:
+    with zipfile.ZipFile("%s/urban_type/UU2020_au_01-01-2024.zip" % output_path, "w") as archive:
+        with archive.open("UU2020_au_01-01-2024.xlsx", "w") as f:
             df_urban_type.to_excel(f, startrow = 5, sheet_name = "Composition_communale", index = False)
 
     # set scenario cutter shape

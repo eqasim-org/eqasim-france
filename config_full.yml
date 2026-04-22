@@ -95,6 +95,18 @@ config:
   ## Minimum number of observation to sample from
   # matching_minimum_observations: 20
 
+  ## Persons whose age is below this value are not matched to hts persons.
+  ## In most hts, persons below 5 are not surveyed for their trips so they would end up being
+  ## matched to older persons.
+  ## See https://github.com/eqasim-org/eqasim-france/issues/383
+  ## Recommended values:
+  ## - 5: persons below 5 are generated but have no trip and no enriched attributes
+  ## - 0: persons below 5 have trips and enriched attributed corresponding to those of a persons
+  #    between 5 and 14
+  ## - 16: for EMG 2023 (which only survey persons over 16), persons below 16 are generated but have
+  #    no trip and no enriched attributes
+  # matching_minimum_age: 5
+
   ## list of attributes to use for matching
   # matching_attributes: ["sex", "any_cars", "age_class", "socioprofessional_class", "departement_id"]
 

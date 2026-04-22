@@ -166,8 +166,12 @@ def execute(context):
     ).rename(columns = { "person_weight": "trip_weight" })
     df_persons["trip_weight"] = df_persons["person_weight"]
 
-    # Chain length
+    # Chain length.
+    # Persons who did not travel have NA values for NBDEPL, so NA values are filled with 0...
     df_persons["number_of_trips"] = df_persons["NBDEPL"].fillna(0).astype(int)
+    # ...But if NONDEPL is also NA, it means that the person was not surveyed for trips (persons
+    # below 5). In this case, we use value -1 (these persons are dropped in `filtered.py`).
+    df_persons.loc[df_persons["NONDEPL"].isna(), "number_of_trips"] = -1
 
     # Passenger attribute
     df_persons["is_passenger"] = df_persons["person_id"].isin(
