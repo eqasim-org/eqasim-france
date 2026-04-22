@@ -170,8 +170,12 @@ def execute(context):
 
     if context.config("mode_choice"):
         trips_path = "%s/mode_choice/output_trips.csv" % context.path("matsim.simulation.prepare")
-        if not os.path.exists(trips_path):
+        
+        if os.path.exists(trips_path + ".gz"):
             trips_path = "%s/mode_choice/output_trips.csv.gz" % context.path("matsim.simulation.prepare")
+
+        if os.path.exists(trips_path + ".zst"):
+            trips_path = "%s/mode_choice/output_trips.csv.zst" % context.path("matsim.simulation.prepare")
 
         df_mode_choice = pd.read_csv(
             trips_path,
