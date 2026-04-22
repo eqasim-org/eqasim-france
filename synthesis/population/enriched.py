@@ -37,7 +37,7 @@ def execute(context):
 
     # Attach matching information
     df_matching = context.stage("synthesis.population.matched")
-    df_population = pd.merge(df_population, df_matching, on = "person_id")
+    df_population = pd.merge(df_population, df_matching, on="person_id", how="left")
 
     initial_size = len(df_population)
     initial_person_ids = len(df_population["person_id"].unique())
@@ -52,17 +52,17 @@ def execute(context):
     extra_cols = context.config("extra_enriched_attributes")
     assert isinstance(extra_cols, list), "`extra_enriched_attributes` parameter must be a list"
     columns += extra_cols
-    df_population = pd.merge(df_population, df_hts_persons[columns], on="hts_id")
+    df_population = pd.merge(df_population, df_hts_persons[columns], on="hts_id", how="left")
 
     df_population = pd.merge(df_population, df_hts_households[[
         "hts_household_id", "number_of_bikes"
-    ]], on = "hts_household_id")
+    ]], on="hts_household_id", how="left")
 
     # Attach income
     df_income = context.stage("synthesis.population.income.selected")
     df_population = pd.merge(df_population, df_income[[
         "household_id", "household_income"
-    ]], on = "household_id")
+    ]], on="household_id", how="left")
 
     # Check consistency
     final_size = len(df_population)
@@ -78,7 +78,8 @@ def execute(context):
     df_number_of_licenses = df_population[["household_id", "has_license"]].groupby("household_id").sum().reset_index().rename(columns = { "has_license": "number_of_licenses" })
     df_car_availability = pd.merge(df_number_of_cars, df_number_of_licenses)
 
-    df_car_availability["car_availability"] = "all"
+    df_car_availability["car_availability"] = None
+    df_car_availability.loc[df_car_availability["number_of_cars"] >= df_car_availability["number_of_licenses"], "car_availability"] = "all"
     df_car_availability.loc[df_car_availability["number_of_cars"] < df_car_availability["number_of_licenses"], "car_availability"] = "some"
     df_car_availability.loc[df_car_availability["number_of_cars"] == 0, "car_availability"] = "none"
     df_car_availability["car_availability"] = df_car_availability["car_availability"].astype("category")
@@ -90,10 +91,16 @@ def execute(context):
         df_population.drop(columns=["use_motorcycle"])
 
     # Add bike availability
-    df_population["bike_availability"] = "all"
-    df_population.loc[df_population["number_of_bikes"] < df_population["household_size"], "bike_availability"] = "some"
-    df_population.loc[df_population["number_of_bikes"] == 0, "bike_availability"] = "none"
-    df_population["bike_availability"] = df_population["bike_availability"].astype("category")
+    # This is done at the household level and then merged with the persons so that not-matched
+    # persons have the same bike availability as their household members.
+    df_bike_availability = df_population[["household_id", "number_of_bikes", "household_size"]].drop_duplicates("household_id").dropna()
+
+    df_bike_availability["bike_availability"] = "all"
+    df_bike_availability.loc[df_bike_availability["number_of_bikes"] < df_bike_availability["household_size"], "bike_availability"] = "some"
+    df_bike_availability.loc[df_bike_availability["number_of_bikes"] == 0, "bike_availability"] = "none"
+    df_bike_availability["bike_availability"] = df_bike_availability["bike_availability"].astype("category")
+
+    df_population = pd.merge(df_population, df_bike_availability[["household_id", "bike_availability"]])
 
     # Add age range for education
     df_population["age_range"] = "higher_education"

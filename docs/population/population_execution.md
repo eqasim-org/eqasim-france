@@ -192,6 +192,18 @@ config:
 
 For validation, a table of person volumes by age range and trip purpose can be generated from the `analysis.synthesis.population` stage, as explained at the end of this documentation. 
 
+### Assigning activities to children
+
+By default, the pipeline excludes children under 5 years old from activity and trip assignments, as household travel surveys rarely include data for this age group.
+
+To override this behavior, use the `matching_minimum_age` parameter in the configuration.
+Setting it to `0` ensures activities and trips are assigned to all persons, including children under 5, by matching them to older surveyed children.
+
+```yaml
+config:
+  # [...]
+  matching_minimum_age: 0
+```
 
 ### Exclude entreprise with no employee
 
@@ -264,7 +276,7 @@ config:
 Caution, this method will fail on communes where the Filosofi subpopulation distributions are missing. In this case,
 we fall back to the `uniform` method.
 
-## Enriching person attributes
+### Enriching person attributes
 
 By default, the pipeline "enriches" generated persons with variables such as
 `has_license` and `has_pt_subscription`.
