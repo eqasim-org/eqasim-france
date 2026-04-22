@@ -23,7 +23,7 @@ def configure(context):
     context.stage("data.spatial.municipalities")
 
     context.config("data_path")
-    context.config("urban_type_path", "urban_type/UU2020_au_01-01-2023.zip")
+    context.config("urban_type_path", "urban_type/UU2020_au_01-01-2024.zip")
 
 def execute(context):
     with zipfile.ZipFile("{}/{}".format(
@@ -31,8 +31,8 @@ def execute(context):
         assert len(archive.filelist) == 1
         with archive.open(archive.filelist[0]) as f:
             df = pd.read_excel(f, sheet_name = "Composition_communale", skiprows = 5)
-            
-    df = df[["CODGEO", "STATUT_2017"]].copy()
+
+    df = df[["CODGEO", "STATUT_COM_UU"]].copy()
     df = df.set_axis(["commune_id", "urban_type"], axis = "columns")
 
     # Cities that have districts are not detailed in the UU file, only the whole city is mentioned
@@ -50,7 +50,7 @@ def execute(context):
             "commune_id": replacement_codes,
             "urban_type": [base_type] * len(replacement_codes)
         })])
-    
+
     df = df[~df["commune_id"].isin(cities_with_districts.keys())]
 
     # Clean unités urbaines

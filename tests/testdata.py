@@ -791,19 +791,19 @@ def create(output_path):
     print("Creating urban type ...")
     df_urban_type = df_codes[["DEPCOM"]].copy().rename(columns = { "DEPCOM": "CODGEO" })
     df_urban_type = df_urban_type.drop_duplicates()
-    df_urban_type["STATUT_2017"] = [["B", "C", "I", "H"][k % 4] for k in range(len(df_urban_type))]
+    df_urban_type["STATUT_COM_UU"] = [["B", "C", "I", "H"][k % 4] for k in range(len(df_urban_type))]
 
     df_urban_type = pd.concat([df_urban_type, pd.DataFrame({
         "CODGEO": ["75056", "69123", "13055"],
-        "STATUT_2017": ["C", "C", "C"]
+        "STATUT_COM_UU": ["C", "C", "C"]
     })])
 
     print("Hash", "df_urban_type", pd.util.hash_pandas_object(df_urban_type, index = True).sum())
     assert pd.util.hash_pandas_object(df_urban_type, index = True).sum() == 15662019550405027472
 
     os.mkdir("%s/urban_type" % output_path)
-    with zipfile.ZipFile("%s/urban_type/UU2020_au_01-01-2023.zip" % output_path, "w") as archive:
-        with archive.open("UU2020_au_01-01-2023.xlsx", "w") as f:
+    with zipfile.ZipFile("%s/urban_type/UU2020_au_01-01-2024.zip" % output_path, "w") as archive:
+        with archive.open("UU2020_au_01-01-2024.xlsx", "w") as f:
             df_urban_type.to_excel(f, startrow = 5, sheet_name = "Composition_communale", index = False)
 
     # set scenario cutter shape

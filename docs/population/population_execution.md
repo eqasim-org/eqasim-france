@@ -172,8 +172,8 @@ The `*default*` trigger will be replaced by the default list of matching attribu
 Note that not all HTS implement the urban type, so matching may not work with some implementations. Most of them, however, contain the data, we just need to update the code to read them in.
 
 To make use of the urban type, the following data is needed:
-- [Download the urban type data from INSEE](https://www.insee.fr/fr/information/4802589). The pipeline is currently compatible with the 2023 data set (referencing 2020 boundaries). 
-- Put the downloaded *zip* file into `data/urban_type`, so you will have the file `data/urban_type/UU2020_au_01-01-2023.zip`
+- [Download the urban type data from INSEE](https://www.insee.fr/fr/information/4802589). The pipeline is currently compatible with the 2024 data set (referencing 2020 boundaries). 
+- Put the downloaded *zip* file into `data/urban_type`, so you will have the file `data/urban_type/UU2020_au_01-01-2024.zip`
 
 Then, you should be able to run the pipeline with the configuration explained above.
 
