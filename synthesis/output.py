@@ -1,5 +1,5 @@
 import shutil
-import gzip
+import gzip, zstandard
 import geopandas as gpd
 import pandas as pd
 import shapely.geometry as geo
@@ -61,6 +61,25 @@ def clean_gpkg(path):
         )
     conn.commit()
     conn.close()
+
+def copy_csv(source_path, destination_path):
+    if os.path.exists(source_path + ".gz"):
+        source_path = source_path + ".gz"
+    elif os.path.exists(source_path + ".zst"):
+        source_path = source_path + ".zst"
+    else:
+        assert os.path.exists(source_path)
+
+    if source_path.endswith(".gz"):
+        with gzip.open(source_path, "rb") as f_in:
+            with open(destination_path, "wb") as f_out:
+                shutil.copyfileobj(f_in, f_out)
+    elif source_path.endswith(".zst"):
+        with zstandard.open(source_path, "rb") as f_in:
+            with open(destination_path, "wb") as f_out:
+                shutil.copyfileobj(f_in, f_out)
+    else:
+        shutil.copy(source_path, destination_path)            
 
 def execute(context):
     output_path = context.config("output_path")
@@ -187,30 +206,16 @@ def execute(context):
         df_trips = df_trips[columns_to_keep]
         df_trips = pd.merge(df_trips, df_mode_choice, on = [
             "person_id", "trip_index"], how="left", validate = "one_to_one")
+        
+        copy_csv(
+            "{}/mode_choice/output_pt_legs.csv".format(context.path("matsim.simulation.prepare")),
+            "{}/{}pt_legs.csv".format(output_path, output_prefix)
+        )
 
-        pt_legs_path = "%s/mode_choice/output_pt_legs.csv" % context.path("matsim.simulation.prepare")
-        if not os.path.exists(pt_legs_path):
-            pt_legs_path = "%s/mode_choice/output_pt_legs.csv.gz" % context.path("matsim.simulation.prepare")
-
-        output_pt_legs_path = "%s/%spt_legs.csv" % (output_path, output_prefix)
-        if pt_legs_path.endswith(".gz"):
-            with gzip.open(pt_legs_path, "rb") as f_in:
-                with open(output_pt_legs_path, "wb") as f_out:
-                    shutil.copyfileobj(f_in, f_out)
-        else:
-            shutil.copy(pt_legs_path, output_pt_legs_path)
-
-        legs_path = "%s/mode_choice/output_legs.csv" % context.path("matsim.simulation.prepare")
-        if not os.path.exists(legs_path):
-            legs_path = "%s/mode_choice/output_legs.csv.gz" % context.path("matsim.simulation.prepare")
-
-        output_legs_path = "%s/%slegs.csv" % (output_path, output_prefix)
-        if legs_path.endswith(".gz"):
-            with gzip.open(legs_path, "rb") as f_in:
-                with open(output_legs_path, "wb") as f_out:
-                    shutil.copyfileobj(f_in, f_out)
-        else:
-            shutil.copy(legs_path, output_legs_path)
+        copy_csv(
+            "{}/mode_choice/output_legs.csv".format(context.path("matsim.simulation.prepare")),
+            "{}/{}legs.csv".format(output_path, output_prefix)
+        )
 
         assert not np.any(df_trips["mode"].isna())
 
