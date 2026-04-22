@@ -153,11 +153,13 @@ def execute(context):
         # Newer standalone mode choice versions write compressed CSVs.
         trips_exists = (
             os.path.exists("%s/mode_choice/output_trips.csv" % context.path()) or
-            os.path.exists("%s/mode_choice/output_trips.csv.gz" % context.path())
+            os.path.exists("%s/mode_choice/output_trips.csv.gz" % context.path()) or
+            os.path.exists("%s/mode_choice/output_trips.csv.zst" % context.path())
         )
         pt_legs_exists = (
             os.path.exists("%s/mode_choice/output_pt_legs.csv" % context.path()) or
-            os.path.exists("%s/mode_choice/output_pt_legs.csv.gz" % context.path())
+            os.path.exists("%s/mode_choice/output_pt_legs.csv.gz" % context.path()) or
+            os.path.exists("%s/mode_choice/output_pt_legs.csv.zst" % context.path())
         )
 
         assert trips_exists
