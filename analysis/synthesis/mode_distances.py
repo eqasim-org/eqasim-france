@@ -15,7 +15,7 @@ def execute(context):
     acquisition_sample_size = context.config("acquisition_sample_size")
 
     probabilities = np.linspace(0.0, 1.0, 20)
-    modes = ["car", "car_passenger", "pt", "bike", "walk"]
+    modes = ["car", "car_passenger", "pt", "bicycle", "walk"]
 
     quantiles = { mode : [] for mode in modes }
 

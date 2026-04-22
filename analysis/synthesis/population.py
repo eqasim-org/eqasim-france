@@ -3,10 +3,10 @@ import os
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-from  analysis.marginals import NUMBER_OF_VEHICLES_LABELS
+from  analysis.marginals import NUMBER_OF_CARS_LABELS
 from shapely import distance
 AGE_CLASS = [0, 10, 14, 17, 24, 49, 64, np.inf]
-NUMBER_OF_VEHICLES= [0,1,2,3,np.inf]
+NUMBER_OF_CARS= [0,1,2,3,np.inf]
 NAME_AGE_CLASS = ["0-10","11-14","15-17","18-24","25-49","50-64","65+"]
 ANALYSIS_FOLDER = "analysis_population"
 def configure(context):
@@ -70,8 +70,8 @@ def execute(context):
     df_hts_person["age_class"] = pd.cut(df_hts_person["age"],AGE_CLASS,include_lowest=True,labels=NAME_AGE_CLASS)
 
     # get vehicule class 
-    df_person_eq["vehicles_class"] = pd.cut(df_person_eq["number_of_vehicles"],NUMBER_OF_VEHICLES,right=True,labels=NUMBER_OF_VEHICLES_LABELS)
-    df_hts_households["vehicles_class"] = pd.cut(df_hts_households["number_of_vehicles"],NUMBER_OF_VEHICLES,right=True,labels=NUMBER_OF_VEHICLES_LABELS)
+    df_person_eq["vehicles_class"] = pd.cut(df_person_eq["NUMBER_OF_CARS"],NUMBER_OF_CARS,right=True,labels=NUMBER_OF_CARS_LABELS)
+    df_hts_households["vehicles_class"] = pd.cut(df_hts_households["NUMBER_OF_CARS"],NUMBER_OF_CARS,right=True,labels=NUMBER_OF_CARS_LABELS)
 
 
     df_eq_travel = pd.merge(df_trip_eq,df_person_eq[["person_id","age_class"]],on=["person_id"])

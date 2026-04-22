@@ -22,7 +22,7 @@ def execute(context: ExecuteContext):
 
     force_full_rerun = context.config("force_full_rerun")
     if (
-        os.path.exists("%s/simulation_output/output_events.xml.gz" % context.config("output_path"))
+        os.path.exists("%s/simulation_output/output_events.xml.zst" % context.config("output_path"))
         and force_full_rerun is False
     ):
         return
@@ -40,5 +40,5 @@ def execute(context: ExecuteContext):
     )
 
     assert os.path.exists(
-        "%s/simulation_output/output_events.xml.gz" % context.config("output_path")
+        "%s/simulation_output/output_events.xml.zst" % context.config("output_path")
     )

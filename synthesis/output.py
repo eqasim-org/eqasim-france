@@ -138,9 +138,9 @@ def execute(context):
         "iris_id", "commune_id","departement_id","region_id"]].drop_duplicates("household_id"),how="left")
     df_households = df_households[[
         "household_id","iris_id", "commune_id", "departement_id","region_id",
-        "car_availability", "bike_availability", "use_motorcycle",
+        "car_availability", "bicycle_availability", "use_motorcycle",
         "number_of_cars", "number_of_motorcycles",
-        "number_of_vehicles", "number_of_bikes",
+        "number_of_vehicles", "number_of_bicycles",
         "income",
         "census_household_id"
     ]]
@@ -170,8 +170,12 @@ def execute(context):
 
     if context.config("mode_choice"):
         trips_path = "%s/mode_choice/output_trips.csv" % context.path("matsim.simulation.prepare")
-        if not os.path.exists(trips_path):
+        
+        if os.path.exists(trips_path + ".gz"):
             trips_path = "%s/mode_choice/output_trips.csv.gz" % context.path("matsim.simulation.prepare")
+
+        if os.path.exists(trips_path + ".zst"):
+            trips_path = "%s/mode_choice/output_trips.csv.zst" % context.path("matsim.simulation.prepare")
 
         df_mode_choice = pd.read_csv(
             trips_path,

@@ -23,7 +23,7 @@ MODE_LABELS = dict(
     car = "Car driver",
     car_passenger = "Car passenger",
     pt = "Public transport",
-    bike = "Bicycle",
+    bicycle = "Bicycle",
     walk = "Walking"
 )
 

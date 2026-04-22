@@ -63,7 +63,7 @@ def execute(context):
     df["commute_mode"] = None
     df.loc[df["TRANS"] == "1", "commute_mode"] = np.nan
     df.loc[df["TRANS"] == "2", "commute_mode"] = "walk"
-    df.loc[df["TRANS"] == "3", "commute_mode"] = "bike"
+    df.loc[df["TRANS"] == "3", "commute_mode"] = "bicycle"
     df.loc[df["TRANS"] == "4", "commute_mode"] = "motorcycle"
     df.loc[df["TRANS"] == "5", "commute_mode"] = "car"
     df.loc[df["TRANS"] == "6", "commute_mode"] = "pt"

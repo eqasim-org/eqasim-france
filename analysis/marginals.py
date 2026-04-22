@@ -8,14 +8,14 @@ AGE_CLASS_LABELS = ["<15", "15-29", "30-44", "45-59", "60-74", "75+"]
 HOUSEHOLD_SIZE_BOUNDS = [1, 3, np.inf]
 HOUSEHOLD_SIZE_LABELS = ["1", "2-3", "4+"]
 
-NUMBER_OF_VEHICLES_BOUNDS = [0, 1, 2, np.inf]
-NUMBER_OF_VEHICLES_LABELS = ["0", "1", "2", "3+"]
+NUMBER_OF_CARS_BOUNDS = [0, 1, 2, np.inf]
+NUMBER_OF_CARS_LABELS = ["0", "1", "2", "3+"]
 
-NUMBER_OF_BIKES_BOUNDS = [0, 1, 2, np.inf]
-NUMBER_OF_BIKES_LABELS = ["0", "1", "2", "3+"]
+NUMBER_OF_BICYCLES_BOUNDS = [0, 1, 2, np.inf]
+NUMBER_OF_BICYCLES_LABELS = ["0", "1", "2", "3+"]
 
 GENERAL_PERSON_MARGINALS = [("age_class",), ("sex",), ("employed",), ("studies",)]
-GENERAL_HOUSEHOLD_MARGINALS = [("household_size_class",), ("number_of_vehicles_class",)]
+GENERAL_HOUSEHOLD_MARGINALS = [("household_size_class",), ("number_of_cars_class",)]
 
 CENSUS_PERSON_MARGINALS = GENERAL_PERSON_MARGINALS + [("socioprofessional_class",)]
 CENSUS_HOUSEHOLD_MARGINALS = GENERAL_HOUSEHOLD_MARGINALS
@@ -34,11 +34,11 @@ def prepare_classes(df):
     if "household_size" in df:
         df["household_size_class"] = np.digitize(df["household_size"], HOUSEHOLD_SIZE_BOUNDS, right = True)
 
-    if "number_of_vehicles" in df:
-        df["number_of_vehicles_class"] = np.digitize(df["number_of_vehicles"], NUMBER_OF_VEHICLES_BOUNDS, right = True)
+    if "number_of_cars" in df:
+        df["number_of_cars_class"] = np.digitize(df["number_of_cars"], NUMBER_OF_CARS_BOUNDS, right = True)
 
-    if "number_of_bikes" in df:
-        df["number_of_bikes_class"] = np.digitize(df["number_of_bikes"], NUMBER_OF_BIKES_BOUNDS, right = True)
+    if "number_of_bicycles" in df:
+        df["number_of_bicycles_class"] = np.digitize(df["number_of_bicycles"], NUMBER_OF_BICYCLES_BOUNDS, right = True)
 
 def cross(*marginals):
     result = []

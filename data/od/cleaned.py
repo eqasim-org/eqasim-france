@@ -50,8 +50,8 @@ def execute(context):
     df_work["commute_mode"] = ""
     df_work.loc[df_work["TRANS"] == 1, "commute_mode"] = "no transport"
     df_work.loc[df_work["TRANS"] == 2, "commute_mode"] = "walk"
-    df_work.loc[df_work["TRANS"] == 3, "commute_mode"] = "bike"
-    df_work.loc[df_work["TRANS"] == 4, "commute_mode"] = "car"
+    df_work.loc[df_work["TRANS"] == 3, "commute_mode"] = "bicycle"
+    df_work.loc[df_work["TRANS"] == 4, "commute_mode"] = "car" # motorbike
     df_work.loc[df_work["TRANS"] == 5, "commute_mode"] = "car"
     df_work.loc[df_work["TRANS"] == 6, "commute_mode"] = "pt"
     assert not np.any(df_work["commute_mode"] == "")

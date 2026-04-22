@@ -48,14 +48,14 @@ def execute(context):
     df_hts_persons = df_hts_persons.rename(columns = { "person_id": "hts_id", "household_id": "hts_household_id" })
     df_hts_households = df_hts_households.rename(columns = { "household_id": "hts_household_id" })
 
-    columns = ["hts_id", "hts_household_id", "has_license", "has_pt_subscription", "is_passenger"]
+    columns = ["hts_id", "hts_household_id", "has_license", "has_pt_subscription"]
     extra_cols = context.config("extra_enriched_attributes")
     assert isinstance(extra_cols, list), "`extra_enriched_attributes` parameter must be a list"
     columns += extra_cols
     df_population = pd.merge(df_population, df_hts_persons[columns], on="hts_id")
 
     df_population = pd.merge(df_population, df_hts_households[[
-        "hts_household_id", "number_of_bikes"
+        "hts_household_id", "number_of_bicycles"
     ]], on = "hts_household_id")
 
     # Attach income
@@ -85,15 +85,15 @@ def execute(context):
 
     df_population = pd.merge(df_population, df_car_availability[["household_id", "car_availability"]])
 
+    # Add bicycle availability
+    df_population["bicycle_availability"] = "all"
+    df_population.loc[df_population["number_of_bicycles"] < df_population["household_size"], "bicycle_availability"] = "some"
+    df_population.loc[df_population["number_of_bicycles"] == 0, "bicycle_availability"] = "none"
+    df_population["bicycle_availability"] = df_population["bicycle_availability"].astype("category")
+    
     # Handle motorcycle use if needed (remove use_motorcycle)
     if not context.config("with_motorcycles"):
         df_population.drop(columns=["use_motorcycle"])
-
-    # Add bike availability
-    df_population["bike_availability"] = "all"
-    df_population.loc[df_population["number_of_bikes"] < df_population["household_size"], "bike_availability"] = "some"
-    df_population.loc[df_population["number_of_bikes"] == 0, "bike_availability"] = "none"
-    df_population["bike_availability"] = df_population["bike_availability"].astype("category")
 
     # Add age range for education
     df_population["age_range"] = "higher_education"

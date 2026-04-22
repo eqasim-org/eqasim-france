@@ -197,8 +197,8 @@ def execute(context):
         df_target["income_class"] = INCOME_CLASS[hts](df_target)
 
     if "any_cars" in columns:
-        df_target["any_cars"] = df_target["number_of_vehicles"] > 0
-        df_source["any_cars"] = df_source["number_of_vehicles"] > 0
+        df_target["any_cars"] = df_target["number_of_cars"] > 0
+        df_source["any_cars"] = df_source["number_of_cars"] > 0
 
     # Perform statistical matching
     df_source = df_source.rename(columns = { "person_id": "hts_id" })
