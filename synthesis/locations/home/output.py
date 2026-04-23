@@ -15,6 +15,9 @@ def execute(context):
     df_locations = context.stage("synthesis.locations.home.locations")[[
         "location_id", "weight", "building_id", "geometry"]]
 
+    if not "building_id" in df_locations:
+        raise RuntimeError("This stage works only if buildings are the basis of home locations")
+
     # Write into same file with multiple layers
     df_buildings.to_file("%s/%shousing.gpkg" % (
         context.config("output_path"), context.config("output_prefix")
