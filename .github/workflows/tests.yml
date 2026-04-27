@@ -35,7 +35,6 @@ jobs:
         git config --system core.longpaths true
     - name: Prepare Java for MacOS
       if: matrix.os == 'macos-latest'
-      shell: bash -el {0}
       run: |
         export JAVA_HOME=${JAVA_HOME_25_ARM64}
         export PATH=${JAVA_HOME_25_ARM64}/bin:${PATH}
