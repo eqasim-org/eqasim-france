@@ -41,6 +41,8 @@ jobs:
         uv --version
         python --version
         git --version
+        echo ${JAVA_HOME}
+        echo ${JAVA_CMD}
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
