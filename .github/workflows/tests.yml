@@ -38,7 +38,7 @@ jobs:
       shell: bash -el {0}
       run: |
         export JAVA_HOME=${JAVA_HOME_25_ARM64}
-        export PATH=${PATH}:${JAVA_HOME_25_ARM64}/bin
+        export PATH=${JAVA_HOME_25_ARM64}/bin:${PATH}
     - name: Test versions
       shell: bash -el {0}
       run: |
