@@ -92,7 +92,7 @@ def execute(context):
     df_bike_availability.loc[df_bike_availability["number_of_bikes"] == 0, "bike_availability"] = "none"
     df_bike_availability["bike_availability"] = df_bike_availability["bike_availability"].astype("category")
 
-    df_population = pd.merge(df_population, df_bike_availability[["household_id", "bike_availability"]], how="left")
+    df_population = pd.merge(df_population, df_bike_availability[["household_id", "bike_availability"]])
 
     # Add age range for education
     df_population["age_range"] = "higher_education"
