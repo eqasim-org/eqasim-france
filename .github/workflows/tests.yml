@@ -49,6 +49,7 @@ jobs:
         echo ${JAVA_HOME}
         echo ${JAVA_CMD}
         which java
+        echo $PATH
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
