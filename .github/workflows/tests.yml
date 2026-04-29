@@ -48,6 +48,7 @@ jobs:
         git --version
         echo ${JAVA_HOME}
         echo ${JAVA_CMD}
+        which java
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
