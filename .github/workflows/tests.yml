@@ -62,6 +62,8 @@ jobs:
         echo "====="
         export PATH="${JAVA_HOME_25_ARM64}/bin:$PATH"
         echo $PATH
+        echo "===="
+        echo $PATH | tr -d '\n'
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
