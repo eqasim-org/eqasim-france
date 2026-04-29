@@ -36,10 +36,11 @@ jobs:
     - name: Prepare Java for MacOS
       if: matrix.os == 'macos-latest'
       run: |
-        export PATH=$JAVA_HOME/bin:$PATH
+        export PATH=${JAVA_HOME_25_ARM64}/bin:$PATH
+        export JAVA_HOME=${JAVA_HOME_25_ARM64}
         echo ${JAVA_HOME_25_ARM64}
         printf 'RAW:\n%s\n' "${JAVA_HOME_25_ARM64}"
-        printf 'QUOTED:\n%q\n' "{JAVA_HOME_25_ARM64}"
+        printf 'QUOTED:\n%q\n' "${JAVA_HOME_25_ARM64}"
         # echo "JAVA_HOME=${JAVA_HOME_25_ARM64}" >> $GITHUB_ENV
         # echo "${JAVA_HOME_25_ARM64}/bin" >> $GITHUB_PATH
     - name: Test versions
@@ -52,9 +53,9 @@ jobs:
         uv --version
         python --version
         git --version
-        echo ${JAVA_HOME}
+        echo "java home: ${JAVA_HOME}"
         printf 'RAW:\n%s\n' "${JAVA_HOME_25_ARM64}"
-        printf 'QUOTED:\n%q\n' "{JAVA_HOME_25_ARM64}"
+        printf 'QUOTED:\n%q\n' "${JAVA_HOME_25_ARM64}"
         echo ${JAVA_CMD}
         which java
         echo $PATH
