@@ -37,7 +37,7 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         echo "JAVA_HOME=${JAVA_HOME_25_ARM64}" >> $GITHUB_ENV
-        echo {JAVA_HOME_25_ARM64} >> $GITHUB_PATH
+        echo "${JAVA_HOME_25_ARM64}/bin" >> $GITHUB_PATH
     - name: Test versions
       shell: bash -el {0}
       run: |
