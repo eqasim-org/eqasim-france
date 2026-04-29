@@ -53,13 +53,10 @@ jobs:
         python --version
         git --version
         echo "java home: ${JAVA_HOME}"
-        printf 'RAW:\n%s\n' "${JAVA_HOME_25_ARM64}"
-        printf 'QUOTED:\n%q\n' "${JAVA_HOME_25_ARM64}"
         echo ${JAVA_CMD}
-        echo ${JAVA_HOME}
         which java
         echo "====="
-        export PATH="${JAVA_HOME}/bin"
+        export PATH="${JAVA_HOME}/bin:$PATH"
         which java
     - name: Run pipeline tests
       shell: bash -el {0}
