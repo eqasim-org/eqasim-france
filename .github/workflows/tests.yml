@@ -39,8 +39,7 @@ jobs:
         export PATH=${JAVA_HOME_25_ARM64}/bin:$PATH
         export JAVA_HOME=${JAVA_HOME_25_ARM64}
         echo ${JAVA_HOME_25_ARM64}
-        printf 'RAW:\n%s\n' "${JAVA_HOME_25_ARM64}"
-        printf 'QUOTED:\n%q\n' "${JAVA_HOME_25_ARM64}"
+        which java
         # echo "JAVA_HOME=${JAVA_HOME_25_ARM64}" >> $GITHUB_ENV
         # echo "${JAVA_HOME_25_ARM64}/bin" >> $GITHUB_PATH
     - name: Test versions
@@ -58,14 +57,8 @@ jobs:
         printf 'QUOTED:\n%q\n' "${JAVA_HOME_25_ARM64}"
         echo ${JAVA_CMD}
         which java
-        echo $PATH
         echo "====="
-        export PATH="${JAVA_HOME_25_ARM64}/bin:$PATH"
-        echo $PATH
-        echo "===="
-        echo $PATH | tr -d '\n'
-        echo "===="
-        ls ${JAVA_HOME}/bin
+        export PATH="${JAVA_
         which java
     - name: Run pipeline tests
       shell: bash -el {0}
