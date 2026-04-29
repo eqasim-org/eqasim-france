@@ -64,6 +64,9 @@ jobs:
         echo $PATH
         echo "===="
         echo $PATH | tr -d '\n'
+        echo "===="
+        ls ${JAVA_HOME}/bin
+        which java
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
