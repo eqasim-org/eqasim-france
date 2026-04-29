@@ -59,6 +59,7 @@ jobs:
         echo ${JAVA_CMD}
         which java
         echo $PATH
+        echo "====="
         export PATH="${JAVA_HOME_25_ARM64}/bin:$PATH"
         echo $PATH
     - name: Run pipeline tests
