@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ "ubuntu-latest", "windows-latest" ]
+        os: [ "ubuntu-latest", "windows-latest", "macos-latest" ]
 
     steps:
     - uses: actions/checkout@v6
@@ -33,14 +33,31 @@ jobs:
         git config --global user.email "you@example.com"
         git config --global user.name "Your Name"
         git config --system core.longpaths true
+    - name: Prepare Java for MacOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        export PATH=${JAVA_HOME_25_ARM64}/bin:$PATH
+        # export JAVA_HOME=${JAVA_HOME_25_ARM64} #If we do this and check the value of java_home in the next step, we get another value so I guess there's something that overrides it
+        echo "JAVA_HOME=${JAVA_HOME_25_ARM64}" >> $GITHUB_ENV
+        echo ${JAVA_HOME_25_ARM64}
+        which java
+        # echo "${JAVA_HOME_25_ARM64}/bin" >> $GITHUB_PATH
     - name: Test versions
       shell: bash -el {0}
       run: |
+        echo "java home: ${JAVA_HOME}"
+        echo "java_home_25_arm64: ${JAVA_HOME_25_ARM64}"        
+        echo "======"
         java -version
         mvn -v
         uv --version
         python --version
         git --version
+        echo ${JAVA_CMD}
+        which java
+        echo "====="
+        export PATH="${JAVA_HOME_25_ARM64}/bin:$PATH"
+        which java
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
