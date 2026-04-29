@@ -36,17 +36,14 @@ jobs:
     - name: Prepare Java for MacOS
       if: matrix.os == 'macos-latest'
       run: |
-        echo ${GITHUB_ENV}
         cat ${GITHUB_ENV}
         echo "======"
         echo ${JAVA_HOME_25_ARM64}
         echo "JAVA_HOME=${JAVA_HOME_25_ARM64}" >> $GITHUB_ENV
-        echo "PATH=${JAVA_HOME_25_ARM64}/bin:$PATH" >> $GITHUB_ENV
-        cat ${GITHUB_ENV}
+        echo "${JAVA_HOME_25_ARM64}/bin" >> $GITHUB_PATH
     - name: Test versions
       shell: bash -el {0}
       run: |
-        echo ${GITHUB_ENV}
         cat ${GITHUB_ENV}
         echo "======"
         java -version
