@@ -53,7 +53,7 @@ jobs:
         python --version
         git --version
         echo "java home: ${JAVA_HOME}"
-        echo "java_home_25_arm64: ${JAVA_HOME_25ARM64}"
+        echo "java_home_25_arm64: ${JAVA_HOME_25_ARM64}"
         echo ${JAVA_CMD}
         which java
         echo "====="
