@@ -37,10 +37,10 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         export PATH=${JAVA_HOME_25_ARM64}/bin:$PATH
-        export JAVA_HOME=${JAVA_HOME_25_ARM64}
+        # export JAVA_HOME=${JAVA_HOME_25_ARM64} #If we do this and check the value of java_home in the next step, we get another value so I guess there's something that overrides it
+        echo "JAVA_HOME=${JAVA_HOME_25_ARM64}" >> $GITHUB_ENV
         echo ${JAVA_HOME_25_ARM64}
         which java
-        # echo "JAVA_HOME=${JAVA_HOME_25_ARM64}" >> $GITHUB_ENV
         # echo "${JAVA_HOME_25_ARM64}/bin" >> $GITHUB_PATH
     - name: Test versions
       shell: bash -el {0}
