@@ -33,7 +33,7 @@ def configure(context):
 def _income_distributions_from_filosofi_ensemble_sheet(filsofi_sheets, year, df_municipalities):
     requested_communes = set(df_municipalities["commune_id"].unique())
 
-    df = filsofi_sheets["ENSEMBLE"][["CODGEO"] + [("D%d" % q) + year if q != 5 else "Q2" + year for q in range(1, 10)]]
+    df = filsofi_sheets["ENSEMBLE"][["CODGEO"] + [("D%d" % q) + year if q != 5 else "Q2" + year for q in range(1, 10)]].copy()
     df.columns = ["commune_id", "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9"]
     # correct data type
     df.replace("s",np.nan,inplace=True) 

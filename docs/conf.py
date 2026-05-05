@@ -47,7 +47,7 @@ html_baseurl = "https://eqasim.readthedocs.io/stable/"
 #         {"name": "Home Page", "url": html_baseurl, "icon": "fas fa-home"},
 #         {
 #             "name": "GitHub",
-#             "url": "https://github.com/eqasim-org/ile-de-france",
+#             "url": "https://github.com/eqasim-org/eqasim-france",
 #             "icon": "fab fa-github-square",
 #         },
 #     ],

@@ -29,9 +29,9 @@ Again, only if you want to run simulations, the digital transit schedule is requ
 Unfortunately, there is no consolidated GTFS schedule avaiable for the region of interest. Hence,
 it is necessary to collect all relevant GTFS schedules one by one.
 
-- [Chemins de fer de Corse](https://www.data.corsica/explore/dataset/horaires-cfc-gtfs/export/)
-- [Cars Corse du Sud](https://www.data.corsica/explore/dataset/horaires-cars2a-gtfs/export/)
-- [Cars Haute Corse](https://www.data.corsica/explore/dataset/gtfs-transport-horaires-cars-de-haute-corse/export/)
+- [Chemins de fer de Corse](https://transport.data.gouv.fr/datasets/gtfs-transport-horaires-chemins-de-fer-corse-1/)
+- [Cars Corse du Sud](https://transport.data.gouv.fr/datasets/gtfs-transport-via-strada-les-cars-corse-du-sud/) (save as `via-strada.zip`)
+- [Cars Haute Corse](https://transport.data.gouv.fr/datasets/gtfs-transport-lignes-privees-corse/) (save as `lignes-privees-corse.zip`)
 
 Download all the *zip*'d GTFS schedules and put them into the folder `data/gtfs_corsica`.
 
@@ -57,9 +57,9 @@ Afterwards, you should have the following additional files in your directory str
 *Only for simulation:*
 
 - `data/osm_corsica/corse-220101.osm.pbf`
-- `data/gtfs_corsica/GTFS été 2021.zip`
-- `data/gtfs_corsica/cars2a-gtfs.zip`
-- `data/gtfs_corsica/cars2b-gtfs.zip`
+- `data/gtfs_corsica/chemin-de-fer-de-la-corse.zip`
+- `data/gtfs_corsica/via-strada.zip`
+- `data/gtfs_corsica/lignes-privees-corse.zip`
 
 Note that the file names may change slightly over time as GTFS schedule are
 updated continuously.
@@ -104,7 +104,7 @@ for Corsica.
 
 ## Running the simulation
 
-To prepare the pipeline for a simulation of Lyon, the paths to the OSM data sets and to the GTFS schedule must be adjusted explicitly:
+To prepare the pipeline for a simulation of Corsica, the paths to the OSM data sets and to the GTFS schedule must be adjusted explicitly:
 
 ```yaml
 config:

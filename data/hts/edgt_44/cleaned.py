@@ -15,7 +15,9 @@ PURPOSE_MAP = {
     "education": [21, 22, 23, 24, 25, 26, 27, 28, 29],
     "shop": [30, 31, 32, 33, 34, 35, 82],
     "leisure": [51, 52, 53, 54],
-    "other": [41, 42, 43, 44, 45, 61, 62, 63, 64, 71, 72, 73, 74, 91]
+    "escort": [61, 62, 63, 64, 71, 72, 73, 74],
+    "task": [41, 42, 43, 44, 45],
+    "other": [91],
 }
 
 MODES_MAP = {
@@ -118,9 +120,6 @@ def execute(context):
 
     assert np.count_nonzero(df_trips["following_purpose"] == "invalid") == 0
     assert np.count_nonzero(df_trips["preceding_purpose"] == "invalid") == 0
-
-    df_trips["following_purpose"] = df_trips["following_purpose"].astype("category")
-    df_trips["preceding_purpose"] = df_trips["preceding_purpose"].astype("category")
 
     # Trip mode
     df_trips["mode"] = "invalid"

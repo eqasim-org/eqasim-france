@@ -1,4 +1,3 @@
-import subprocess as sp
 import os, os.path
 
 import matsim.runtime.git as git
@@ -6,12 +5,12 @@ import matsim.runtime.java as java
 import matsim.runtime.maven as maven
 
 def configure(context):
-    context.stage("matsim.runtime.git")
-    context.stage("matsim.runtime.java")
-    context.stage("matsim.runtime.maven")
+    git.configure(context)
+    java.configure(context)
+    maven.configure(context)
 
-    context.config("pt2matsim_version", "22.3")
-    context.config("pt2matsim_branch", "v22.3")
+    context.config("pt2matsim_version", "26.1")
+    context.config("pt2matsim_branch", "v26.1")
 
 def run(context, command, arguments, vm_arguments=[]):
     # Make sure there is a dependency
@@ -32,7 +31,7 @@ def execute(context):
     ])
 
     # Build pt2matsim
-    maven.run(context, ["package", "-DskipTests=true"], cwd = "%s/pt2matsim" % context.path())
+    maven.run(context, ["package", "-Dskip.surefire.tests"], cwd = "%s/pt2matsim" % context.path())
     jar_path = "pt2matsim/target/pt2matsim-{}-shaded.jar".format(version)
 
     # Test pt2matsim
@@ -42,3 +41,8 @@ def execute(context):
 
     assert os.path.exists("%s/test_config.xml" % context.path())
     return jar_path
+
+def validate(context):
+    git.validate(context)
+    java.validate(context)
+    maven.validate(context)

@@ -14,6 +14,7 @@ def execute(context):
     df_vehicle_types = pd.DataFrame.from_records([{
         "type_id": "default_car_passenger", "nb_seats": 4, "length": 5.0, "width": 1.0, "pce": 1.0, "mode": "car_passenger",
         "hbefa_cat": "pass. car", "hbefa_tech": "average", "hbefa_size": "average", "hbefa_emission": "average",
+        'cnossos_cat': "1"
     }])
 
     df_vehicles = df_persons[["person_id"]].copy()

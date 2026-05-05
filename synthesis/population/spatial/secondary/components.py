@@ -19,7 +19,7 @@ class CustomDistanceSampler(rda.FeasibleDistanceSampler):
             mode_distribution = mode_distribution["distributions"][bound_index]
 
             distances[index] = mode_distribution["values"][
-                np.count_nonzero(self.random.random_sample() > mode_distribution["cdf"])
+                np.count_nonzero(self.random.random() > mode_distribution["cdf"])
             ]
 
         return distances
@@ -40,21 +40,28 @@ class CandidateIndex:
         return identifier, location
 
     def sample(self, purpose, random):
-        index = random.randint(0, len(self.data[purpose]["locations"]))
+        index = random.integers(0, len(self.data[purpose]["locations"]))
         identifier = self.data[purpose]["identifiers"][index]
         location = self.data[purpose]["locations"][index]
         return identifier, location
 
 class CustomDiscretizationSolver(rda.DiscretizationSolver):
-    def __init__(self, index):
+    def __init__(self, index, random, escort_activities, escort_weights):
         self.index = index
+        self.random = random
+        self.escort_activities = np.array(escort_activities)
+        self.escort_probs = np.array(escort_weights) / np.sum(escort_weights)
 
     def solve(self, problem, locations):
         discretized_locations = []
         discretized_identifiers = []
 
         for location, purpose in zip(locations, problem["purposes"]):
-            identifier, location = self.index.query(purpose, location.reshape(1, -1))
+            if purpose == "escort":
+                loc_purpose = str(self.random.choice(self.escort_activities, p=self.escort_probs))
+            else:
+                loc_purpose = purpose
+            identifier, location = self.index.query(loc_purpose, location.reshape(1, -1))
 
             discretized_identifiers.append(identifier)
             discretized_locations.append(location)
@@ -76,4 +83,4 @@ class CustomFreeChainSolver(rda.RelaxationSolver):
         locations = np.vstack((anchor, locations))
 
         assert len(locations) == len(distances) + 1
-        return dict(valid = True, locations = locations)
+        return dict(valid = True, locations = locations, iterations = None)

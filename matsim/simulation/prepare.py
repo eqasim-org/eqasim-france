@@ -5,6 +5,7 @@ import matsim.runtime.eqasim as eqasim
 
 def configure(context):
     context.config("mode_choice", False)
+    context.config("with_motorcycles", False)
     
     context.stage("matsim.scenario.population")
     context.stage("matsim.scenario.households")
@@ -14,14 +15,14 @@ def configure(context):
     context.stage("matsim.scenario.supply.processed")
     context.stage("matsim.scenario.supply.gtfs")
 
-    context.stage("matsim.runtime.java")
+    eqasim.configure(context)
     context.stage("matsim.runtime.eqasim")
 
     context.stage("data.spatial.departments")
     context.stage("data.spatial.codes")
 
     context.config("sampling_rate")
-    context.config("processes")
+    context.config("processes", volatile = True)
     context.config("random_seed")
 
     context.config("output_prefix", "ile_de_france_")
@@ -100,6 +101,16 @@ def execute(context):
     ])
     assert os.path.exists("%s/%sconfig.xml" % (context.path(), context.config("output_prefix")))
 
+    # Optionally, enable motorcycles
+    if context.config("with_motorcycles"):
+        eqasim.run(context, "org.eqasim.core.scenario.config.EditConfig", [
+            "--input-path", "%sconfig.xml" % context.config("output_prefix"),
+            "--output-path", "%sconfig.xml" % context.config("output_prefix"),
+            "--config:qsim.mainMode", "car,motorcycle",
+            "--config:qsim.linkDynamics", "SeepageQ",
+            "--config:qsim.seepMode", "bike,motorcycle"
+    ])
+
     # Add urban attributes to population and network
     # (but only if Paris is included in the scenario!)
     df_codes = context.stage("data.spatial.codes")
@@ -148,8 +159,19 @@ def execute(context):
         ])
 
         assert os.path.exists("%s/mode_choice/output_plans.xml.gz" % context.path())
-        assert os.path.exists("%s/mode_choice/output_trips.csv" % context.path())
-        assert os.path.exists("%s/mode_choice/output_pt_legs.csv" % context.path())
+
+        # Newer standalone mode choice versions write compressed CSVs.
+        trips_exists = (
+            os.path.exists("%s/mode_choice/output_trips.csv" % context.path()) or
+            os.path.exists("%s/mode_choice/output_trips.csv.gz" % context.path())
+        )
+        pt_legs_exists = (
+            os.path.exists("%s/mode_choice/output_pt_legs.csv" % context.path()) or
+            os.path.exists("%s/mode_choice/output_pt_legs.csv.gz" % context.path())
+        )
+
+        assert trips_exists
+        assert pt_legs_exists
 
         shutil.copy("%s/mode_choice/output_plans.xml.gz" % context.path(),
                     "%s/%spopulation.xml.gz" % (context.path(), context.config("output_prefix")))

@@ -14,9 +14,12 @@ This stage fuses census data with HTS data.
 """
 
 def configure(context):
+    context.config("with_motorcycles", False)
+
     context.stage("synthesis.population.matched")
     context.stage("synthesis.population.sampled")
     context.stage("synthesis.population.income.selected")
+    context.config("extra_enriched_attributes", [])
 
     hts = context.config("hts")
     context.stage("data.hts.selected", alias = "hts")
@@ -27,13 +30,14 @@ def execute(context):
         "person_id", "household_id",
         "census_person_id", "census_household_id",
         "age", "sex", "employed", "studies",
-        "number_of_vehicles", "household_size", "consumption_units",
-        "socioprofessional_class"
+        "number_of_cars", "number_of_motorcycles", "number_of_vehicles", "use_motorcycle",
+        "household_size", "consumption_units",
+        "socioprofessional_class", "professional_activity",
     ]]
 
     # Attach matching information
     df_matching = context.stage("synthesis.population.matched")
-    df_population = pd.merge(df_population, df_matching, on = "person_id")
+    df_population = pd.merge(df_population, df_matching, on="person_id", how="left")
 
     initial_size = len(df_population)
     initial_person_ids = len(df_population["person_id"].unique())
@@ -44,19 +48,58 @@ def execute(context):
     df_hts_persons = df_hts_persons.rename(columns = { "person_id": "hts_id", "household_id": "hts_household_id" })
     df_hts_households = df_hts_households.rename(columns = { "household_id": "hts_household_id" })
 
-    df_population = pd.merge(df_population, df_hts_persons[[
-        "hts_id", "hts_household_id", "has_license", "has_pt_subscription", "is_passenger"
-    ]], on = "hts_id")
+    columns = ["hts_id", "hts_household_id", "has_license", "has_pt_subscription", "is_passenger"]
+    extra_cols = context.config("extra_enriched_attributes")
+    assert isinstance(extra_cols, list), "`extra_enriched_attributes` parameter must be a list"
+    columns += extra_cols
+    df_population = pd.merge(df_population, df_hts_persons[columns], on="hts_id", how="left")
 
     df_population = pd.merge(df_population, df_hts_households[[
         "hts_household_id", "number_of_bikes"
-    ]], on = "hts_household_id")
+    ]], on="hts_household_id", how="left")
+    df_population["number_of_bikes"] = df_population["number_of_bikes"].fillna(0)
 
     # Attach income
     df_income = context.stage("synthesis.population.income.selected")
     df_population = pd.merge(df_population, df_income[[
         "household_id", "household_income"
-    ]], on = "household_id")
+    ]], on="household_id", how="left")
+
+    # Add car availability
+    df_number_of_cars = df_population[["household_id", "number_of_cars"]].drop_duplicates("household_id")
+    df_number_of_licenses = df_population[["household_id", "has_license"]].groupby("household_id").sum().reset_index().rename(columns = { "has_license": "number_of_licenses" })
+    df_car_availability = pd.merge(df_number_of_cars, df_number_of_licenses)
+
+    df_car_availability["car_availability"] = None
+    df_car_availability.loc[df_car_availability["number_of_cars"] >= df_car_availability["number_of_licenses"], "car_availability"] = "all"
+    df_car_availability.loc[df_car_availability["number_of_cars"] < df_car_availability["number_of_licenses"], "car_availability"] = "some"
+    df_car_availability.loc[df_car_availability["number_of_cars"] == 0, "car_availability"] = "none"
+    df_car_availability["car_availability"] = df_car_availability["car_availability"].astype("category")
+
+    df_population = pd.merge(df_population, df_car_availability[["household_id", "car_availability"]])
+
+    # Handle motorcycle use if needed (remove use_motorcycle)
+    if not context.config("with_motorcycles"):
+        df_population.drop(columns=["use_motorcycle"])
+
+    # Add bike availability
+    # This is done at the household level and then merged with the persons so that not-matched
+    # persons have the same bike availability as their household members.
+    df_bike_availability = df_population[["household_id", "number_of_bikes", "household_size"]].drop_duplicates("household_id").dropna()
+
+    df_bike_availability["bike_availability"] = "all"
+    df_bike_availability.loc[df_bike_availability["number_of_bikes"] < df_bike_availability["household_size"], "bike_availability"] = "some"
+    df_bike_availability.loc[df_bike_availability["number_of_bikes"] == 0, "bike_availability"] = "none"
+    df_bike_availability["bike_availability"] = df_bike_availability["bike_availability"].astype("category")
+
+    df_population = pd.merge(df_population, df_bike_availability[["household_id", "bike_availability"]])
+
+    # Add age range for education
+    df_population["age_range"] = "higher_education"
+    df_population.loc[df_population["age"]<=10,"age_range"] = "primary_school"
+    df_population.loc[df_population["age"].between(11,14),"age_range"] = "middle_school"
+    df_population.loc[df_population["age"].between(15,17),"age_range"] = "high_school"
+    df_population["age_range"] = df_population["age_range"].astype("category")
 
     # Check consistency
     final_size = len(df_population)
@@ -67,29 +110,4 @@ def execute(context):
     assert initial_person_ids == final_person_ids
     assert initial_household_ids == final_household_ids
 
-    # Add car availability
-    df_number_of_cars = df_population[["household_id", "number_of_vehicles"]].drop_duplicates("household_id")
-    df_number_of_licenses = df_population[["household_id", "has_license"]].groupby("household_id").sum().reset_index().rename(columns = { "has_license": "number_of_licenses" })
-    df_car_availability = pd.merge(df_number_of_cars, df_number_of_licenses)
-
-    df_car_availability["car_availability"] = "all"
-    df_car_availability.loc[df_car_availability["number_of_vehicles"] < df_car_availability["number_of_licenses"], "car_availability"] = "some"
-    df_car_availability.loc[df_car_availability["number_of_vehicles"] == 0, "car_availability"] = "none"
-    df_car_availability["car_availability"] = df_car_availability["car_availability"].astype("category")
-
-    df_population = pd.merge(df_population, df_car_availability[["household_id", "car_availability"]])
-
-    # Add bike availability
-    df_population["bike_availability"] = "all"
-    df_population.loc[df_population["number_of_bikes"] < df_population["household_size"], "bike_availability"] = "some"
-    df_population.loc[df_population["number_of_bikes"] == 0, "bike_availability"] = "none"
-    df_population["bike_availability"] = df_population["bike_availability"].astype("category")
-    
-    # Add age range for education
-    df_population["age_range"] = "higher_education"
-    df_population.loc[df_population["age"]<=10,"age_range"] = "primary_school"
-    df_population.loc[df_population["age"].between(11,14),"age_range"] = "middle_school"
-    df_population.loc[df_population["age"].between(15,17),"age_range"] = "high_school"
-    df_population["age_range"] = df_population["age_range"].astype("category")
-    
     return df_population

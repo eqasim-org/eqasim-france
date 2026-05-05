@@ -1,8 +1,11 @@
 import os, datetime, json
 import subprocess as sp
 
+import matsim.runtime.git as git
+
 def configure(context):
-    context.stage("matsim.runtime.git")
+    git.configure(context)
+
     context.config("output_path")
     context.config("output_prefix", "ile_de_france_")
 
@@ -16,12 +19,12 @@ def get_version():
     with open(version_path) as f:
         return f.read().strip()
 
-def get_commit():
+def get_commit(context):
     root_path = os.path.dirname(os.path.realpath(__file__))
     root_path = os.path.realpath("{}/..".format(root_path))
 
     try:
-        return sp.check_output(["git", "rev-parse", "HEAD"], cwd = root_path).strip().decode("utf-8")
+        return git.run(context, ["rev-parse", "HEAD"], cwd = root_path, catch_output = True)
     except sp.CalledProcessError:
         return "unknown"
 
@@ -33,11 +36,12 @@ def execute(context):
         random_seed = context.config("random_seed"),
         created = datetime.datetime.now(datetime.timezone.utc).isoformat(),
         version = get_version(),
-        commit = get_commit()
+        commit = get_commit(context)
     )
 
     with open("%s/%smeta.json" % (context.config("output_path"), context.config("output_prefix")), "w+") as f:
         json.dump(information, f, indent = 4)
 
 def validate(context):
-    return get_version()
+    git.validate(context)
+    return get_version() + get_commit(context)

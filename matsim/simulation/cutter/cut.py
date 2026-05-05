@@ -11,7 +11,8 @@ def configure(context: ConfigurationContext):
     context.config("cutter.after_full_simulation", True)
 
     context.stage("data.cutter.geometry")
-    context.stage("matsim.runtime.java")
+
+    eqasim.configure(context)
     context.stage("matsim.runtime.eqasim")
 
     context.stage("matsim.output")

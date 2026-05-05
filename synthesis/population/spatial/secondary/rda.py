@@ -6,7 +6,6 @@ def check_feasibility(distances, direct_distance, consider_total_distance = True
 
 def calculate_feasibility(distances, direct_distance, consider_total_distance = True):
     total_distance = np.sum(distances)
-    delta_distance = 0.0
 
     remaining_distance = total_distance - distances
     delta = max(distances - direct_distance - remaining_distance)
@@ -14,7 +13,7 @@ def calculate_feasibility(distances, direct_distance, consider_total_distance = 
     if consider_total_distance:
         delta = max(delta, direct_distance - total_distance)
 
-    return float(max(delta, 0))
+    return float(max(delta.item(), 0))
 
 class DiscretizationSolver:
     def solve(self, problem, locations):
@@ -82,7 +81,7 @@ class GeneralRelaxationSolver(RelaxationSolver):
             return self.chain_solver.solve(problem, distances)
 
 def sample_tail(random, anchor, distances):
-    angles = random.random_sample(len(distances)) * 2.0 * np.pi
+    angles = random.random(len(distances)) * 2.0 * np.pi
     offsets = np.vstack([np.cos(angles), np.sin(angles)]).T * distances[:, np.newaxis]
 
     locations = [anchor]
@@ -114,12 +113,12 @@ class AngularTailSolver(RelaxationSolver):
         if reverse: locations = locations[::-1,:]
 
         assert len(locations) == len(distances)
-        return dict(valid = True, locations = locations)
+        return dict(valid = True, locations = locations, iterations = None)
 
 class GravityChainSolver:
     def __init__(self, random, alpha = 0.3, eps = 1.0, maximum_iterations = 1000, lateral_deviation = None):
-        self.alpha = 0.3
-        self.eps = 1e-2
+        self.alpha = alpha
+        self.eps = eps
         self.maximum_iterations = maximum_iterations
         self.random = random
         self.lateral_deviation = lateral_deviation
@@ -161,7 +160,7 @@ class GravityChainSolver:
         else:
             A = 0.5 * ( distances[0]**2 - distances[1]**2 + direct_distance**2 ) / direct_distance
             H = np.sqrt(max(0, distances[0]**2 - A**2))
-            r = self.random.random_sample()
+            r = self.random.random()
 
             center = origin + direction * A
             offset = direction * H

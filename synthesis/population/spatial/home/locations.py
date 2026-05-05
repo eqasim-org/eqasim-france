@@ -30,13 +30,13 @@ def _sample_locations(context, args):
     assert home_count > 0
 
     # Perform sampling
-    random = np.random.RandomState(random_seed)
+    random = np.random.default_rng(random_seed)
 
     cdf = np.cumsum(df_locations["weight"].values)
     cdf /= cdf[-1]
 
     indices = np.array([np.count_nonzero(cdf < u) 
-        for u in random.random_sample(size = home_count)])
+        for u in random.random(size = home_count)])
     
     # Apply selection
     df_homes["geometry"] = df_locations.iloc[indices]["geometry"].values
@@ -48,7 +48,7 @@ def _sample_locations(context, args):
     return gpd.GeoDataFrame(df_homes, crs = df_locations.crs)
 
 def execute(context):
-    random = np.random.RandomState(context.config("random_seed"))
+    random = np.random.default_rng(context.config("random_seed"))
 
     df_homes = context.stage("synthesis.population.spatial.home.zones")
     df_locations = context.stage("synthesis.locations.home.locations")
@@ -60,7 +60,7 @@ def execute(context):
         with context.parallel(dict(
             df_locations = df_locations, df_homes = df_homes
         )) as parallel:
-            seeds = random.randint(10000, size = len(unique_iris_ids))
+            seeds = random.integers(10000, size = len(unique_iris_ids))
             df_homes = pd.concat(parallel.map(_sample_locations, zip(unique_iris_ids, seeds)))
     out = ["household_id", "commune_id", "home_location_id", "geometry"]
         

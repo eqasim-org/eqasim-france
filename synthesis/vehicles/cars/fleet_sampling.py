@@ -10,8 +10,8 @@ Creates the synthetic vehicle fleet
 def configure(context):
     context.stage("synthesis.population.enriched")
     context.stage("synthesis.population.spatial.home.zones")
-    context.stage("data.vehicles.raw")
-    context.stage("data.vehicles.types")
+    context.stage("data.vehicles.cars.critair")
+    context.stage("data.vehicles.cars.types")
 
     context.config("vehicles_year", 2021)
 
@@ -113,7 +113,7 @@ def _get_euro_from_critair(vehicle, year):
 
 def execute(context):
 
-    df_vehicle_types = context.stage("data.vehicles.types")
+    df_vehicle_types = context.stage("data.vehicles.cars.types")
 
     df_persons = context.stage("synthesis.population.enriched")
     df_homes = context.stage("synthesis.population.spatial.home.zones")
@@ -126,7 +126,7 @@ def execute(context):
     df_vehicles["type_id"] = "default_car"
     df_vehicles["mode"] = "car"
 
-    df_vehicle_fleet_counts, df_vehicle_age_counts = context.stage("data.vehicles.raw")
+    df_vehicle_fleet_counts, df_vehicle_age_counts = context.stage("data.vehicles.cars.critair")
 
     res = []
 

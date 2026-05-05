@@ -9,12 +9,12 @@ DEFAULT_NM_BRANCH = "main"
 
 
 def configure(context: ConfigurationContext):
+    git.configure(context)
+    
     context.config("noisemodelling_branch", DEFAULT_NM_BRANCH)
     context.config(
         "noisemodelling_repository", "https://github.com/Symexpo/matsim-noisemodelling.git"
     )
-
-    context.stage("matsim.runtime.git")
 
 
 def run(context: ExecuteContext, arguments: list):
@@ -82,3 +82,6 @@ def run_gradlew_task(task, project_dir):
         text=True,
         shell=is_windows,  # On Windows, shell=True helps with .bat files
     )
+
+def validate(context):
+    git.validate(context)

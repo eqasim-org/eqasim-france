@@ -23,27 +23,15 @@ def execute(context):
     for path in input_files:
         feed = gtfs.read_feed(path)
         feed = gtfs.cut_feed(feed, df_area)
-
-        # This was fixed in pt2matsim, so we can remove one a new release (> 20.7) is available.
-        feed = gtfs.despace_stop_ids(feed) # Necessary as MATSim does not like stops/links with spaces
-
         feeds.append(feed)
 
     # Merge feeds
     merged_feed = gtfs.merge_feeds(feeds) if len(feeds) > 1 else feeds[0]
 
-    # Fix for pt2matsim (will be fixed after PR #173)
-    # Order of week days must be fixed
-    days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-    columns = list(merged_feed["calendar"].columns)
-    for day in days: columns.remove(day)
-    columns += ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-    merged_feed["calendar"] = merged_feed["calendar"][columns]
-
     # Write feed (not as a ZIP, but as files, for pt2matsim)
-    gtfs.write_feed(merged_feed, "%s/output" % context.path())
+    gtfs.write_feed(merged_feed, "{}/gtfs.zip".format(context.path()))
 
-    return "gtfs"
+    return "gtfs.zip"
 
 def get_input_files(base_path):
     gtfs_paths = [

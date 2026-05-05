@@ -27,7 +27,7 @@ def _sample_income(context, args):
     commune_id, random_seed = args
     df_households, df_income = context.data("households"), context.data("income")
 
-    random = np.random.RandomState(random_seed)
+    random = np.random.default_rng(random_seed)
 
     # selection of commune population and distributions
     f = df_households["commune_id"] == commune_id
@@ -93,7 +93,7 @@ def _sample_income(context, args):
 
 
 def execute(context):
-    random = np.random.RandomState(context.config("random_seed"))
+    random = np.random.default_rng(context.config("random_seed"))
 
     # Load data
     df_income = context.stage("data.income.municipality")
@@ -113,7 +113,7 @@ def execute(context):
     df_households = pd.merge(df_households, df_homes)
 
     commune_ids = df_households["commune_id"].unique()
-    random_seeds = random.randint(10000, size = len(commune_ids))
+    random_seeds = random.integers(10000, size = len(commune_ids))
 
     # Perform sampling per commune
     with context.progress(label = "Imputing income ...", total = len(commune_ids)) as progress:

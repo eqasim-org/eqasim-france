@@ -18,24 +18,16 @@ Q_TCM_MENAGE_COLUMNS = [
 ]
 
 K_INDIVIDU_COLUMNS = [
-    "IDENT_IND", "IDENT_MEN",
-    "pond_indC", "BPERMIS", "BCARTABON","ETUDIE"
+    "IDENT_MEN", "IDENT_IND", "MDATE_jour", "pond_indC", "BPERMIS", "BCARTABON","ETUDIE"
 ]
 
-Q_TCM_INDIVIDU_COLUMNS = [
-    "ident_ind", "ident_men", "SEXE",
-]
-Q_TCM_INDIVIDU_KISH_COLUMNS = [
-    "AGE", "ident_ind", "ident_men",
-    "CS24", "SEXE", "SITUA",
-]
+Q_TCM_INDIVIDU_COLUMNS = ["ident_ind", "ident_men", "SEXE"]
+Q_TCM_INDIVIDU_KISH_COLUMNS = ["AGE", "ident_ind", "CS24", "SITUA"]
 
 K_DEPLOC_COLUMNS = [
-    "IDENT_IND", "MMOTIFDES", "MOTPREC",
-    "TYPEJOUR", "MORIHDEP", "MDESHARR", "MDISTTOT_fin",
-    "MDATE_jour","MDATE_mois", "mtp",
+    "IDENT_MEN", "IDENT_IND", "MMOTIFDES", "MOTPREC",
+    "MORIHDEP", "MDESHARR", "MDISTTOT_fin", "mtp",
     "REG_ORI", "REG_DES", "nb_dep",
-    "POND_JOUR"
 ]
 
 def configure(context):

@@ -125,3 +125,40 @@ java -cp ile_de_france_run.jar org.eqasim.ile_de_france.emissions.RunComputeEmis
 ```
 
 Please note that you need a copy of the HBEFA database in order to run those. For further information you can look at [eqasim-java](https://github.com/eqasim-org/eqasim-java) and [matsim-libs/contribs/emissions](https://github.com/matsim-org/matsim-libs/tree/master/contribs/emissions)
+
+
+## Adding motorcycles to the simulation
+
+The eqasim-france pipeline supports the generation of motorcycle vehicles in addition to cars and car passengers.
+
+### Using Default Motorcycle
+
+To enable motorcycles in your simulation, add the following to your `config.yml`:
+
+```yaml
+config:
+  with_motorcycles: true
+```
+
+This will generate a default motorcycle for each person in the population.
+
+### Using Detailed Motorcycle Fleet (using 2RM survey data)
+
+For a more realistic motorcycle fleet based on actual French vehicle data, you need to:
+
+1. **Download the required data**. The motorcycle fleet generation uses the 2RM (Two-Wheeled Motorized Vehicles) survey data from 2012:
+
+- [2RM Survey 2012](https://www.statistiques.developpement-durable.gouv.fr/sites/default/files/2018-11/2rm-detail-diffusion.csv)
+- Download the CSV file `2rm-detail-diffusion.csv`
+- Place the CSV file in the `{data}/2rm` folder
+
+2. **Enable fleet sampling** in your configuration:
+
+```yaml
+config:
+  with_motorcycles: true
+  vehicles_method: fleet_sample
+  vehicles_year: 2021  # specify the year 
+```
+
+The resulting vehicles fleet will include a detailed motorcycle flette with HBEFA vehicle types for pollutant emissions as well as CNOSSOS categories for noise emission

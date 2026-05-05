@@ -3,14 +3,14 @@ import os.path
 import matsim.runtime.pt2matsim as pt2matsim
 
 def configure(context):
-    context.stage("matsim.runtime.java")
+    pt2matsim.configure(context)
     context.stage("matsim.runtime.pt2matsim")
 
     context.stage("matsim.scenario.supply.osm")
     context.stage("matsim.scenario.supply.gtfs")
 
     context.config("data_path")
-    context.config("processes")
+    context.config("processes", volatile = True)
 
 def execute(context):
     # Prepare input paths
