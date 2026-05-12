@@ -10,7 +10,7 @@ def configure(context):
     context.stage("data.od.raw")
     context.stage("data.spatial.codes")
 
-RENAME = { "COMMUNE" : "origin_id", "DCLT" : "destination_id", "IPONDI" : "weight", "DCETUF" : "destination_id","CS1": "socioprofessional_class" }
+RENAME = { "COMMUNE" : "origin_id", "DCLT" : "destination_id", "IPONDI" : "weight", "DCETUF" : "destination_id","GS": "socioprofessional_class" }
 
 def execute(context):
     
