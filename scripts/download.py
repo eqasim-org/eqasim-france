@@ -235,7 +235,7 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
     )
 
     bdtopo_path = config["config"].get("bdtopo_path", "bdtopo_idf")
-    for department in (75, 77, 78, 91, 92, 93, 94, 95):
+    for department in departments:
         registry.register(
             "Buildings database (BD TOPO), {}".format(department),
             "https://data.geopf.fr/telechargement/download/BDTOPO/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D0{}_2022-03-15/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D0{}_2022-03-15.7z".format(department, department),
@@ -243,7 +243,7 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
         )
 
     ban_path = config["config"].get("ban_path", "ban_idf")
-    for department in (75, 77, 78, 91, 92, 93, 94, 95):
+    for department in departments:
         registry.register(
             "Adresses database (BAN), {}".format(department),
             "https://adresse.data.gouv.fr/data/ban/adresses/latest/csv/adresses-{}.csv.gz".format(department),
