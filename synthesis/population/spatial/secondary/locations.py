@@ -27,6 +27,21 @@ def configure(context):
     if chain_solver == "force_model":
         context.stage("synthesis.population.spatial.secondary.force_model.force_field")
 
+    # Locations for escort activities are drawn from the activity types below, with the given
+    # probabilities. For example, there is a 70% probability that a escort activity is drawn from
+    # "education" locations.
+    # The probabilities were derived from observed escort activities in an aggregation of travel
+    # surveys.
+    context.config("escort_locations_activities", ["education", "leisure", "task", "transport", "shop"])
+    context.config("escort_locations_weights", [0.71, 0.16, 0.07, 0.05, 0.01])
+
+def validate(context):
+    activities = context.config("escort_locations_activities")
+    weights = context.config("escort_locations_weights")
+    assert len(activities) == len(weights), (
+        "`escort_locations_activities` and `escort_locations_weights` must have the same length"
+    )
+
 def prepare_locations(context):
     # Load persons and their primary locations
     df_home = context.stage("synthesis.population.spatial.home.locations")
@@ -47,22 +62,23 @@ def prepare_locations(context):
 def prepare_destinations(context):
     df_locations = context.stage("synthesis.locations.secondary")
 
-    identifiers = df_locations["location_id"].values
-    locations = np.vstack(df_locations["geometry"].apply(lambda x: np.array([x.x, x.y])).values)
-    type_act = df_locations["type_act"].values
-    weight = df_locations["weight"].values
-
     data = {}
 
-    for purpose in ("shop", "leisure", "other"):
-        f = df_locations["offers_%s" % purpose].values
-
-        data[purpose] = dict(
-            identifiers = identifiers[f],
-            locations = locations[f],
-            type_act= type_act[f],
-            weight = weight[f]
+    for activity, group in df_locations.groupby("activity_type"):
+        data[activity] = dict(
+            identifiers = group["location_id"].values,
+            locations = np.column_stack((group.geometry.x, group.geometry.y)),
+            type_act = df_locations["type_act"].values,
+            weight = df_locations["weight"].values  
         )
+
+    # Add "other" as a special purpose with all possible locations.
+    data["other"] = dict(
+        identifiers = df_locations["location_id"].values,
+        locations = np.column_stack((df_locations.geometry.x, df_locations.geometry.y)),
+        type_act = df_locations["type_act"].values,
+        weight = df_locations["weight"].values
+    )
 
     return data
 
@@ -151,13 +167,18 @@ def process(context, arguments):
   df_trips, df_primary, random_seed, crs = arguments
 
   # Set up RNG
-  random = np.random.RandomState(random_seed)
+  random = np.random.default_rng(random_seed)
   maximum_iterations = context.config("secondary_activities.maximum_iterations")
 
   # Set up discretization solver
   destinations = context.data("destinations")
   candidate_index = CandidateIndex(destinations,random=random)
-  discretization_solver = CustomDiscretizationSolver(candidate_index)
+  discretization_solver = CustomDiscretizationSolver(
+      candidate_index,
+      random,
+      escort_activities=context.config("escort_locations_activities"),
+      escort_weights=context.config("escort_locations_weights")
+  )
 
   # Set up distance sampler
   distance_distributions = context.data("distance_distributions")
@@ -174,7 +195,7 @@ def process(context, arguments):
       maximum_iterations = min(1000, maximum_iterations))
   elif chain_solver_option == "force_model":
     grid_parameters, force_field_data = context.data("force_field_data")
-    chain_solver = ForceFieldChainSolver(grid_parameters, force_field_data, 
+    chain_solver = ForceFieldChainSolver(grid_parameters, force_field_data,
       random = random, maximum_iterations = min(1000, maximum_iterations))
 
   tail_solver = AngularTailSolver(random = random)

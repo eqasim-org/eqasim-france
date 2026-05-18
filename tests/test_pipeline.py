@@ -132,3 +132,8 @@ def test_population_with_motorcycles(tmpdir):
         "vehicles_method": "fleet_sample",
         "vehicles_year": 2021
     })
+
+def test_population_with_secondary_activity_force_model(tmpdir):
+    run_population(tmpdir, "entd", { 
+        "secondary_activities": dict(chain_solver = "force_model", maximum_iterations = 10)
+    })

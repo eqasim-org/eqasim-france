@@ -31,7 +31,7 @@ def execute(context):
     ])
 
     # Build pt2matsim
-    maven.run(context, ["package", "-DskipTests=true"], cwd = "%s/pt2matsim" % context.path())
+    maven.run(context, ["package", "-Dskip.surefire.tests"], cwd = "%s/pt2matsim" % context.path())
     jar_path = "pt2matsim/target/pt2matsim-{}-shaded.jar".format(version)
 
     # Test pt2matsim
