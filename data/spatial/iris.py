@@ -21,7 +21,7 @@ def execute(context):
     with py7zr.SevenZipFile(source_path) as archive:
         contour_paths = [
             path for path in archive.getnames()
-            if "LAMB93" in path
+            if "LAMB93" in path or "WGS84" in path
         ]
 
         archive.extract(context.path(), contour_paths)
@@ -38,7 +38,8 @@ def execute(context):
         "code_insee": "commune_id"
     })
 
-    assert df_iris.crs == "EPSG:2154"
+    if df_iris.crs != "EPSG:2154":
+        df_iris = df_iris.to_crs("EPSG:2154")
 
     df_iris["iris_id"] = df_iris["iris_id"].astype("category")
     df_iris["commune_id"] = df_iris["commune_id"].astype("category")

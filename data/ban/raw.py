@@ -30,11 +30,13 @@ def execute(context):
     for source_path in find_ban("{}/{}".format(context.config("data_path"), context.config("ban_path"))):
         print("Reading {} ...".format(source_path))
 
+        dep = str(int(os.path.basename(source_path).split(".")[0].split("-")[1]))
+
         df_partial = pd.read_csv(source_path, 
             compression = "gzip", sep = ";", usecols = BAN_DTYPES.keys(), dtype = BAN_DTYPES)
-        
+
         # Filter by departments
-        df_partial["department_id"] = df_partial["code_insee"].str[:2]
+        df_partial["department_id"] = df_partial["code_insee"].str[:len(dep)]
         df_partial = df_partial[["department_id", "x", "y"]]
         df_partial = df_partial[df_partial["department_id"].isin(requested_departments)]
 
