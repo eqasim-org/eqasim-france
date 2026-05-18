@@ -30,7 +30,8 @@ def execute(context):
     for source_path in find_ban("{}/{}".format(context.config("data_path"), context.config("ban_path"))):
         print("Reading {} ...".format(source_path))
 
-        dep = str(int(os.path.basename(source_path).split(".")[0].split("-")[1]))
+        dep = os.path.basename(source_path).split(".")[0].split("-")[1]
+        assert len(dep) in [2, 3]
 
         df_partial = pd.read_csv(source_path, 
             compression = "gzip", sep = ";", usecols = BAN_DTYPES.keys(), dtype = BAN_DTYPES)
