@@ -34,7 +34,7 @@ def execute(context):
         lf = lf.filter(pl.col("plg_code_commune").str.slice(0, 3).is_in(deps3))
     cols = ["siret", "x", "y"]
     if "epsg" in lf.columns:
-        cols += "epsg"
+        cols += ["epsg"]
     df_siret_geoloc = lf.select(*cols).collect()
     return df_siret_geoloc.to_pandas()
 
