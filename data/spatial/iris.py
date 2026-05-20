@@ -12,6 +12,7 @@ def configure(context):
     context.config("data_path")
     context.config("iris_path", "iris_2024")
     context.stage("data.spatial.codes")
+    context.config("crs", "EPSG:2154")
 
 def execute(context):
     df_codes = context.stage("data.spatial.codes")
@@ -38,8 +39,7 @@ def execute(context):
         "code_insee": "commune_id"
     })
 
-    if df_iris.crs != "EPSG:2154":
-        df_iris = df_iris.to_crs("EPSG:2154")
+    df_iris = df_iris.to_crs(context.config("crs"))
 
     df_iris["iris_id"] = df_iris["iris_id"].astype("category")
     df_iris["commune_id"] = df_iris["commune_id"].astype("category")

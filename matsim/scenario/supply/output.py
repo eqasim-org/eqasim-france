@@ -10,6 +10,7 @@ def configure(context: ConfigurationContext):
 
     context.config("output_path")
     context.config("output_prefix", "ile_de_france_")
+    context.config("crs", "EPSG:2154")
 
 
 def execute(context: ExecuteContext):
@@ -24,7 +25,7 @@ def execute(context: ExecuteContext):
         context.stage("matsim.scenario.supply.processed")["schedule_path"]
     )
 
-    crs = "EPSG:2154"
+    crs = context.config("crs")
 
     eqasim.run(context, "org.eqasim.core.tools.ExportNetworkToGeopackage", [
         "--network-path", network_path,
