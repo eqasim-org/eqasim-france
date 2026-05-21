@@ -26,9 +26,6 @@ def execute(context):
     df_sirene = df_sirene.join(df_siret_geoloc,how="left")
     df_sirene.dropna(subset=['x', 'y'],inplace=True)
 
-    if "epsg" not in df_sirene.columns:
-        df_sirene["epsg"] = "2154"
-
     df_sirene = df_sirene.groupby("epsg")[df_sirene.columns].apply(lambda df: gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.x, df.y),
                                                                               crs="EPSG:" + df["epsg"].iloc[0]).to_crs(context.config("crs")))
 
