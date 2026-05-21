@@ -125,7 +125,7 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_activities.csv",
         "{}/ile_de_france_activities.csv".format(output_path),
-        "89b38b842359c77e1f5a51692d0cd8e3")
+        "40a74228ea811c8a5fe65dd31d71beb9")
 
     manager.check(
         "ile_de_france_trips.csv",
@@ -145,7 +145,7 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_activities.gpkg",
         "{}/ile_de_france_activities.gpkg".format(output_path),
-        "a3caa84f909456ef8c0e57243a343c27")
+        "ac2e3aaca88a5021e7fa7119687239fe")
 
     manager.check(
         "ile_de_france_commutes.gpkg",
@@ -160,7 +160,7 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_trips.gpkg",
         "{}/ile_de_france_trips.gpkg".format(output_path),
-        "0d9c1bf9816273c8755d9390a04792d2")
+        "6d12374eb623e3d579350539fe5a7a14")
 
     manager.finish()
 

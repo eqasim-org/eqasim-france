@@ -131,9 +131,17 @@ config:
   ## source for the education locations
   # education_location_source: bpe # bpe, addresses
 
-  ## max iterations for the secondary location selection algorithm
+  ## source for weight/capacity of bpe locations (except education)
+  # bpe_weight_source: external # None, internal, external
+
+  ## parameters for the secondary location selection algorithm
   # secondary_activities:
   #   maximum_iterations: .inf
+  #   chain_solver: "default" # "default", "force_model"
+  #   force_model: # force field parameters  
+  #      attractors: "uniform" # "uniform", "capacities" 
+  #      cell_size: 250.0
+  #      grid_margin: 2000.0
 
   # Locations for escort activities are drawn from the activity types below, with the given weights.
   # By default, there is a 71% probability that a escort activity is drawn from "education" locations.
@@ -258,6 +266,8 @@ config:
 
   # bpe_path: bpe_2021/bpe21_ensemble_xy_csv.zip
   # bpe_csv: bpe21_ensemble_xy.csv
+
+  # bpe_weight_path: bpe_2024/BPE24_weight.csv
 
   # gtfs_path: gtfs_idf
 
