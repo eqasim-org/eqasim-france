@@ -16,7 +16,7 @@ def configure(context):
 COLUMNS_DTYPES = {
     "CANTVILLE":"str",
     "NUMMI":"str",
-    "AGED":"str",
+    "AGEREV":"str",
     "COUPLE":"str",
     "GS":"str",
     "STAT_GSEC":"str",

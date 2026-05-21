@@ -54,7 +54,7 @@ def execute(context):
     df["iris_id"] = df["iris_id"].astype("category")
 
     # Age
-    df["age"] = df["AGED"].apply(lambda x: "0" if x == "000" else x.lstrip("0")).astype(int)
+    df["age"] = df["AGEREV"].apply(lambda x: "0" if x == "000" else x.lstrip("0")).astype(int)
 
     # Clean COUPLE
     df["couple"] = df["COUPLE"] == "1"
