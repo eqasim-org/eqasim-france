@@ -2,7 +2,7 @@ import numpy as np
 import shapely.geometry as geo
 import data.spatial.utils as spatial_utils
 import geopandas as gpd
-
+import pandas as pd
 """
 This stage cleans the enterprise census:
   - Filter out enterprises that do not have a valid municipality or IRIS
@@ -16,6 +16,9 @@ def configure(context):
     context.stage("data.spatial.iris")
     context.stage("data.spatial.municipalities")
     context.config("education_location_source","bpe")
+    if context.config("bpe_weight_source",None) == "external":
+        context.config("data_path")
+        context.config("bpe_weight_path", "bpe_2024/BPE24_weight.csv")
 
     context.config("bpe_random_seed", 0)
 
@@ -31,6 +34,15 @@ ACTIVITY_TYPE_MAP = [
     ("F", "leisure"),       # Sports & Culture
     ("G", "task"),          # Tourism, hotels, etc. (Hôtel = G102)
 ]
+
+EQU_WEIGHT_MAP = [("B1", 100.0**1.5),          # Big crowds shops
+    ("B105", 10.0**1.5),    # Medium crowds shops
+    ("B2", 3.0**1.5),          # Small crowds shops
+    ("B302",10.0**1.5),     # Medium crowds shops
+    ("B304", 10.0**1.5),       # Medium crowds shops
+    ("B306", 10.0**1.5),    # Medium crowds shops
+    ("B307", 10.0**1.5),       # Medium crowds shops
+    ]
 
 def find_outside(context, commune_id):
     df_municipalities = context.data("df_municipalities")
@@ -66,9 +78,13 @@ def execute(context):
 
     # Add weight for shopping locations 
     df.loc[df["activity_type"]!="education","weight"] = 1.0
-    df.loc[(df["activity_type"]=="shop")&(df["education_type"].isin(["B201", "B202", "B204", "B205", "B206","B207","B208","B209","B210"])),"weight"] = 3.0**1.5 
-    df.loc[(df["activity_type"]=="shop")&(df["education_type"].isin(["B105", "B302", "B304", "B306", "B307"])),"weight"] = 10.0**1.5
-    df.loc[(df["activity_type"]=="shop")&(df["education_type"].isin(["B103", "B104"])),"weight"] = 100.0**1.5
+    if context.config("bpe_weight_source") != None :
+        weight_map = EQU_WEIGHT_MAP
+        if context.config("bpe_weight_source") == "external": 
+            weight_map = pd.read_csv("{}/{}".format(context.config("data_path"), context.config("bpe_weight_path"))).values
+        for prefix, weight in weight_map:
+            df.loc[df["education_type"].str.startswith(prefix), "weight"] = weight
+
     # Clean coordinates
     df["x"] = df["LAMBERT_X"].astype(str).str.replace(",", ".").astype(float)
     df["y"] = df["LAMBERT_Y"].astype(str).str.replace(",", ".").astype(float)
