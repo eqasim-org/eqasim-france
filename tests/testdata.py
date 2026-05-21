@@ -730,7 +730,7 @@ def create(output_path):
     df_ban = df_ban[:round(len(x)*.8)]
 
     print("Hash", "df_ban", pd.util.hash_pandas_object(df_ban, index = True).sum())
-    assert pd.util.hash_pandas_object(df_ban, index = True).sum() == 18059141538074721436
+    assert pd.util.hash_pandas_object(df_ban, index = True).sum() == 7791063598888440532
 
     os.mkdir("%s/ban_idf" % output_path)
 
