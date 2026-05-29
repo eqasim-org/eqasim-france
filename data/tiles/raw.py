@@ -14,6 +14,7 @@ def configure(context):
     context.config("data_path")
     context.config("tiles_path", "tiles_2019/Filosofi2019_carreaux_200m_gpkg.zip")
     context.config("tiles_file", "carreaux_200m_met.gpkg")
+    context.config("crs", "EPSG:2154")
 
 
 def execute(context):
@@ -47,6 +48,7 @@ def execute(context):
     df_tiles["home_location_id"] = df_tiles["home_location_id"].str[14:]
     df_tiles["geometry"] = df_tiles["geometry"].centroid
     df_tiles["department_id"] = df_tiles["lcog_geo"].str[:2]
+    df_tiles = df_tiles.to_crs(context.config("crs"))
 
     for department_id in df_departments["departement_id"].values:
         assert np.count_nonzero(df_tiles["department_id"] == department_id) > 0
