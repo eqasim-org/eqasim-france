@@ -17,7 +17,7 @@ def configure(context):
     if context.config("use_urban_type", False):
         context.stage("data.spatial.urban_type")
 
-    context.config("census.attributes", {})
+    context.config("census_attributes", {})
 
 def execute(context):
     df = context.stage("data.census.raw")
@@ -158,7 +158,7 @@ def execute(context):
         "household_size", "consumption_units", "socioprofessional_class"
     ]
 
-    for attribute, raw in context.config("census.attributes").items():
+    for attribute, raw in context.config("census_attributes").items():
         if attribute in selected_attributes:
             raise RuntimeError("Additional census attribute {} is already included".format(attribute))
         
