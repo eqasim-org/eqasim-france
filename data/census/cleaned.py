@@ -1,4 +1,3 @@
-from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import data.hts.hts as hts
@@ -17,6 +16,8 @@ def configure(context):
 
     if context.config("use_urban_type", False):
         context.stage("data.spatial.urban_type")
+
+    context.config("census.attributes", {})
 
 def execute(context):
     df = context.stage("data.census.raw")
@@ -146,7 +147,8 @@ def execute(context):
     # Consumption units
     df = pd.merge(df, hts.calculate_consumption_units(df), on = "household_id")
 
-    df = df[[
+    # additional attributes
+    selected_attributes = [
         "person_id", "household_id", "weight",
         "iris_id", "commune_id", "departement_id",
         "age", "sex", "couple",
@@ -154,7 +156,18 @@ def execute(context):
         "commute_mode", "employed", "studies",
         "number_of_cars", "number_of_motorcycles", "number_of_vehicles", "use_motorcycle",
         "household_size", "consumption_units", "socioprofessional_class"
-    ]]
+    ]
+
+    for attribute, raw in context.config("census.attributes").items():
+        if attribute in selected_attributes:
+            raise RuntimeError("Additional census attribute {} is already included".format(attribute))
+        
+        # copy column
+        df[attribute] = df[raw]
+        selected_attributes.append(attribute)
+
+    # cleanup
+    df = df[selected_attributes]
 
     if context.config("use_urban_type"):
         df_urban_type = context.stage("data.spatial.urban_type")[[

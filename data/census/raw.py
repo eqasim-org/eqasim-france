@@ -1,8 +1,6 @@
-import pandas as pd
 import os
-import zipfile
-import pyarrow as pa
 import polars as pl
+
 """
 This stage loads the raw data from the French population census.
 """
@@ -13,36 +11,39 @@ def configure(context):
     context.config("data_path")
     context.config("census_path", "rp_2022/RP2022_indcvi.parquet")
 
-COLUMNS_DTYPES = {
-    "CANTVILLE":"str",
-    "NUMMI":"str",
-    "AGEREV":"str",
-    "COUPLE":"str",
-    "GS":"str",
-    "STAT_GSEC":"str",
-    "DEPT":"str",
-    "ETUD":"str",
-    "IPONDI":"str",
-    "IRIS":"str",
-    "REGION":"str",
-    "SEXE":"str",
-    "TACT":"str",
-    "TP":"str",
-    "TRANS":"str",
-    "VOIT":"str",
-    "DEROU":"str"
+    context.config("census.attributes", {})
+
+COLUMNS = {
+    "CANTVILLE",
+    "NUMMI",
+    "AGEREV",
+    "COUPLE",
+    "GS",
+    "STAT_GSEC",
+    "DEPT",
+    "ETUD",
+    "IPONDI",
+    "IRIS",
+    "REGION",
+    "SEXE",
+    "TACT",
+    "TP",
+    "TRANS",
+    "VOIT",
+    "DEROU"
 }
 
 
 def execute(context):
-    df_records = []
     df_codes = context.stage("data.spatial.codes")
 
     requested_departements = df_codes["departement_id"].unique()
 
     with context.progress(label = "Reading census ...") as progress:
+        selected_columns = COLUMNS + list(sorted(context.config("census.attributes", {}).keys()))
+        
         parquet = pl.read_parquet( "{}/{}".format(context.config("data_path"), context.config("census_path")),
-                        columns=  COLUMNS_DTYPES.keys())
+                        columns=selected_columns)
 
         parquet = parquet.cast(pl.String)
         parquet = parquet.filter(pl.col("DEPT").is_in(requested_departements))
