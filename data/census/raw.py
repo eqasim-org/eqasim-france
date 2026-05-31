@@ -40,7 +40,7 @@ def execute(context):
     requested_departements = df_codes["departement_id"].unique()
 
     with context.progress(label = "Reading census ...") as progress:
-        selected_columns = COLUMNS + list(sorted(context.config("census.attributes", {}).keys()))
+        selected_columns = COLUMNS + list(sorted(context.config("census.attributes").keys()))
         
         parquet = pl.read_parquet( "{}/{}".format(context.config("data_path"), context.config("census_path")),
                         columns=selected_columns)
