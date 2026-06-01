@@ -605,10 +605,12 @@ def create(output_path):
                 SEXE = random.choice([1, 2]),
                 TACT = random.choice(["11", "12", "21", "22", "23", "24", "25"]),
                 TP = "1",
-                TRANS = 4, VOIT = random.integers(3), DEROU = random.integers(2),
-                MODV = random.choice(["a", "b", "c", "d"]),
-                NBPI = random.choice([1, 2, 3, 4])
+                TRANS = 4, VOIT = random.integers(3), DEROU = random.integers(2)
             ))
+
+    df_persons = pd.DataFrame.from_records(persons)
+    df_persons["MODV"] = random.choice(["a", "b", "c", "d"], len(df_persons))
+    df_persons["NBPI"] = random.choice([1, 2, 3, 4], len(df_persons))
 
     columns = [
         "CANTVILLE", "NUMMI", "AGEREV", "COUPLE", "GS", "DEPT", "IRIS", "REGION",
@@ -616,11 +618,11 @@ def create(output_path):
         "SEXE", "TACT", "TP", "TRANS", "VOIT", "DEROU", "MODV", "NBPI"
     ]
 
-    df_persons = pd.DataFrame.from_records(persons)[columns]
+    df_persons = df_persons[columns]
     df_persons.columns = columns
 
     print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
-    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 15929982487916886465
+    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 7536202557341291122
 
     df_persons.to_parquet("%s/rp_2022/RP2022_indcvi.parquet" % output_path)
 
