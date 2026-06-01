@@ -57,21 +57,13 @@ def execute(context):
     df_population = pd.merge(df_population, df_hts_households[[
         "hts_household_id", "number_of_bikes"
     ]], on="hts_household_id", how="left")
+    df_population["number_of_bikes"] = df_population["number_of_bikes"].fillna(0)
 
     # Attach income
     df_income = context.stage("synthesis.population.income.selected")
     df_population = pd.merge(df_population, df_income[[
         "household_id", "household_income"
     ]], on="household_id", how="left")
-
-    # Check consistency
-    final_size = len(df_population)
-    final_person_ids = len(df_population["person_id"].unique())
-    final_household_ids = len(df_population["household_id"].unique())
-
-    assert initial_size == final_size
-    assert initial_person_ids == final_person_ids
-    assert initial_household_ids == final_household_ids
 
     # Add car availability
     df_number_of_cars = df_population[["household_id", "number_of_cars"]].drop_duplicates("household_id")
@@ -108,5 +100,14 @@ def execute(context):
     df_population.loc[df_population["age"].between(11,14),"age_range"] = "middle_school"
     df_population.loc[df_population["age"].between(15,17),"age_range"] = "high_school"
     df_population["age_range"] = df_population["age_range"].astype("category")
+
+    # Check consistency
+    final_size = len(df_population)
+    final_person_ids = len(df_population["person_id"].unique())
+    final_household_ids = len(df_population["household_id"].unique())
+
+    assert initial_size == final_size
+    assert initial_person_ids == final_person_ids
+    assert initial_household_ids == final_household_ids
 
     return df_population

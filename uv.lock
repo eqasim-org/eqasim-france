@@ -374,7 +374,7 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=1.8.0" },
     { name = "scipy", specifier = ">=1.17.1" },
     { name = "shapely", specifier = ">=2.1.2" },
-    { name = "synpp", specifier = ">=1.6.1" },
+    { name = "synpp", specifier = ">=1.6.2" },
     { name = "tqdm", specifier = ">=4.67.3" },
     { name = "xlrd", specifier = ">=2.0.2" },
     { name = "xlwt", specifier = ">=1.3.0" },
@@ -468,11 +468,11 @@ wheels = [
 
 [[package]]
 name = "idna"
-version = "3.11"
+version = "3.15"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6f/6d/0703ccc57f3a7233505399edb88de3cbd678da106337b9fcde432b65ed60/idna-3.11.tar.gz", hash = "sha256:795dafcc9c04ed0c1fb032c2aa73654d8e8c5023a7df64a53f39190ada629902", size = 194582, upload-time = "2025-10-12T14:55:20.501Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/82/77/7b3966d0b9d1d31a36ddf1746926a11dface89a83409bf1483f0237aa758/idna-3.15.tar.gz", hash = "sha256:ca962446ea538f7092a95e057da437618e886f4d349216d2b1e294abfdb65fdc", size = 199245, upload-time = "2026-05-12T22:45:57.011Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0e/61/66938bbb5fc52dbdf84594873d5b51fb1f7c7794e9c0f5bd885f30bc507b/idna-3.11-py3-none-any.whl", hash = "sha256:771a87f49d9defaf64091e6e6fe9c18d4833f140bd19464795bc32d966ca37ea", size = 71008, upload-time = "2025-10-12T14:55:18.883Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/23/408243171aa9aaba178d3e2559159c24c1171a641aa83b67bdd3394ead8e/idna-3.15-py3-none-any.whl", hash = "sha256:048adeaf8c2d788c40fee287673ccaa74c24ffd8dcf09ffa555a2fbb59f10ac8", size = 72340, upload-time = "2026-05-12T22:45:55.733Z" },
 ]
 
 [[package]]
@@ -1707,16 +1707,16 @@ wheels = [
 
 [[package]]
 name = "synpp"
-version = "1.6.1"
+version = "1.6.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "networkx" },
     { name = "pyyaml" },
     { name = "pyzmq" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e6/09/b830fedd1059d643093c2ea390db40d3e2174d1fe7b4585c9b879310fed4/synpp-1.6.1.tar.gz", hash = "sha256:273ce2f0b6e9db9b5aa690fc95ffa7eddbb279ced103609d7f6abe6adff8fb57", size = 33334, upload-time = "2025-08-15T12:19:06.859Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/42/ea/c5a3c900c5d3e477a2f9f2917185ab0159df5756d60d3860d6be74f3fddb/synpp-1.6.2.tar.gz", hash = "sha256:73618a81f65745adb37c759ec4c36de74097602ff7cf0bb67593f96e2ccdf271", size = 34421, upload-time = "2026-05-31T19:46:27.386Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ab/b2/e188cacfef78d8b355915995dbc82034b297e326e5a47b12e250786b170e/synpp-1.6.1-py3-none-any.whl", hash = "sha256:79d61a48ea82b3ca2822fe02f34b0acb734352024e5f3e18b512eb75aae46443", size = 22193, upload-time = "2025-08-15T12:19:00.265Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/b0/644e6517bd6adf61b65a7aecf472e7953bd2d1cbc149b1b4a027acf519bd/synpp-1.6.2-py3-none-any.whl", hash = "sha256:c6ad8408d9c3757e11f8a5b45d79e47d5d9d53029f915a32f2cee108361165f7", size = 22521, upload-time = "2026-05-31T19:46:26.012Z" },
 ]
 
 [[package]]
@@ -1775,11 +1775,11 @@ wheels = [
 
 [[package]]
 name = "urllib3"
-version = "2.6.3"
+version = "2.7.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c7/24/5f1b3bdffd70275f6661c76461e25f024d5a38a46f04aaca912426a2b1d3/urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed", size = 435556, upload-time = "2026-01-07T16:24:43.925Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/53/0c/06f8b233b8fd13b9e5ee11424ef85419ba0d8ba0b3138bf360be2ff56953/urllib3-2.7.0.tar.gz", hash = "sha256:231e0ec3b63ceb14667c67be60f2f2c40a518cb38b03af60abc813da26505f4c", size = 433602, upload-time = "2026-05-07T16:13:18.596Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4", size = 131584, upload-time = "2026-01-07T16:24:42.685Z" },
+    { url = "https://files.pythonhosted.org/packages/7f/3e/5db95bcf282c52709639744ca2a8b149baccf648e39c8cc87553df9eae0c/urllib3-2.7.0-py3-none-any.whl", hash = "sha256:9fb4c81ebbb1ce9531cce37674bbc6f1360472bc18ca9a553ede278ef7276897", size = 131087, upload-time = "2026-05-07T16:13:17.151Z" },
 ]
 
 [[package]]

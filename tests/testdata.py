@@ -593,7 +593,7 @@ def create(output_path):
         for person_index in range(CENSUS_HOUSEHOLD_MEMBERS):
             persons.append(dict(
                 CANTVILLE = "ABCE", NUMMI = household_id,
-                AGED = "%03d" % random.integers(5, 90), COUPLE = random.choice([1, 2]),
+                AGEREV = "%03d" % random.integers(5, 90), COUPLE = random.choice([1, 2]),
                 GS = random.choice(["1", "2", "3", "4", "5", "6", "Z"]),
                 STAT_GSEC = random.choice(["", "32"], p = [0.85, 0.15]),
                 DEPT = department, IRIS = iris, REGION = region, ETUD = random.choice([1, 2]),
@@ -607,7 +607,7 @@ def create(output_path):
             ))
 
     columns = [
-        "CANTVILLE", "NUMMI", "AGED", "COUPLE", "GS", "DEPT", "IRIS", "REGION",
+        "CANTVILLE", "NUMMI", "AGEREV", "COUPLE", "GS", "DEPT", "IRIS", "REGION",
         "ETUD", "ILETUD", "ILT", "IPONDI", "STAT_GSEC",
         "SEXE", "TACT", "TP", "TRANS", "VOIT", "DEROU"
     ]
