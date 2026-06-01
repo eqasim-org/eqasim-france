@@ -103,19 +103,19 @@ def test_population_with_secondary_activity_force_model(data_path, tmpdir):
 
 def test_population_with_location_information(data_path, tmpdir):
     output_path = run_population(data_path, tmpdir, "entd", { 
-        "write_location_ids": True
+        "output_location_ids": True
     }, [
         dict(descriptor = "synthesis.locations.output.home"),
         dict(descriptor = "synthesis.locations.output.work"),
         dict(descriptor = "synthesis.locations.output.education"),
         dict(descriptor = "synthesis.locations.output.secondary"),
         dict(descriptor = "synthesis.locations.output.buildings")
-    ])
+    ])["output_path"]
 
     df = pd.read_csv("%s/ile_de_france_households.csv" % output_path, sep = ";", nrows = 1)
     assert "location_id" in df
 
-    df = pd.read_csv("%s/ile_de_france_persons.csv" % output_path, sep = ";", nrows = 1)
+    df = pd.read_csv("%s/ile_de_france_activities.csv" % output_path, sep = ";", nrows = 1)
     assert "location_id" in df
 
     os.path.isfile("{}/ile_de_france_home_locations.gpkg".format(output_path))

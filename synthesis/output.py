@@ -154,7 +154,7 @@ def execute(context):
     ).drop_duplicates("household_id")[columns]
 
     df_households = pd.merge(df_households,df_activities[df_activities["purpose"] == "home"][["household_id",
-        "iris_id", "commune_id","departement_id","region_id"]].drop_duplicates("household_id"),how="left")
+        "iris_id", "commune_id","departement_id","region_id"] + location_column].drop_duplicates("household_id"),how="left")
 
     if "csv" in output_formats:
         df_households.to_csv("%s/%shouseholds.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
