@@ -71,8 +71,6 @@ def create(output_path):
     ADDRESS_OBSERVATIONS = 2000
     SIRENE_OBSERVATIONS = 2000
 
-    random = np.random.default_rng(1000)
-
     REGION_LENGTH = 50 * 1e3
     DEPARTMENT_LENGTH = 25 * 1e3
     MUNICIPALITY_LENGTH = 5 * 1e3
@@ -230,6 +228,7 @@ def create(output_path):
     # Dataset: BPE
     # Required attributes: DCIRIS, LAMBERT_X, LAMBERT_Y, TYPEQU, DEPCOM, DEP
     print("Creating BPE ...")
+    random = np.random.default_rng(1000)
 
     # We put enterprises at the centroid of the shapes
     observations = BPE_OBSERVATIONS
@@ -348,6 +347,7 @@ def create(output_path):
 
     # Data set: ENTD
     print("Creating ENTD ...")
+    random = np.random.default_rng(2533)
 
     data = dict(
         Q_MENAGE = [],
@@ -456,11 +456,11 @@ def create(output_path):
     pd.DataFrame.from_records(data["K_DEPLOC"]).to_csv("%s/entd_2008/K_deploc.csv" % output_path, index = False, sep = ";")
 
     hashes = {
-        "Q_MENAGE": 13747765506488913060,
-        "Q_TCM_MENAGE": 11743608538769824299,
-        "Q_INDIVIDU": 10605303610959774056,
-        "Q_TCM_INDIVIDU": 14111705055958460361,
-        "K_DEPLOC": 8223897019656200695
+        "Q_MENAGE": 6916190433170563173,
+        "Q_TCM_MENAGE": 6980538473335852422,
+        "Q_INDIVIDU": 15145767072075638494,
+        "Q_TCM_INDIVIDU": 13969435991955395586,
+        "K_DEPLOC": 7631538890399794851
     }
 
     for slot in ["Q_MENAGE", "Q_TCM_MENAGE", "Q_INDIVIDU", "Q_TCM_INDIVIDU", "K_DEPLOC"]:
@@ -470,6 +470,7 @@ def create(output_path):
 
     # Data set: EGT
     print("Creating EGT ...")
+    random = np.random.default_rng(5632)
 
     data = dict(
         households = [],
@@ -561,9 +562,9 @@ def create(output_path):
     pd.DataFrame.from_records(data["trips"]).to_csv("%s/egt_2010/Deplacements_semaine.csv" % output_path, index = False, sep = ",")
 
     hashes = {
-        "households": 9610947733268415162,
-        "persons": 4225414291640515394,
-        "trips": 3642532006631400738,
+        "households": 11444390802329132734,
+        "persons": 7614014922097515207,
+        "trips": 14635367621539133620,
     }
 
     for slot in ["households", "persons", "trips"]:
@@ -573,6 +574,7 @@ def create(output_path):
 
     # Data set: Census
     print("Creating census ...")
+    random = np.random.default_rng(73523)
 
     persons = []
 
@@ -618,12 +620,17 @@ def create(output_path):
     df_persons.columns = columns
 
     print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
+<<<<<<< HEAD
     assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 598127275281505367
+=======
+    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 5371293800328552247
+>>>>>>> main
 
     df_persons.to_parquet("%s/rp_2022/RP2022_indcvi.parquet" % output_path)
 
     # Data set: commute flows
     print("Creating commute flows ...")
+    random = np.random.default_rng(82625)
 
     municipalities = df["municipality"].unique()
     observations = COMMUTE_FLOW_OBSERVATIONS
@@ -642,7 +649,11 @@ def create(output_path):
     df_work.columns = columns
 
     print("Hash", "df_work", pd.util.hash_pandas_object(df_work, index = True).sum())
+<<<<<<< HEAD
     assert pd.util.hash_pandas_object(df_work, index = True).sum() == 3295932809042887277
+=======
+    assert pd.util.hash_pandas_object(df_work, index = True).sum() == 6975741772103988418
+>>>>>>> main
 
     df_work.to_parquet("%s/rp_2022/RP2022_mobpro.parquet" % output_path)
 
@@ -659,12 +670,17 @@ def create(output_path):
     df_education.columns = columns
 
     print("Hash", "df_education", pd.util.hash_pandas_object(df_education, index = True).sum())
+<<<<<<< HEAD
     assert pd.util.hash_pandas_object(df_education, index = True).sum() == 12370303287634202763
+=======
+    assert pd.util.hash_pandas_object(df_education, index = True).sum() == 3071821450482011272
+>>>>>>> main
 
     df_education.to_parquet("%s/rp_2022/RP2022_mobsco.parquet" % output_path)
 
     # Data set: BD-TOPO
     print("Creating BD-TOPO ...")
+    random = np.random.default_rng(54582)
 
     observations = ADDRESS_OBSERVATIONS
 
@@ -692,7 +708,11 @@ def create(output_path):
     df_bdtopo.set_geometry(df_bdtopo.buffer(40),inplace=True,crs="EPSG:2154")
 
     print("Hash", "df_bdtopo", pd.util.hash_pandas_object(df_bdtopo, index = True).sum())
+<<<<<<< HEAD
     assert pd.util.hash_pandas_object(df_bdtopo, index = True).sum() == 6381383707682918136
+=======
+    assert pd.util.hash_pandas_object(df_bdtopo, index = True).sum() == 11745417358469153345
+>>>>>>> main
 
     os.mkdir("{}/bdtopo_idf".format(output_path))
     df_bdtopo.to_file("{}/bdtopo_idf/content.gpkg".format(output_path), layer = "batiment")
@@ -731,7 +751,11 @@ def create(output_path):
     df_ban = df_ban[:round(len(x)*.8)]
 
     print("Hash", "df_ban", pd.util.hash_pandas_object(df_ban, index = True).sum())
+<<<<<<< HEAD
     assert pd.util.hash_pandas_object(df_ban, index = True).sum() == 3408857057320138636
+=======
+    assert pd.util.hash_pandas_object(df_ban, index = True).sum() == 3264831854545569377
+>>>>>>> main
 
     os.mkdir("%s/ban_idf" % output_path)
 
@@ -740,6 +764,7 @@ def create(output_path):
 
     # Data set: SIRENE
     print("Creating SIRENE ...")
+    random = np.random.default_rng(8864)
 
     observations = SIRENE_OBSERVATIONS
 
@@ -756,7 +781,11 @@ def create(output_path):
     df_sirene["trancheEffectifsEtablissement"] = "03"
 
     print("Hash", "SIRENE ET", pd.util.hash_pandas_object(df_sirene, index = True).sum())
+<<<<<<< HEAD
     assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 3984610849398975189
+=======
+    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 17429090226711180196
+>>>>>>> main
 
     os.mkdir("%s/sirene" % output_path)
     df_sirene.to_parquet(output_path + "/sirene/StockEtablissement_utf8.parquet", index = False)
@@ -767,7 +796,11 @@ def create(output_path):
     df_sirene.to_parquet(output_path + "/sirene/StockUniteLegale_utf8.parquet", index = False)
 
     print("Hash", "SIRENE UL", pd.util.hash_pandas_object(df_sirene, index = True).sum())
+<<<<<<< HEAD
     assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 13356409250401496963
+=======
+    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 8449205416520787779
+>>>>>>> main
 
     # Data set: SIRENE GEOLOCATION
     print("Creating SIRENE GEOLOCATION...")
@@ -786,7 +819,11 @@ def create(output_path):
     })
 
     print("Hash", "SIRENE GEO", pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum())
+<<<<<<< HEAD
     assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 12122700768692956174
+=======
+    assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 12038323953301123794
+>>>>>>> main
 
     df_sirene_geoloc.to_parquet("%s/sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet" % output_path, index = False)
 
@@ -1084,6 +1121,7 @@ def create(output_path):
 
     # add 2rm dataset
     print("Creating 2RM dataset ...")
+    random = np.random.default_rng(12512)
 
     os.mkdir("%s/2rm" % output_path)
 
