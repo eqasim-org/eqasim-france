@@ -41,7 +41,7 @@ jobs:
         git --version
     - name: Run pipeline tests
       run: |
-        MKL_CBWR=AUTO uv run pytest tests/
+        uv run pytest tests/
 
     - name: Archive failed tests data
       uses: actions/upload-artifact@v7
