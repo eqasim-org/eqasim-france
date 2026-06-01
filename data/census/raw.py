@@ -41,10 +41,8 @@ def execute(context):
     census_attributes = { attribute["raw"] for attribute in context.config("census_attributes") }
 
     with context.progress(label = "Reading census ...") as progress:
-        selected_columns = COLUMNS | census_attributes
-        
         parquet = pl.read_parquet( "{}/{}".format(context.config("data_path"), context.config("census_path")),
-                        columns=selected_columns)
+                        columns=COLUMNS | census_attributes)
 
         parquet = parquet.cast(pl.String)
         parquet = parquet.filter(pl.col("DEPT").is_in(requested_departements))
