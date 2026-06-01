@@ -66,6 +66,7 @@ a few are actually relevant for the pipeline. Those are:
   - Logement, stationnement, véhicules à disposition des ménages (Q_menage.csv)
   - Données trajets domicile-travail, domicile-étude, accidents (Q_individu.csv)
   - Données mobilité contrainte, trajets vers lieu de travail (Q_ind_lieu_teg.csv)
+  - Données mobilité quotidienne, mobilité du Kish (K_mobilite.csv)
   - Données mobilité déplacements locaux (K_deploc.csv)
 - Put the downloaded *csv* files in to the folder `data/entd_2008`.
 
