@@ -38,12 +38,10 @@ def execute(context):
     df_codes = context.stage("data.spatial.codes")
 
     requested_departements = df_codes["departement_id"].unique()
-
-    census_attributes = [attribute["raw"] for attribute in context.config("census_attributes")]
-    census_attributes = sorted([a for a in census_attributes if a not in COLUMNS])
+    census_attributes = { attribute["raw"] for attribute in context.config("census_attributes") }
 
     with context.progress(label = "Reading census ...") as progress:
-        selected_columns = COLUMNS + census_attributes
+        selected_columns = COLUMNS | census_attributes
         
         parquet = pl.read_parquet( "{}/{}".format(context.config("data_path"), context.config("census_path")),
                         columns=selected_columns)
