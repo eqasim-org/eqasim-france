@@ -105,11 +105,11 @@ def test_population_with_location_information(data_path, tmpdir):
     output_path = run_population(data_path, tmpdir, "entd", { 
         "write_location_ids": True
     }, [
-        "synthesis.locations.output.home",
-        "synthesis.locations.output.work",
-        "synthesis.locations.output.education",
-        "synthesis.locations.output.secondary",
-        "synthesis.locations.output.buildings"
+        dict(descriptor = "synthesis.locations.output.home"),
+        dict(descriptor = "synthesis.locations.output.work"),
+        dict(descriptor = "synthesis.locations.output.education"),
+        dict(descriptor = "synthesis.locations.output.secondary"),
+        dict(descriptor = "synthesis.locations.output.buildings")
     ])
 
     df = pd.read_csv("%s/ile_de_france_households.csv" % output_path, sep = ";", nrows = 1)
