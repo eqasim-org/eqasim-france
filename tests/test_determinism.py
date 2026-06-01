@@ -1,9 +1,7 @@
 import synpp
 import os
 import hashlib, gzip
-from . import testdata
 import sqlite3
-import shutil, json
 
 class HashManager:
     def __init__(self):
@@ -80,10 +78,7 @@ class HashManager:
 
         return hash.hexdigest()
 
-def test_determinism(tmpdir):
-    data_path = str(tmpdir.mkdir("data"))
-    testdata.create(data_path)
-
+def test_determinism(data_path, tmpdir):
     for index in range(2):
         _test_determinism(index, data_path, tmpdir)
 
@@ -164,10 +159,7 @@ def _test_determinism(index, data_path, tmpdir):
 
     manager.finish()
 
-def test_determinism_matsim(tmpdir):
-    data_path = str(tmpdir.mkdir("data"))
-    testdata.create(data_path)
-
+def test_determinism_matsim(data_path, tmpdir):
     for index in range(2):
         _test_determinism_matsim(index, data_path, tmpdir)
 
