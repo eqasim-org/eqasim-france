@@ -16,7 +16,9 @@ PURPOSE_MAP = {
     "education": [21, 22, 23, 24, 25, 26, 27, 28, 29, 96, 97],
     "shop": [30, 31, 32, 33, 34, 35, 82, 98],
     "leisure": [51, 52, 53, 54],
-    "other": [41, 42, 43, 61, 62, 63, 64, 71, 72, 73, 74, 91]
+    "escort": [61, 62, 63, 64, 71, 72, 73, 74],
+    "task": [41, 42, 43],
+    "other": [91],
 }
 
 MODES_MAP = {
@@ -116,7 +118,7 @@ def execute(context):
     # Has subscription
     df_persons["has_pt_subscription"] = df_persons["P12"].isin(["1", "2", "3", "5", "6"])
 
-    # Survey respondents 
+    # Survey respondents
     # PENQ 1 : fully awnsered the travel questionary section, having a chain or non-movers
     # PENQ 2 : nonrespondent of travel questionary section
     df_persons["PENQ"] = df_persons["PENQ"].fillna("2").astype("int")
@@ -135,9 +137,6 @@ def execute(context):
 
     assert np.count_nonzero(df_trips["following_purpose"] == "invalid") == 0
     assert np.count_nonzero(df_trips["preceding_purpose"] == "invalid") == 0
-
-    df_trips["following_purpose"] = df_trips["following_purpose"].astype("category")
-    df_trips["preceding_purpose"] = df_trips["preceding_purpose"].astype("category")
 
     # Trip mode
     for mode, values in MODES_MAP.items():

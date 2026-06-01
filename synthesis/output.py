@@ -74,7 +74,8 @@ def execute(context):
 
     columns = [
         "person_id", "household_id",
-        "age", "employed", "sex", "socioprofessional_class",
+        "age", "employed", "studies", "sex", "socioprofessional_class",
+        "professional_activity",
         "has_driving_license", "has_pt_subscription",
         "census_person_id", "hts_id"
     ] + context.config("extra_enriched_attributes")
@@ -138,6 +139,7 @@ def execute(context):
     df_households = df_households[[
         "household_id","iris_id", "commune_id", "departement_id","region_id",
         "car_availability", "bike_availability", "use_motorcycle",
+        "number_of_cars", "number_of_motorcycles",
         "number_of_vehicles", "number_of_bikes",
         "income",
         "census_household_id"
