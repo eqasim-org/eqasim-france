@@ -27,6 +27,7 @@ def configure(context):
     context.config("output_formats", ["csv", "gpkg"])
     context.config("sampling_rate")
     context.config("extra_enriched_attributes", [])
+    context.config("census_attributes", [])
 
     if context.config("mode_choice", False):
         context.stage("matsim.simulation.prepare")
@@ -79,6 +80,11 @@ def execute(context):
         "has_driving_license", "has_pt_subscription",
         "census_person_id", "hts_id"
     ] + context.config("extra_enriched_attributes")
+    
+    for attribute in context.config("census_attributes"):
+        if attribute.get("scope", "person") == "person":
+            columns.append(attribute["name"])
+    
     df_persons = df_persons[columns]
     if "csv" in output_formats:
         df_persons.to_csv("%s/%spersons.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
@@ -130,14 +136,20 @@ def execute(context):
         df_activities.to_parquet("%s/%sactivities.parquet" % (output_path, output_prefix))
 
     # Prepare households
-    df_households = context.stage("synthesis.population.enriched").rename(
-        columns = { "household_income": "income" }
-    ).drop_duplicates("household_id")[[
+    columns = [
         "household_id", "car_availability", "bike_availability", "use_motorcycle",
         "number_of_cars", "number_of_motorcycles",
         "number_of_vehicles", "number_of_bikes",
         "income", "census_household_id"
-    ]]
+    ]
+
+    for attribute in context.config("census_attributes"):
+        if attribute.get("scope", "person") == "household":
+            columns.append(attribute["name"])
+
+    df_households = context.stage("synthesis.population.enriched").rename(
+        columns = { "household_income": "income" }
+    ).drop_duplicates("household_id")[columns]
 
     df_households = pd.merge(df_households,df_activities[df_activities["purpose"] == "home"][["household_id",
         "iris_id", "commune_id","departement_id","region_id"]].drop_duplicates("household_id"),how="left")

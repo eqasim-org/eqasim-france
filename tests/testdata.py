@@ -603,20 +603,22 @@ def create(output_path):
                 SEXE = random.choice([1, 2]),
                 TACT = random.choice(["11", "12", "21", "22", "23", "24", "25"]),
                 TP = "1",
-                TRANS = 4, VOIT = random.integers(3), DEROU = random.integers(2)
+                TRANS = 4, VOIT = random.integers(3), DEROU = random.integers(2),
+                MODV = random.choice(["a", "b", "c", "d"]),
+                NBPI = random.choice([1, 2, 3, 4])
             ))
 
     columns = [
         "CANTVILLE", "NUMMI", "AGEREV", "COUPLE", "GS", "DEPT", "IRIS", "REGION",
         "ETUD", "ILETUD", "ILT", "IPONDI", "STAT_GSEC",
-        "SEXE", "TACT", "TP", "TRANS", "VOIT", "DEROU"
+        "SEXE", "TACT", "TP", "TRANS", "VOIT", "DEROU", "MODV", "NBPI"
     ]
 
     df_persons = pd.DataFrame.from_records(persons)[columns]
     df_persons.columns = columns
 
     print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
-    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 9906836554399977863
+    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 598127275281505367
 
     df_persons.to_parquet("%s/rp_2022/RP2022_indcvi.parquet" % output_path)
 
@@ -640,7 +642,7 @@ def create(output_path):
     df_work.columns = columns
 
     print("Hash", "df_work", pd.util.hash_pandas_object(df_work, index = True).sum())
-    assert pd.util.hash_pandas_object(df_work, index = True).sum() == 4226572591318659871
+    assert pd.util.hash_pandas_object(df_work, index = True).sum() == 3295932809042887277
 
     df_work.to_parquet("%s/rp_2022/RP2022_mobpro.parquet" % output_path)
 
@@ -657,7 +659,7 @@ def create(output_path):
     df_education.columns = columns
 
     print("Hash", "df_education", pd.util.hash_pandas_object(df_education, index = True).sum())
-    assert pd.util.hash_pandas_object(df_education, index = True).sum() == 4552268535654263404
+    assert pd.util.hash_pandas_object(df_education, index = True).sum() == 12370303287634202763
 
     df_education.to_parquet("%s/rp_2022/RP2022_mobsco.parquet" % output_path)
 
@@ -690,7 +692,7 @@ def create(output_path):
     df_bdtopo.set_geometry(df_bdtopo.buffer(40),inplace=True,crs="EPSG:2154")
 
     print("Hash", "df_bdtopo", pd.util.hash_pandas_object(df_bdtopo, index = True).sum())
-    assert pd.util.hash_pandas_object(df_bdtopo, index = True).sum() == 15052525390832911939
+    assert pd.util.hash_pandas_object(df_bdtopo, index = True).sum() == 6381383707682918136
 
     os.mkdir("{}/bdtopo_idf".format(output_path))
     df_bdtopo.to_file("{}/bdtopo_idf/content.gpkg".format(output_path), layer = "batiment")
@@ -729,7 +731,7 @@ def create(output_path):
     df_ban = df_ban[:round(len(x)*.8)]
 
     print("Hash", "df_ban", pd.util.hash_pandas_object(df_ban, index = True).sum())
-    assert pd.util.hash_pandas_object(df_ban, index = True).sum() == 2128043709322238162
+    assert pd.util.hash_pandas_object(df_ban, index = True).sum() == 3408857057320138636
 
     os.mkdir("%s/ban_idf" % output_path)
 
@@ -754,7 +756,7 @@ def create(output_path):
     df_sirene["trancheEffectifsEtablissement"] = "03"
 
     print("Hash", "SIRENE ET", pd.util.hash_pandas_object(df_sirene, index = True).sum())
-    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 11823850498057821917
+    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 3984610849398975189
 
     os.mkdir("%s/sirene" % output_path)
     df_sirene.to_parquet(output_path + "/sirene/StockEtablissement_utf8.parquet", index = False)
@@ -765,7 +767,7 @@ def create(output_path):
     df_sirene.to_parquet(output_path + "/sirene/StockUniteLegale_utf8.parquet", index = False)
 
     print("Hash", "SIRENE UL", pd.util.hash_pandas_object(df_sirene, index = True).sum())
-    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 3081936000399868577
+    assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 13356409250401496963
 
     # Data set: SIRENE GEOLOCATION
     print("Creating SIRENE GEOLOCATION...")
@@ -784,7 +786,7 @@ def create(output_path):
     })
 
     print("Hash", "SIRENE GEO", pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum())
-    assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 11781731939284746012
+    assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 12122700768692956174
 
     df_sirene_geoloc.to_parquet("%s/sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet" % output_path, index = False)
 

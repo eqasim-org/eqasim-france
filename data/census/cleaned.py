@@ -166,14 +166,6 @@ def execute(context):
         df[attribute["name"]] = df[attribute["raw"]]
         selected_attributes.append(attribute["name"])
 
-        if "type" in attribute:
-            if attribute["type"] == "int":
-                df[attribute["name"]] = df[attribute["name"]].astype(int)
-            elif attribute["type"] == "float":
-                df[attribute["name"]] = df[attribute["name"]].astype(float)
-            else:
-                raise RuntimeError("Unknown type {} for custom attribute {}".format(attribute["type"], attribute["name"]))
-
     # cleanup
     df = df[selected_attributes]
 
