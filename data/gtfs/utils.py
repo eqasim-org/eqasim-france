@@ -312,7 +312,7 @@ def merge_two_feeds(first, second, suffix = "_merged"):
                     )
 
                     for ref_slot, ref_identifier in collision["references"]:
-                        if ref_slot in first and ref_slot in second:
+                        if ref_slot in second:
                             second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].replace(
                                 duplicate_ids, replacement_ids
                             )
