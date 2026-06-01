@@ -121,7 +121,7 @@ def test_population_with_urban_type_and_egt(tmpdir):
         ],
         "matching_minimum_observations": 5
     })
-
+    
 def test_population_with_motorcycles(tmpdir):
     run_population(tmpdir, "entd", {
         "with_motorcycles": True,

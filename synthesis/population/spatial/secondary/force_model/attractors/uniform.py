@@ -9,7 +9,7 @@ def configure(context):
 def execute(context):
     # load all secondary activity locations
     df_attractors = context.stage("synthesis.locations.secondary")[["activity_type", "geometry"]].copy()
-    df_attractors = df_attractors[df_attractors["activity_type"].isin(["shop", "leisure", "other"])]
+    df_attractors = df_attractors[df_attractors["activity_type"]!="education"]
 
     # assign a weight of one to every secondary activity location
     df_attractors["weight"] = 1.0

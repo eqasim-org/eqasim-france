@@ -252,6 +252,17 @@ config:
   education_location_source: addresses
   education_file: education/education_addresses.geojson
 ```
+### Weight BPE locations
+
+By default secondary sampling doesn't take into account any weight from BPE locations to differiantiate . To represent their capacity, weight can be added, to specifics BPE locations using `TYPEQU` values, via configuration :  
+
+```yaml
+config:
+  # [...]
+  bpe_weight_source: internal 
+```
+
+With actual implementation and `internal` as parameter value, weight is only added to some shop locations. But with `external` as parameter value, weight can be provided by external dataframe required to have only 2 columns, one specifying `TYPEQU` values and the other one weights. 
 
 ### Income
 
