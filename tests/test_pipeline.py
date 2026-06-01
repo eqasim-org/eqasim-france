@@ -2,7 +2,7 @@ import synpp
 import os
 import pandas as pd
 
-def run_population(data_path, tmpdir, hts, update = {}):
+def run_population(data_path, tmpdir, hts, update = {}, stages = []):
     cache_path = str(tmpdir.mkdir("cache"))
     output_path = str(tmpdir.mkdir("output"))
 
@@ -17,7 +17,7 @@ def run_population(data_path, tmpdir, hts, update = {}):
 
     stages = [
         dict(descriptor = "synthesis.output"),
-    ]
+    ] + stages
 
     synpp.run(stages, config, working_directory = cache_path)
 
@@ -48,6 +48,8 @@ def run_population(data_path, tmpdir, hts, update = {}):
     assert expected_households == len(pd.read_csv("%s/ile_de_france_households.csv" % output_path, usecols = ["household_id"], sep = ";"))
     assert expected_vehicles == len(pd.read_csv("%s/ile_de_france_vehicles.csv" % output_path, usecols = ["vehicle_id"], sep = ";"))
     assert expected_vehicle_types == len(pd.read_csv("%s/ile_de_france_vehicle_types.csv" % output_path, usecols = ["type_id"], sep = ";"))
+
+    return { "output_path": output_path }
 
 def test_population_with_entd(data_path, tmpdir):
     run_population(data_path, tmpdir, "entd")
@@ -98,3 +100,26 @@ def test_population_with_secondary_activity_force_model(data_path, tmpdir):
     run_population(data_path, tmpdir, "entd", { 
         "secondary_activities": dict(chain_solver = "force_model", maximum_iterations = 10)
     })
+
+def test_population_with_location_information(data_path, tmpdir):
+    output_path = run_population(data_path, tmpdir, "entd", { 
+        "write_location_ids": True
+    }, [
+        "synthesis.locations.output.home",
+        "synthesis.locations.output.work",
+        "synthesis.locations.output.education",
+        "synthesis.locations.output.secondary",
+        "synthesis.locations.output.buildings"
+    ])
+
+    df = pd.read_csv("%s/ile_de_france_households.csv" % output_path, sep = ";", nrows = 1)
+    assert "location_id" in df
+
+    df = pd.read_csv("%s/ile_de_france_persons.csv" % output_path, sep = ";", nrows = 1)
+    assert "location_id" in df
+
+    os.path.isfile("{}/ile_de_france_home_locations.gpkg".format(output_path))
+    os.path.isfile("{}/ile_de_france_work_locations.gpkg".format(output_path))
+    os.path.isfile("{}/ile_de_france_education_locations.gpkg".format(output_path))
+    os.path.isfile("{}/ile_de_france_secondary_locations.gpkg".format(output_path))
+    os.path.isfile("{}/ile_de_france_buildings.gpkg".format(output_path))
