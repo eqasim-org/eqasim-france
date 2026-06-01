@@ -83,6 +83,7 @@ def read_feed(path):
         if not "parent_station" in df_stops:
             print("WARNING Missing parent_station in stops, setting to empty string")
             df_stops["parent_station"] = ""
+        df_stops.loc[df_stops["parent_station"].isna() & (df_stops["location_type"] == 0), "location_type"] = 1
 
     if "transfers" in feed:
         df_transfers = feed["transfers"]
