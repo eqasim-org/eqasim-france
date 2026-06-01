@@ -49,6 +49,8 @@ def run_population(data_path, tmpdir, hts, update = {}):
     assert expected_vehicles == len(pd.read_csv("%s/ile_de_france_vehicles.csv" % output_path, usecols = ["vehicle_id"], sep = ";"))
     assert expected_vehicle_types == len(pd.read_csv("%s/ile_de_france_vehicle_types.csv" % output_path, usecols = ["type_id"], sep = ";"))
 
+    return { "output_path": output_path }
+
 def test_population_with_entd(data_path, tmpdir):
     run_population(data_path, tmpdir, "entd")
 
@@ -98,3 +100,17 @@ def test_population_with_secondary_activity_force_model(data_path, tmpdir):
     run_population(data_path, tmpdir, "entd", { 
         "secondary_activities": dict(chain_solver = "force_model", maximum_iterations = 10)
     })
+
+def test_population_with_census_attributes(data_path, tmpdir):
+    output_path = run_population(data_path, tmpdir, "entd", { 
+        "census_attributes": [
+            { "name": "household_type", "raw": "MODV", "scope": "household" },
+            { "name": "rooms", "raw": "NBPI" },
+        ]
+    })["output_path"]
+
+    df = pd.read_csv("%s/ile_de_france_persons.csv" % output_path, sep = ";", nrows = 2)
+    assert "rooms" in df
+
+    df = pd.read_csv("%s/ile_de_france_households.csv" % output_path, sep = ";", nrows = 2)
+    assert "household_type" in df

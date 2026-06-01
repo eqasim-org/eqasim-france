@@ -1,13 +1,4 @@
-from tqdm import tqdm
-import itertools
-import numpy as np
 import pandas as pd
-import numba
-
-import data.hts.egt.cleaned
-import data.hts.entd.cleaned
-
-import multiprocessing as mp
 
 """
 This stage fuses census data with HTS data.
@@ -21,19 +12,11 @@ def configure(context):
     context.stage("synthesis.population.income.selected")
     context.config("extra_enriched_attributes", [])
 
-    hts = context.config("hts")
     context.stage("data.hts.selected", alias = "hts")
 
 def execute(context):
     # Select population columns
-    df_population = context.stage("synthesis.population.sampled")[[
-        "person_id", "household_id",
-        "census_person_id", "census_household_id",
-        "age", "sex", "employed", "studies",
-        "number_of_cars", "number_of_motorcycles", "number_of_vehicles", "use_motorcycle",
-        "household_size", "consumption_units",
-        "socioprofessional_class", "professional_activity",
-    ]]
+    df_population = context.stage("synthesis.population.sampled")
 
     # Attach matching information
     df_matching = context.stage("synthesis.population.matched")
