@@ -132,18 +132,16 @@ def execute(context):
     # Prepare households
     df_households = context.stage("synthesis.population.enriched").rename(
         columns = { "household_income": "income" }
-    ).drop_duplicates("household_id")
+    ).drop_duplicates("household_id")[[
+        "household_id", "car_availability", "bike_availability", "use_motorcycle",
+        "number_of_cars", "number_of_motorcycles",
+        "number_of_vehicles", "number_of_bikes",
+        "income", "census_household_id"
+    ]]
 
     df_households = pd.merge(df_households,df_activities[df_activities["purpose"] == "home"][["household_id",
         "iris_id", "commune_id","departement_id","region_id"]].drop_duplicates("household_id"),how="left")
-    df_households = df_households[[
-        "household_id","iris_id", "commune_id", "departement_id","region_id",
-        "car_availability", "bike_availability", "use_motorcycle",
-        "number_of_cars", "number_of_motorcycles",
-        "number_of_vehicles", "number_of_bikes",
-        "income",
-        "census_household_id"
-    ]]
+
     if "csv" in output_formats:
         df_households.to_csv("%s/%shouseholds.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
     if "parquet" in output_formats:
