@@ -123,3 +123,17 @@ def test_population_with_location_information(data_path, tmpdir):
     os.path.isfile("{}/ile_de_france_education_locations.gpkg".format(output_path))
     os.path.isfile("{}/ile_de_france_secondary_locations.gpkg".format(output_path))
     os.path.isfile("{}/ile_de_france_buildings.gpkg".format(output_path))
+
+def test_population_with_census_attributes(data_path, tmpdir):
+    output_path = run_population(data_path, tmpdir, "entd", { 
+        "census_attributes": [
+            { "name": "household_type", "raw": "MODV", "scope": "household" },
+            { "name": "rooms", "raw": "NBPI" },
+        ]
+    })["output_path"]
+
+    df = pd.read_csv("%s/ile_de_france_persons.csv" % output_path, sep = ";", nrows = 2)
+    assert "rooms" in df
+
+    df = pd.read_csv("%s/ile_de_france_households.csv" % output_path, sep = ";", nrows = 2)
+    assert "household_type" in df
