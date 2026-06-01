@@ -605,13 +605,15 @@ def create(output_path):
                 SEXE = random.choice([1, 2]),
                 TACT = random.choice(["11", "12", "21", "22", "23", "24", "25"]),
                 TP = "1",
-                TRANS = 4, VOIT = random.integers(3), DEROU = random.integers(2)
+                TRANS = 4, VOIT = random.integers(3), DEROU = random.integers(2),
+                MODV = random.choice(["a", "b", "c", "d"]),
+                NBPI = random.choice([1, 2, 3, 4])
             ))
 
     columns = [
         "CANTVILLE", "NUMMI", "AGEREV", "COUPLE", "GS", "DEPT", "IRIS", "REGION",
         "ETUD", "ILETUD", "ILT", "IPONDI", "STAT_GSEC",
-        "SEXE", "TACT", "TP", "TRANS", "VOIT", "DEROU"
+        "SEXE", "TACT", "TP", "TRANS", "VOIT", "DEROU", "MODV", "NBPI"
     ]
 
     df_persons = pd.DataFrame.from_records(persons)[columns]
