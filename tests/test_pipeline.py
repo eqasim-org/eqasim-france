@@ -101,8 +101,8 @@ def test_population_with_secondary_activity_force_model(data_path, tmpdir):
         "secondary_activities": dict(chain_solver = "force_model", maximum_iterations = 10)
     })
 
-def test_population_with_census_attributes(tmpdir):
-    output_path = run_population(tmpdir, "entd", { 
+def test_population_with_census_attributes(data_path, tmpdir):
+    output_path = run_population(data_path, tmpdir, "entd", { 
         "census_attributes": [
             { "name": "household_type", "raw": "MODV", "scope": "household" },
             { "name": "rooms", "raw": "NBPI" },
