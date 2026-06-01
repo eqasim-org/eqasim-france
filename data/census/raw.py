@@ -11,7 +11,7 @@ def configure(context):
     context.config("data_path")
     context.config("census_path", "rp_2022/RP2022_indcvi.parquet")
 
-    context.config("census_attributes", {})
+    context.config("census_attributes", [])
 
 COLUMNS = {
     "CANTVILLE",
@@ -39,8 +39,11 @@ def execute(context):
 
     requested_departements = df_codes["departement_id"].unique()
 
+    census_attributes = [attribute["raw"] for attribute in context.config("census_attributes")]
+    census_attributes = sorted([a for a in census_attributes if a not in COLUMNS])
+
     with context.progress(label = "Reading census ...") as progress:
-        selected_columns = COLUMNS + list(sorted(context.config("census_attributes").keys()))
+        selected_columns = COLUMNS + census_attributes
         
         parquet = pl.read_parquet( "{}/{}".format(context.config("data_path"), context.config("census_path")),
                         columns=selected_columns)

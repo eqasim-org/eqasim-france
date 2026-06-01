@@ -17,7 +17,7 @@ def configure(context):
     if context.config("use_urban_type", False):
         context.stage("data.spatial.urban_type")
 
-    context.config("census_attributes", {})
+    context.config("census_attributes", [])
 
 def execute(context):
     df = context.stage("data.census.raw")
@@ -158,13 +158,21 @@ def execute(context):
         "household_size", "consumption_units", "socioprofessional_class"
     ]
 
-    for attribute, raw in context.config("census_attributes").items():
-        if attribute in selected_attributes:
-            raise RuntimeError("Additional census attribute {} is already included".format(attribute))
+    for attribute in context.config("census_attributes"):
+        if attribute["name"] in selected_attributes:
+            raise RuntimeError("Custom census attribute {} is already present".format(attribute["name"]))
         
         # copy column
-        df[attribute] = df[raw]
-        selected_attributes.append(attribute)
+        df[attribute["name"]] = df[attribute["raw"]]
+        selected_attributes.append(attribute["name"])
+
+        if "type" in attribute:
+            if attribute["type"] == "int":
+                df[attribute["name"]] = df[attribute["name"]].astype(int)
+            elif attribute["type"] == "float":
+                df[attribute["name"]] = df[attribute["name"]].astype(float)
+            else:
+                raise RuntimeError("Unknown type {} for custom attribute {}".format(attribute["type"], attribute["name"]))
 
     # cleanup
     df = df[selected_attributes]
