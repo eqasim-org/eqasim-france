@@ -71,6 +71,9 @@ config:
   ## file formats that should be exported
   # output_formats: ["csv", "gpkg"] # ["csv", "gpkg", "parquet", "geoparquet"]
 
+  ## whether to write location id informations
+  # output_location_ids: false
+
   ##############################
   #  Algorithms configurations #
   ##############################

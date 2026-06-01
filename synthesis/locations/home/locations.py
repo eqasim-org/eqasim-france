@@ -48,7 +48,6 @@ def execute(context):
                 "iris_id": iris_id, "geometry": centroid,
                 "commune_id": iris_id[:5],
                 "weight" : 1,
-                "home_location_id": -1
             })
 
         df_added = gpd.GeoDataFrame(pd.DataFrame.from_records(df_added), crs = df_addresses.crs)
