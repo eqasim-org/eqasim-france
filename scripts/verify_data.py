@@ -94,6 +94,7 @@ entd_sources = [
     (2556, "Q_menage"),
     (2565, "Q_individu"),
     (2566, "Q_ind_lieu_teg"),
+    (2567, "K_mobilite"),
     (2568, "K_deploc")
 ]
 
