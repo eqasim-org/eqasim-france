@@ -6,7 +6,6 @@ def check_feasibility(distances, direct_distance, consider_total_distance = True
 
 def calculate_feasibility(distances, direct_distance, consider_total_distance = True):
     total_distance = np.sum(distances)
-    delta_distance = 0.0
 
     remaining_distance = total_distance - distances
     delta = max(distances - direct_distance - remaining_distance)
@@ -14,7 +13,7 @@ def calculate_feasibility(distances, direct_distance, consider_total_distance = 
     if consider_total_distance:
         delta = max(delta, direct_distance - total_distance)
 
-    return float(max(delta, 0))
+    return float(max(delta.item(), 0))
 
 class DiscretizationSolver:
     def solve(self, problem, locations):
@@ -114,12 +113,12 @@ class AngularTailSolver(RelaxationSolver):
         if reverse: locations = locations[::-1,:]
 
         assert len(locations) == len(distances)
-        return dict(valid = True, locations = locations)
+        return dict(valid = True, locations = locations, iterations = None)
 
 class GravityChainSolver:
     def __init__(self, random, alpha = 0.3, eps = 1.0, maximum_iterations = 1000, lateral_deviation = None):
-        self.alpha = 0.3
-        self.eps = 1e-2
+        self.alpha = alpha
+        self.eps = eps
         self.maximum_iterations = maximum_iterations
         self.random = random
         self.lateral_deviation = lateral_deviation

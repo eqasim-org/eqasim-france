@@ -1,17 +1,13 @@
 import synpp
 import os
-from . import testdata
 
 TEST_NOISE = False
 
-def test_simulation(tmpdir):
+def test_simulation(data_path, tmpdir):
 
     test_noise = TEST_NOISE
     if os.environ.get("TEST_NOISE") is not None:
         test_noise = os.environ.get("TEST_NOISE").lower() == "true"
-
-    data_path = str(tmpdir.mkdir("data"))
-    testdata.create(data_path)
 
     cache_path = str(tmpdir.mkdir("cache"))
     output_path = str(tmpdir.mkdir("output"))
@@ -20,7 +16,7 @@ def test_simulation(tmpdir):
         data_path = data_path, output_path = output_path,
         regions = [10, 11], sampling_rate = 1.0, hts = "entd",
         random_seed = 1000, processes = 1,
-        secloc_maximum_iterations = 10,
+        secondary_activities = dict(maximum_iterations = 10),
         maven_skip_tests = True,
         export_detailed_network=True
     )
@@ -54,7 +50,7 @@ def test_simulation(tmpdir):
 
     if not test_noise:
         return
-    
+
     config.update({
         "noise.time_bin_size": 3600,
         "noise.time_bin_min": 8*3600,

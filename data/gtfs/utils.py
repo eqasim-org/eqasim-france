@@ -100,6 +100,8 @@ def read_feed(path):
 
     if "agency" in feed:
         df_agency = feed["agency"]
+        if "agency_id" not in df_agency.columns:
+            df_agency["agency_id"] = "generic"
         df_agency.loc[df_agency["agency_id"].isna(), "agency_id"] = "generic"
 
     if "routes" in feed:

@@ -33,15 +33,13 @@ Unfortunately, there is no consolidated GTFS schedule avaiable for the region of
 it is necessary to collect all relevant GTFS schedules one by one. Here, we
 provide a selection of links, which is not necessarily exhaustive:
 
-- [TCL (Lyon)](https://transport.data.gouv.fr/datasets/horaires-theoriques-du-reseau-transports-en-commun-lyonnais-1/)
-- [SNCF TER](https://ressources.data.sncf.com/explore/dataset/sncf-ter-gtfs/information/)
-- [SNCF Intercités](https://ressources.data.sncf.com/explore/dataset/sncf-intercites-gtfs/information/)
-- [SNCF TGV](https://ressources.data.sncf.com/explore/dataset/horaires-des-train-voyages-tgvinouiouigo/information/)
-- [TAG (Grenoble)](https://transport.data.gouv.fr/datasets/horaires-theoriques-du-reseau-tag/)
-- [Ruban (Porte d'Isère)](https://transport.data.gouv.fr/datasets/reseau-ruban-donnees-theoriques/)
+- [TCL (Lyon)](https://transport.data.gouv.fr/datasets/horaires-theoriques-du-reseau-transports-en-commun-lyonnais/)
+- [SNCF TGV, Intercités et TER](https://transport.data.gouv.fr/datasets/horaires-sncf) (save as `sncf-tgv-intercite-ter.gtfs.zip`)
+- [TAG (Grenoble)](https://transport.data.gouv.fr/datasets/horaires-theoriques-du-telepherique-de-la-bastille/)
+- [Ruban (Porte d'Isère)](https://transport.data.gouv.fr/datasets/agregat-oura/) (save as `oura.gtfs.zip`)
 - [L'va (Vienne)](https://transport.data.gouv.fr/datasets/reseau-lva/?locale=en)
-- [STAS (St. Etienne)](https://transport.data.gouv.fr/datasets/donnees-horaires-theoriques-gtfs-du-reseau-de-transport-de-la-metropole-de-saint-etienne-stas/?locale=fr&slug=donnees-horaires-theoriques-gtfs-du-reseau-de-transport-de-la-metropole-de-saint-etienne-stas)
-- [Rhône Express](https://transport.data.gouv.fr/datasets/horaires-theoriques-du-service-rhonexpress-de-la-metropole-de-lyon-et-du-departement-du-rhone/)
+- [STAS (St. Etienne)](https://transport.data.gouv.fr/datasets/reseau-interurbain-cars-region-loire-42/)  (save as `stas.gtfs.zip`)
+- [Rhône Express](https://transport.data.gouv.fr/datasets/reseau-interurbain-cars-region-express/)  (save as `express.gtfs.zip`)
 
 Download all the *zip*'d GTFS schedules and put them into the folder `data/gtfs_lyon`.
 
@@ -114,15 +112,13 @@ Afterwards, you should have the following additional files in your directory str
 *Only for simulation:*
 
 - `data/osm_lyon/rhone-alpes-latest.osm.pbf`
-- `data/gtfs_lyon/GTFS_TCL.ZIP`
-- `data/gtfs_lyon/CAPI.GTFS.zip`
-- `data/gtfs_lyon/GTFS_RX.ZIP`
-- `data/gtfs_lyon/SEM-GTFS.zip`
+- `data/gtfs_lyon/lyon_tcl.zip`
+- `data/gtfs_lyon/BUL-GTFS.zip`
+- `data/gtfs_lyon/oura.gtfs.zip`
 - `data/gtfs_lyon/stas.gtfs.zip`
-- `data/gtfs_lyon/VIENNE.GTFS.zip`
-- `data/gtfs_lyon/export_gtfs_voyages.zip`
-- `data/gtfs_lyon/export-intercites-gtfs-last.zip`
-- `data/gtfs_lyon/export-ter-gtfs-last.zip`
+- `data/gtfs_lyon/medias.zip`
+- `data/gtfs_lyon/express.gtfs.zip`
+- `data/gtfs_lyon/sncf-tgv-intercite-ter.gtfs.zip`
 
 Note that the file names may change slightly over time as GTFS schedule are
 updated continuously.

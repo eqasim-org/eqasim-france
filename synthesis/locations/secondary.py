@@ -16,7 +16,10 @@ def execute(context):
     # Attach attributes for activity types
     df_locations["offers_leisure"] = df_locations["activity_type"] == "leisure"
     df_locations["offers_shop"] = df_locations["activity_type"] == "shop"
-    df_locations["offers_other"] = ~(df_locations["offers_leisure"] | df_locations["offers_shop"])
+    df_locations["offers_task"] = df_locations["activity_type"] == "task"
+    # All locations are supposed to offer the "escort" and "other" activity purposes.
+    df_locations["offers_escort"] = True
+    df_locations["offers_other"] = True
 
     # Define new IDs
     df_locations["location_id"] = np.arange(len(df_locations))

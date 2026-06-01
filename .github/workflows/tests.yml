@@ -20,18 +20,12 @@ jobs:
       with:
         distribution: zulu
         java-version: 25
-    - uses: actions/cache@v5
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+    - name: Set up Python
+      uses: actions/setup-python@v6
       with:
-        path: ~/conda_pkgs_dir
-        key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
-    - uses: conda-incubator/setup-miniconda@v3
-      with:
-        activate-environment: "eqasim"
-        environment-file: environment.yml
-        python-version: "3.13"
-        channels: conda-forge
-        pkgs-dirs: ~/conda_pkgs_dir
-        conda-remove-defaults: true
+        python-version-file: ".python-version"
     - name: Prepare git for Windows
       if: matrix.os == 'windows-latest'
       shell: bash -el {0}
@@ -44,12 +38,13 @@ jobs:
       run: |
         java -version
         mvn -v
+        uv --version
         python --version
         git --version
     - name: Run pipeline tests
       shell: bash -el {0}
       run: |
-        MKL_CBWR=AUTO pytest tests/
+        MKL_CBWR=AUTO uv run pytest tests/
 
     - name: Archive failed tests data
       uses: actions/upload-artifact@v7

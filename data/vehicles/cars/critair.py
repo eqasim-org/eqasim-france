@@ -11,7 +11,7 @@ https://www.statistiques.developpement-durable.gouv.fr/donnees-sur-le-parc-autom
 
 def configure(context):
     context.config("data_path")
-    context.config("vehicles_path", "vehicles")
+    context.config("critair_path", "critair")
     context.config("vehicles_year", 2021)
     context.stage("data.spatial.codes")
 
@@ -23,11 +23,11 @@ def execute(context):
     with mock.patch.object(excel.ExcelReader, 'read_properties', lambda self: None):
         year = str(context.config("vehicles_year"))
         
-        with zipfile.ZipFile("{}/{}/{}".format(context.config("data_path"), context.config("vehicles_path"), "parc_vp_communes.zip")) as archive:
+        with zipfile.ZipFile("{}/{}/{}".format(context.config("data_path"), context.config("critair_path"), "parc_vp_communes.zip")) as archive:
             with archive.open("Parc_VP_Communes_{}.xlsx".format(year)) as f:
                 df_municipalities = pd.read_excel(f)
 
-        with zipfile.ZipFile("{}/{}/{}".format(context.config("data_path"), context.config("vehicles_path"), "parc_vp_regions.zip")) as archive:
+        with zipfile.ZipFile("{}/{}/{}".format(context.config("data_path"), context.config("critair_path"), "parc_vp_regions.zip")) as archive:
             with archive.open("Parc_VP_Regions_{}.xlsx".format(year)) as f:
                 df_regions = pd.read_excel(f)
     
@@ -71,8 +71,8 @@ def execute(context):
     return df_vehicle_fleet_counts, df_vehicle_age_counts
 
 def validate(context):
-    municipalities_path = "{}/{}/{}".format(context.config("data_path"), context.config("vehicles_path"), "parc_vp_communes.zip")
-    regions_path = "{}/{}/{}".format(context.config("data_path"), context.config("vehicles_path"), "parc_vp_regions.zip")
+    municipalities_path = "{}/{}/{}".format(context.config("data_path"), context.config("critair_path"), "parc_vp_communes.zip")
+    regions_path = "{}/{}/{}".format(context.config("data_path"), context.config("critair_path"), "parc_vp_regions.zip")
 
     if not os.path.exists(municipalities_path):
         raise RuntimeError("Municipalities vehicle data is not available at {}".format(municipalities_path))

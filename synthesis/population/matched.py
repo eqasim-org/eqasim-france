@@ -28,6 +28,7 @@ def configure(context):
     context.config("processes", volatile = True)
     context.config("random_seed")
     context.config("matching_minimum_observations", 20)
+    context.config("matching_minimum_age", 5)
     context.config("matching_attributes", DEFAULT_MATCHING_ATTRIBUTES)
 
     context.stage("synthesis.population.sampled")
@@ -149,10 +150,10 @@ def parallel_statistical_matching(context, df_source, source_identifier, weight,
     processes = context.config("processes")
 
     random = np.random.default_rng(random_seed)
-    
+
     chunk_size = int(len(df_target) / processes) + 1
     chunks = [df_target[i:i + chunk_size] for i in range(0, len(df_target), chunk_size)]
-    
+
     with context.progress(label = "Statistical matching ...", total = len(df_target)):
         with context.parallel({
             "df_source": df_source, "source_identifier": source_identifier, "weight": weight,
@@ -175,6 +176,9 @@ def execute(context):
     df_source = pd.merge(df_source_persons, df_source_households)
 
     df_target = context.stage("synthesis.population.sampled")
+
+    # Do not match persons whose age is below "matching_minimum_age".
+    df_target = df_target[df_target["age"] >= context.config("matching_minimum_age")]
 
     columns = context.config("matching_attributes")
 

@@ -19,7 +19,28 @@ def configure(context):
     context.config("random_seed")
     context.config("processes", volatile = True)
 
-    context.config("secloc_maximum_iterations", np.inf)
+    context.config("secondary_activities.maximum_iterations", np.inf)
+
+    chain_solver = context.config("secondary_activities.chain_solver", "default")
+    assert chain_solver in ("default", "force_model")
+
+    if chain_solver == "force_model":
+        context.stage("synthesis.population.spatial.secondary.force_model.force_field")
+
+    # Locations for escort activities are drawn from the activity types below, with the given
+    # probabilities. For example, there is a 70% probability that a escort activity is drawn from
+    # "education" locations.
+    # The probabilities were derived from observed escort activities in an aggregation of travel
+    # surveys.
+    context.config("escort_locations_activities", ["education", "leisure", "task", "transport", "shop"])
+    context.config("escort_locations_weights", [0.71, 0.16, 0.07, 0.05, 0.01])
+
+def validate(context):
+    activities = context.config("escort_locations_activities")
+    weights = context.config("escort_locations_weights")
+    assert len(activities) == len(weights), (
+        "`escort_locations_activities` and `escort_locations_weights` must have the same length"
+    )
 
 def prepare_locations(context):
     # Load persons and their primary locations
@@ -41,18 +62,19 @@ def prepare_locations(context):
 def prepare_destinations(context):
     df_locations = context.stage("synthesis.locations.secondary")
 
-    identifiers = df_locations["location_id"].values
-    locations = np.vstack(df_locations["geometry"].apply(lambda x: np.array([x.x, x.y])).values)
-
     data = {}
 
-    for purpose in ("shop", "leisure", "other"):
-        f = df_locations["offers_%s" % purpose].values
-
-        data[purpose] = dict(
-            identifiers = identifiers[f],
-            locations = locations[f]
+    for activity, group in df_locations.groupby("activity_type"):
+        data[activity] = dict(
+            identifiers = group["location_id"].values,
+            locations = np.column_stack((group.geometry.x, group.geometry.y))
         )
+
+    # Add "other" as a special purpose with all possible locations.
+    data["other"] = dict(
+        identifiers = df_locations["location_id"].values,
+        locations = np.column_stack((df_locations.geometry.x, df_locations.geometry.y))
+    )
 
     return data
 
@@ -72,6 +94,7 @@ def resample_distributions(distributions, factors):
 
 from synthesis.population.spatial.secondary.rda import AssignmentSolver, DiscretizationErrorObjective, GravityChainSolver, AngularTailSolver, GeneralRelaxationSolver
 from synthesis.population.spatial.secondary.components import CustomDistanceSampler, CustomDiscretizationSolver, CandidateIndex, CustomFreeChainSolver
+from synthesis.population.spatial.secondary.force_model.solver import ForceFieldChainSolver
 
 def execute(context):
     # Load trips and primary locations
@@ -79,9 +102,17 @@ def execute(context):
     df_trips["travel_time"] = df_trips["arrival_time"] - df_trips["departure_time"]
     df_primary, crs = prepare_locations(context)
 
+    # in case it exists, replace motorcycle mode by car for this location algorithm where we don't need the distinction
+    df_trips.loc[df_trips["mode"] == "motorcycle", "mode"] = "car"
+
     # Prepare data
     distance_distributions = context.stage("synthesis.population.spatial.secondary.distance_distributions")
     destinations = prepare_destinations(context)
+
+    # Optional data for force model
+    force_field_data = None
+    if context.config("secondary_activities.chain_solver") == "force_model":
+        force_field_data = context.stage("synthesis.population.spatial.secondary.force_model.force_field")
 
     # Resampling for calibration
     resample_distributions(distance_distributions, dict(
@@ -112,7 +143,8 @@ def execute(context):
     with context.progress(label = "Assigning secondary locations to persons", total = number_of_persons):
         with context.parallel(processes = processes, data = dict(
             distance_distributions = distance_distributions,
-            destinations = destinations
+            destinations = destinations,
+            force_field_data = force_field_data
         )) as parallel:
             df_locations, df_convergence = [], []
 
@@ -132,12 +164,17 @@ def process(context, arguments):
 
   # Set up RNG
   random = np.random.default_rng(random_seed)
-  maximum_iterations = context.config("secloc_maximum_iterations")
+  maximum_iterations = context.config("secondary_activities.maximum_iterations")
 
   # Set up discretization solver
   destinations = context.data("destinations")
   candidate_index = CandidateIndex(destinations)
-  discretization_solver = CustomDiscretizationSolver(candidate_index)
+  discretization_solver = CustomDiscretizationSolver(
+      candidate_index,
+      random,
+      escort_activities=context.config("escort_locations_activities"),
+      escort_weights=context.config("escort_locations_weights")
+  )
 
   # Set up distance sampler
   distance_distributions = context.data("distance_distributions")
@@ -147,10 +184,15 @@ def process(context, arguments):
         distributions = distance_distributions)
 
   # Set up relaxation solver; currently, we do not consider tail problems.
-  chain_solver = GravityChainSolver(
-    random = random, eps = 10.0, lateral_deviation = 10.0, alpha = 0.1,
-    maximum_iterations = min(1000, maximum_iterations)
-    )
+  chain_solver_option = context.config("secondary_activities.chain_solver")
+  if chain_solver_option == "default":
+    chain_solver = GravityChainSolver(
+      random = random, eps = 10.0, lateral_deviation = 10.0, alpha = 0.1,
+      maximum_iterations = min(1000, maximum_iterations))
+  elif chain_solver_option == "force_model":
+    grid_parameters, force_field_data = context.data("force_field_data")
+    chain_solver = ForceFieldChainSolver(grid_parameters, force_field_data,
+      random = random, maximum_iterations = min(1000, maximum_iterations))
 
   tail_solver = AngularTailSolver(random = random)
   free_solver = CustomFreeChainSolver(random, candidate_index)
@@ -188,7 +230,7 @@ def process(context, arguments):
           ))
 
       df_convergence.append((
-          result["valid"], problem["size"]
+          result["valid"], problem["size"], result["iterations"], result["relaxation"]["iterations"], problem["person_id"]
       ))
 
       if problem["person_id"] != last_person_id:
@@ -199,5 +241,5 @@ def process(context, arguments):
   df_locations = gpd.GeoDataFrame(df_locations, crs = crs)
   assert not df_locations["geometry"].isna().any()
 
-  df_convergence = pd.DataFrame.from_records(df_convergence, columns = ["valid", "size"])
+  df_convergence = pd.DataFrame.from_records(df_convergence, columns = ["valid", "size", "assignment_iterations", "relaxation_iterations", "person_id"])
   return df_locations, df_convergence
