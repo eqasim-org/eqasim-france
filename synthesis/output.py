@@ -26,6 +26,7 @@ def configure(context):
     context.config("output_prefix", "ile_de_france_")
     context.config("output_formats", ["csv", "gpkg"])
     context.config("sampling_rate")
+    context.config("output_location_ids", False)
     context.config("extra_enriched_attributes", [])
     context.config("census_attributes", [])
 
@@ -67,6 +68,7 @@ def execute(context):
     output_path = context.config("output_path")
     output_prefix = context.config("output_prefix")
     output_formats = context.config("output_formats")
+    location_column = ["location_id"] if context.config("output_location_ids") else []
 
     # Prepare persons
     df_persons = context.stage("synthesis.population.enriched").rename(
@@ -105,11 +107,11 @@ def execute(context):
     # Prepare spatial data sets
     df_locations = context.stage("synthesis.population.spatial.locations")[[
         "person_id",  "iris_id", "commune_id","departement_id","region_id","activity_index", "geometry"
-    ]]
+    ] + location_column]
 
     df_activities = pd.merge(df_activities, df_locations[[
         "person_id", "iris_id", "commune_id","departement_id","region_id","activity_index", "geometry"
-    ]], how = "left", on = ["person_id", "activity_index"])
+    ] + location_column], how = "left", on = ["person_id", "activity_index"])
 
     # Prepare spatial activities
     df_spatial = gpd.GeoDataFrame(df_activities[[
@@ -118,7 +120,7 @@ def execute(context):
             "preceding_trip_index", "following_trip_index",
             "purpose", "start_time", "end_time",
             "is_first", "is_last", "geometry"
-        ]], crs = df_locations.crs)
+        ] + location_column], crs = df_locations.crs)
     df_spatial = df_spatial.astype({'purpose': 'str', "departement_id": 'str'})
 
     # Write activities
@@ -128,7 +130,7 @@ def execute(context):
         "preceding_trip_index", "following_trip_index",
         "purpose", "start_time", "end_time",
         "is_first", "is_last"
-    ]]
+    ] + location_column]
 
     if "csv" in output_formats:
         df_activities.to_csv("%s/%sactivities.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
@@ -152,7 +154,7 @@ def execute(context):
     ).drop_duplicates("household_id")[columns]
 
     df_households = pd.merge(df_households,df_activities[df_activities["purpose"] == "home"][["household_id",
-        "iris_id", "commune_id","departement_id","region_id"]].drop_duplicates("household_id"),how="left")
+        "iris_id", "commune_id","departement_id","region_id"] + location_column].drop_duplicates("household_id"),how="left")
 
     if "csv" in output_formats:
         df_households.to_csv("%s/%shouseholds.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
@@ -248,8 +250,8 @@ def execute(context):
     df_spatial_homes = df_spatial[
         df_spatial["purpose"] == "home"
     ].drop_duplicates("household_id")[[
-        "household_id","iris_id", "commune_id","departement_id","region_id", "geometry"
-    ]]
+        "household_id","iris_id", "commune_id", "departement_id", "region_id", "geometry"
+    ] + location_column]
     if "gpkg" in output_formats:
         path = "%s/%shomes.gpkg" % (output_path, output_prefix)
         df_spatial_homes.to_file(path, driver = "GPKG")
@@ -260,8 +262,8 @@ def execute(context):
 
     # Write spatial commutes
     df_spatial = pd.merge(
-        df_spatial[df_spatial["purpose"] == "home"].drop_duplicates("person_id")[["person_id", "geometry"]].rename(columns = { "geometry": "home_geometry" }),
-        df_spatial[df_spatial["purpose"] == "work"].drop_duplicates("person_id")[["person_id", "geometry"]].rename(columns = { "geometry": "work_geometry" })
+        df_spatial[df_spatial["purpose"] == "home"].drop_duplicates("person_id")[["person_id", "geometry"] + location_column].rename(columns = { "geometry": "home_geometry", "location_id": "home_location_id" }),
+        df_spatial[df_spatial["purpose"] == "work"].drop_duplicates("person_id")[["person_id", "geometry"] + location_column].rename(columns = { "geometry": "work_geometry", "location_id": "work_location_id" })
     )
 
     df_spatial["geometry"] = gpd.GeoSeries([
