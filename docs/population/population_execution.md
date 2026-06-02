@@ -29,26 +29,14 @@ which will create the `/project/code` folder containing the pipeline code.
 
 ## Preparing the environment
 
-To set up all dependencies, the easiest way is to use `conda` / `mamba`. An open way of setting up such an environment is setting up [miniforge](https://github.com/conda-forge/miniforge). Once it is installed and you are able to call `mamba` from the command line, execute the following code to automatically download all dependencies:
+We use `uv` for dependency management. [Here](https://docs.astral.sh/uv/getting-started/) is a guide for getting started. Make sure that you can call `uv` from your working environment. You can set-up all dependencies by calling:
 
 ```bash
 cd /project/code
-mamba env create -f environment.yml -n eqasim
+uv sync
 ```
 
-It will create a new `mamba` environment called `eqasim`. It, in particular, contains the [synpp](https://github.com/eqasim-org/synpp) package, which is the computational backbone of the pipeline.
-
-:::{tip} 
-
-**Windows:** You can also set up the environment using a graphical user interface for `conda`. You simply need to create a new environment and select `environment.yml` as the dependency definition file.
-
-:::
-
-Whenever you run the processing pipeline, make sure to do so from inside the `eqasim` environment (or whatever name you have given to it). You can enter the environment either though a GUI or by calling
-
-```bash
-mamba activate eqasim
-```
+In particular, the dependencies contain the [synpp](https://github.com/eqasim-org/synpp) package, which is the computational backbone of the pipeline.
 
 ## Preparing the configuration
 
@@ -70,14 +58,7 @@ To run the pipeline, go to the `/project/code` directory, enter the `mamba` envi
 
 ```bash
 cd /project/code
-mamba activate eqasim
-python3 -m synpp config.yml
-```
-
-A shortcut for running the script when not already inside the environment is to call
-
-```bash
-mamba run -n eqasim python3 -m synpp config.yml
+uv run -m synpp config.yml
 ```
 
 It will read the configuration file, run the processing pipeline and eventually create the synthetic population inside the output directory.
@@ -121,7 +102,7 @@ All output files will then be prepended by the given prefix instead of the defau
 Note that the `synpp` script allows you to pass any configuration option via the command line, for instance:
 
 ```bash
-python3 -m synpp config.yml --output_prefix my_prefix_ --output_path /alternative/path
+uv run -m synpp config.yml --output_prefix my_prefix_ --output_path /alternative/path
 ```
 
 In the following, various configuration options will be presented.
@@ -191,8 +172,8 @@ The `*default*` trigger will be replaced by the default list of matching attribu
 Note that not all HTS implement the urban type, so matching may not work with some implementations. Most of them, however, contain the data, we just need to update the code to read them in.
 
 To make use of the urban type, the following data is needed:
-- [Download the urban type data from INSEE](https://www.insee.fr/fr/information/4802589). The pipeline is currently compatible with the 2023 data set (referencing 2020 boundaries). 
-- Put the downloaded *zip* file into `data/urban_type`, so you will have the file `data/urban_type/UU2020_au_01-01-2023.zip`
+- [Download the urban type data from INSEE](https://www.insee.fr/fr/information/4802589). The pipeline is currently compatible with the 2024 data set (referencing 2020 boundaries). 
+- Put the downloaded *zip* file into `data/urban_type`, so you will have the file `data/urban_type/UU2020_au_01-01-2024.zip`
 
 Then, you should be able to run the pipeline with the configuration explained above.
 
@@ -211,6 +192,18 @@ config:
 
 For validation, a table of person volumes by age range and trip purpose can be generated from the `analysis.synthesis.population` stage, as explained at the end of this documentation. 
 
+### Assigning activities to children
+
+By default, the pipeline excludes children under 5 years old from activity and trip assignments, as household travel surveys rarely include data for this age group.
+
+To override this behavior, use the `matching_minimum_age` parameter in the configuration.
+Setting it to `0` ensures activities and trips are assigned to all persons, including children under 5, by matching them to older surveyed children.
+
+```yaml
+config:
+  # [...]
+  matching_minimum_age: 0
+```
 
 ### Exclude entreprise with no employee
 
@@ -283,7 +276,7 @@ config:
 Caution, this method will fail on communes where the Filosofi subpopulation distributions are missing. In this case,
 we fall back to the `uniform` method.
 
-## Enriching person attributes
+### Enriching person attributes
 
 By default, the pipeline "enriches" generated persons with variables such as
 `has_license` and `has_pt_subscription`.
@@ -300,7 +293,6 @@ These variables are specified in the configuration file using the
 config:
   extra_enriched_attributes:
     - "detailed_education_level"
-    - "detailed_professional_occupation"
     - "work_only_at_home"
 ```
 

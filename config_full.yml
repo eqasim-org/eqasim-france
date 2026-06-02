@@ -45,6 +45,10 @@ config:
   ## Whether to filter people going outside of the area and other filters
   # filter_hts: true
 
+  ## Activity purposes included in the generated activities.
+  ## Purposes not present in the list below is put in the "other" category.
+  # activity_purposes: ["leisure", "shop", "escort", "task"]
+
   ## if selected, chose the source for edgt_lyon
   # edgt_lyon_source: unchosen # unchosen, adisp, cerema
 
@@ -76,6 +80,9 @@ config:
   ## file formats that should be exported
   # output_formats: ["csv", "gpkg"] # ["csv", "gpkg", "parquet", "geoparquet"]
 
+  ## whether to write location id informations
+  # output_location_ids: false
+
   ##############################
   #  Algorithms configurations #
   ##############################
@@ -86,13 +93,38 @@ config:
   ## Activate if you want to run mode choice, will assign a mode to output trips
   mode_choice: true
 
+  ## Census data
+  # It is possible to pipe raw per-person or per-household data from the census to the generated persons:
+
+  # census_attributes:
+  # - name: household_type
+  #   raw: MODV
+  #   scope: household # optional: by default attributes are added to persons, but you can choose households
+  # - name: rooms
+  #   raw: NBPI
+
   ## Statistical matching configuration
 
   ## Minimum number of observation to sample from
   # matching_minimum_observations: 20
 
+  ## Persons whose age is below this value are not matched to hts persons.
+  ## In most hts, persons below 5 are not surveyed for their trips so they would end up being
+  ## matched to older persons.
+  ## See https://github.com/eqasim-org/eqasim-france/issues/383
+  ## Recommended values:
+  ## - 5: persons below 5 are generated but have no trip and no enriched attributes
+  ## - 0: persons below 5 have trips and enriched attributed corresponding to those of a persons
+  #    between 5 and 14
+  ## - 16: for EMG 2023 (which only survey persons over 16), persons below 16 are generated but have
+  #    no trip and no enriched attributes
+  # matching_minimum_age: 5
+
   ## list of attributes to use for matching
   # matching_attributes: ["sex", "any_cars", "age_class", "socioprofessional_class", "departement_id"]
+
+  ## Match based on professional occupation
+  # matching_attributes: ["detailed_professional_occupation", "*default*"]
 
   ## Use INSEE's urban type in statistical matching
   # use_urban_type: true
@@ -104,7 +136,6 @@ config:
   ## the list of possible keys can be found here: https://mobisurvstd.github.io/MobiSurvStd/format/persons.html
   # extra_enriched_attributes:
     # - "detailed_education_level"
-    # - "detailed_professional_occupation"
     # - "work_only_at_home"
 
   ## Exclude entreprise without any employee (trancheEffectifsEtablissement is NA, "NN" or "00")
@@ -114,7 +145,15 @@ config:
   # education_location_source: bpe # bpe, addresses
 
   ## max iterations for the secondary location selection algorithm
-  # secloc_maximum_iterations: np.inf
+  # secondary_activities:
+  #   maximum_iterations: .inf
+
+  # Locations for escort activities are drawn from the activity types below, with the given weights.
+  # By default, there is a 71% probability that a escort activity is drawn from "education" locations.
+  # The default weights were derived from observed escort activities in an aggregation of travel surveys.
+  # Possible activity types: "education", "shop", "leisure", "task", "transport", "other".
+  # escort_locations_activities: ["education", "leisure", "task", "transport", "shop"]
+  # escort_locations_weights: [0.71, 0.16, 0.07, 0.05, 0.01]
 
   ## Buffer arround buildings to capture adresses in their vicinity
   # home_address_buffer: 5.0

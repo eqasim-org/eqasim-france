@@ -1,9 +1,7 @@
 import synpp
 import os
 import hashlib, gzip
-from . import testdata
 import sqlite3
-import shutil, json
 
 class HashManager:
     def __init__(self):
@@ -80,10 +78,7 @@ class HashManager:
 
         return hash.hexdigest()
 
-def test_determinism(tmpdir):
-    data_path = str(tmpdir.mkdir("data"))
-    testdata.create(data_path)
-
+def test_determinism(data_path, tmpdir):
     for index in range(2):
         _test_determinism(index, data_path, tmpdir)
 
@@ -96,7 +91,7 @@ def _test_determinism(index, data_path, tmpdir):
         data_path = data_path, output_path = output_path,
         regions = [10, 11], sampling_rate = 1.0, hts = "entd",
         random_seed = 1000, processes = 1,
-        secloc_maximum_iterations = 10,
+        secondary_activities = dict(maximum_iterations = 10),
         maven_skip_tests = True,
         matching_attributes = [
             "sex", "any_cars", "age_class", "socioprofessional_class",
@@ -115,22 +110,22 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.csv",
         "{}/ile_de_france_households.csv".format(output_path),
-        "b00b3a7f9cda19417c2a1eab3f9a2bf2")
+        "0cf89bfda464271f2b1393c0da476ba2")
 
     manager.check(
         "ile_de_france_persons.csv",
         "{}/ile_de_france_persons.csv".format(output_path),
-        "4067b5324a42883e0dc61eca6a82ec9c")
+        "1e16d07319346c43baa70bb8e2ac13bd")
 
     manager.check(
         "ile_de_france_activities.csv",
         "{}/ile_de_france_activities.csv".format(output_path),
-        "3a3c98e80c67db63062d4282d041ddff")
+        "46afe71f037998b3f5e6517149b35dc9")
 
     manager.check(
         "ile_de_france_trips.csv",
         "{}/ile_de_france_trips.csv".format(output_path),
-        "44fc6fbd2e450ac7a3393a02e83097b0")
+        "c7b6e82bd0b983e6e6e052e3a63453aa")
 
     manager.check(
         "ile_de_france_vehicle_types.csv",
@@ -140,34 +135,31 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_vehicles.csv",
         "{}/ile_de_france_vehicles.csv".format(output_path),
-        "4ceb5f779a32236859735219eebc45ad")
+        "4da2a3031482cfd730c9a87cbf173187")
 
     manager.check(
         "ile_de_france_activities.gpkg",
         "{}/ile_de_france_activities.gpkg".format(output_path),
-        "ef882feaddb6cee483a10a3e90add02f")
+        "afbfc3d8358bfbf09c5e875a4b1d9188")
 
     manager.check(
         "ile_de_france_commutes.gpkg",
         "{}/ile_de_france_commutes.gpkg".format(output_path),
-        "85474231b796ee96d1fd778af55f7af2")
+        "ace1adb15b2a76baac23683bf9335acb")
 
     manager.check(
         "ile_de_france_homes.gpkg",
         "{}/ile_de_france_homes.gpkg".format(output_path),
-        "60514bb378f4becabf46d13f4227787d")
+        "22b355038df4fc7da5cc21306e9a20f0")
 
     manager.check(
         "ile_de_france_trips.gpkg",
         "{}/ile_de_france_trips.gpkg".format(output_path),
-        "9f4c51c03b56ee82a96aea0e91c9a0be")
+        "33376f3adb9748f3b13ea03c153127b8")
 
     manager.finish()
 
-def test_determinism_matsim(tmpdir):
-    data_path = str(tmpdir.mkdir("data"))
-    testdata.create(data_path)
-
+def test_determinism_matsim(data_path, tmpdir):
     for index in range(2):
         _test_determinism_matsim(index, data_path, tmpdir)
 
@@ -180,7 +172,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
         data_path = data_path, output_path = output_path,
         regions = [10, 11], sampling_rate = 1.0, hts = "entd",
         random_seed = 1000, processes = 1,
-        secloc_maximum_iterations = 10,
+        secondary_activities = dict(maximum_iterations = 10),
         maven_skip_tests = True,
         matching_attributes = [
             "sex", "any_cars", "age_class", "socioprofessional_class",
@@ -204,11 +196,11 @@ def _test_determinism_matsim(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.xml.gz",
         "{}/ile_de_france_households.xml.gz".format(output_path),
-        "570cd8c0b60a441e0c6314c939839413")
+        "3150ba07fdd8cf2098003884bbf20f20")
 
     manager.check(
         "ile_de_france_vehicles.xml.gz",
         "{}/ile_de_france_vehicles.xml.gz".format(output_path),
-        "63d2f2c7c8096d4f881a9a16c4e406e7")
+        "40db0b3031349b97028ff62832bd96f9")
 
     manager.finish()

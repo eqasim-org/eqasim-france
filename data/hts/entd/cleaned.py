@@ -16,10 +16,10 @@ PURPOSE_MAP = [
     ("1", "home"),
     ("1.11", "education"),
     ("2", "shop"),
-    ("3", "other"),
-    ("4", "other"),
+    ("3", "task"),
+    ("4", "task"),
     ("5", "leisure"),
-    ("6", "other"),
+    ("6", "escort"),
     ("7", "leisure"),
     ("8", "leisure"),
     ("9", "work")
@@ -179,9 +179,6 @@ def execute(context):
         df_trips.loc[
             df_trips["V2_MMOTIFORI"].astype(str).str.startswith(prefix), "preceding_purpose"
         ] = activity_type
-
-    df_trips["following_purpose"] = df_trips["following_purpose"].astype("category")
-    df_trips["preceding_purpose"] = df_trips["preceding_purpose"].astype("category")
 
     # Trip mode
     df_trips["mode"] = "pt"
