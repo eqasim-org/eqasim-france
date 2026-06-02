@@ -24,8 +24,8 @@ def execute(context):
 
     # Duplicate with synthetic persons
     df_matching = context.stage("synthesis.population.matched")
-    df_trips = df_trips.rename(columns = { "person_id": "hts_id" })
-    df_trips = pd.merge(df_matching, df_trips, on = "hts_id")
+    df_trips = df_trips.rename(columns = { "person_id": "hts_person_id" })
+    df_trips = pd.merge(df_matching, df_trips, on = "hts_person_id")
 
     if context.config("with_motorcycles"):
         df_population = context.stage("synthesis.population.enriched")[["person_id", "use_motorcycle"]]
