@@ -78,7 +78,7 @@ def execute(context):
         "age", "employed", "studies", "sex", "socioprofessional_class",
         "professional_activity",
         "has_driving_license", "has_pt_subscription",
-        "census_person_id", "hts_id"
+        "census_person_id", "hts_person_id"
     ] + context.config("extra_enriched_attributes")
     
     for attribute in context.config("census_attributes"):
