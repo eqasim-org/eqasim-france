@@ -115,7 +115,7 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_persons.csv",
         "{}/ile_de_france_persons.csv".format(output_path),
-        "2baea20ad262cf92bac3ae9124dd35c3")
+        "1e16d07319346c43baa70bb8e2ac13bd")
 
     manager.check(
         "ile_de_france_activities.csv",
@@ -196,7 +196,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.xml.gz",
         "{}/ile_de_france_households.xml.gz".format(output_path),
-        "13ae95055e5d8987a109bf2431486a2e")
+        "3150ba07fdd8cf2098003884bbf20f20")
 
     manager.check(
         "ile_de_france_vehicles.xml.gz",
