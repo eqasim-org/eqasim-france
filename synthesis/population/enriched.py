@@ -1,13 +1,4 @@
-from tqdm import tqdm
-import itertools
-import numpy as np
 import pandas as pd
-import numba
-
-import data.hts.egt.cleaned
-import data.hts.entd.cleaned
-
-import multiprocessing as mp
 
 """
 This stage fuses census data with HTS data.
@@ -21,19 +12,18 @@ def configure(context):
     context.stage("synthesis.population.income.selected")
     context.config("extra_enriched_attributes", [])
 
-    hts = context.config("hts")
     context.stage("data.hts.selected", alias = "hts")
+
+ATTRIBUTE_FALLBACK = {
+    "hts_household_id": { "type": int, "fill": -1 },
+    "hts_person_id": { "type": int, "fill": -1 },
+    "has_pt_subscription": { "type": bool, "fill": False },
+    "is_passenger": { "type": bool, "fill": False }
+}
 
 def execute(context):
     # Select population columns
-    df_population = context.stage("synthesis.population.sampled")[[
-        "person_id", "household_id",
-        "census_person_id", "census_household_id",
-        "age", "sex", "employed", "studies",
-        "number_of_cars", "number_of_motorcycles", "number_of_vehicles", "use_motorcycle",
-        "household_size", "consumption_units",
-        "socioprofessional_class", "professional_activity",
-    ]]
+    df_population = context.stage("synthesis.population.sampled")
 
     # Attach matching information
     df_matching = context.stage("synthesis.population.matched")
@@ -45,14 +35,14 @@ def execute(context):
 
     # Attach person and household attributes from HTS
     df_hts_households, df_hts_persons, _ = context.stage("hts")
-    df_hts_persons = df_hts_persons.rename(columns = { "person_id": "hts_id", "household_id": "hts_household_id" })
+    df_hts_persons = df_hts_persons.rename(columns = { "person_id": "hts_person_id", "household_id": "hts_household_id" })
     df_hts_households = df_hts_households.rename(columns = { "household_id": "hts_household_id" })
 
-    columns = ["hts_id", "hts_household_id", "has_license", "has_pt_subscription", "is_passenger"]
+    columns = ["hts_person_id", "hts_household_id", "has_license", "has_pt_subscription", "is_passenger"]
     extra_cols = context.config("extra_enriched_attributes")
     assert isinstance(extra_cols, list), "`extra_enriched_attributes` parameter must be a list"
     columns += extra_cols
-    df_population = pd.merge(df_population, df_hts_persons[columns], on="hts_id", how="left")
+    df_population = pd.merge(df_population, df_hts_persons[columns], on="hts_person_id", how="left")
 
     df_population = pd.merge(df_population, df_hts_households[[
         "hts_household_id", "number_of_bikes"
@@ -109,5 +99,9 @@ def execute(context):
     assert initial_size == final_size
     assert initial_person_ids == final_person_ids
     assert initial_household_ids == final_household_ids
+
+    # Fallback cleaning
+    for attribute, item in ATTRIBUTE_FALLBACK.items():
+        df_population[attribute] = df_population[attribute].fillna(item["fill"]).astype(item["type"])
 
     return df_population

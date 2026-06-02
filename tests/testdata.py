@@ -395,7 +395,7 @@ def create(output_path):
             ))
 
             data["Q_TCM_INDIVIDU"].append(dict(
-                AGE = random.integers(90), SEXE = random.choice([1, 2]),
+                AGE = random.integers(6, 90), SEXE = random.choice([1, 2]),
                 CS24 = random.integers(8) * 10, DEP = department,
                 ETUDES = 1 if studies else 2, IDENT_IND = person_id,
                 IDENT_MEN = household_id, PONDV1 = 1.0,
@@ -468,7 +468,7 @@ def create(output_path):
         "Q_MENAGE": 6916190433170563173,
         "Q_TCM_MENAGE": 6980538473335852422,
         "Q_INDIVIDU": 15145767072075638494,
-        "Q_TCM_INDIVIDU": 13969435991955395586,
+        "Q_TCM_INDIVIDU": 3034067474133300876,
         "K_DEPLOC": 7631538890399794851
     }
 
@@ -511,7 +511,7 @@ def create(output_path):
             data["persons"].append(dict(
                 RESDEP = department, NP = person_id, POIDSP = 1.0,
                 NQUEST = household_id, SEXE = random.choice([1, 2]),
-                AGE = random.integers(90), PERMVP = random.choice([1, 2]),
+                AGE = random.integers(6, 90), PERMVP = random.choice([1, 2]),
                 ABONTC = random.choice([1, 2]), OCCP = 3 if studies else 2,
                 PERM2RM = random.choice([1, 2]), NBDEPL = 2, CS8 = random.integers(9),
                 NONDEPL = 1
@@ -582,7 +582,7 @@ def create(output_path):
 
     hashes = {
         "households": 11444390802329132734,
-        "persons": 7614014922097515207,
+        "persons": 11897428716349732217,
         "trips": 14635367621539133620,
     }
 
@@ -614,7 +614,7 @@ def create(output_path):
         for person_index in range(CENSUS_HOUSEHOLD_MEMBERS):
             persons.append(dict(
                 CANTVILLE = "ABCE", NUMMI = household_id,
-                AGEREV = "%03d" % random.integers(5, 90), COUPLE = random.choice([1, 2]),
+                AGEREV = "%03d" % random.integers(1, 90), COUPLE = random.choice([1, 2]),
                 GS = random.choice(["1", "2", "3", "4", "5", "6", "Z"]),
                 STAT_GSEC = random.choice(["", "32"], p = [0.85, 0.15]),
                 DEPT = department, IRIS = iris, REGION = region, ETUD = random.choice([1, 2]),
@@ -627,17 +627,21 @@ def create(output_path):
                 TRANS = 4, VOIT = random.integers(3), DEROU = random.integers(2)
             ))
 
+    df_persons = pd.DataFrame.from_records(persons)
+    df_persons["MODV"] = random.choice(["a", "b", "c", "d"], len(df_persons))
+    df_persons["NBPI"] = random.choice([1, 2, 3, 4], len(df_persons))
+
     columns = [
         "CANTVILLE", "NUMMI", "AGEREV", "COUPLE", "GS", "DEPT", "IRIS", "REGION",
         "ETUD", "ILETUD", "ILT", "IPONDI", "STAT_GSEC",
-        "SEXE", "TACT", "TP", "TRANS", "VOIT", "DEROU"
+        "SEXE", "TACT", "TP", "TRANS", "VOIT", "DEROU", "MODV", "NBPI"
     ]
 
-    df_persons = pd.DataFrame.from_records(persons)[columns]
+    df_persons = df_persons[columns]
     df_persons.columns = columns
 
     print("Hash", "df_persons", pd.util.hash_pandas_object(df_persons, index = True).sum())
-    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 5371293800328552247
+    assert pd.util.hash_pandas_object(df_persons, index = True).sum() == 1184464799857281958
 
     df_persons.to_parquet("%s/rp_2022/RP2022_indcvi.parquet" % output_path)
 

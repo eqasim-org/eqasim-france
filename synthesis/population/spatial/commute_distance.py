@@ -9,14 +9,14 @@ def execute(context):
     df_commute_distance = context.stage("data.hts.commute_distance")
 
     df_work = pd.merge(
-        df_matching[["person_id", "hts_id"]],
-        df_commute_distance["work"][["person_id", "commute_distance"]].rename(columns = dict(person_id = "hts_id")),
+        df_matching[["person_id", "hts_person_id"]],
+        df_commute_distance["work"][["person_id", "commute_distance"]].rename(columns = dict(person_id = "hts_person_id")),
         how = "left"
     )
 
     df_education = pd.merge(
-        df_matching[["person_id", "hts_id"]],
-        df_commute_distance["education"][["person_id", "commute_distance"]].rename(columns = dict(person_id = "hts_id")),
+        df_matching[["person_id", "hts_person_id"]],
+        df_commute_distance["education"][["person_id", "commute_distance"]].rename(columns = dict(person_id = "hts_person_id")),
         how = "left"
     )
 

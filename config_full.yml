@@ -80,6 +80,9 @@ config:
   ## file formats that should be exported
   # output_formats: ["csv", "gpkg"] # ["csv", "gpkg", "parquet", "geoparquet"]
 
+  ## whether to write location id informations
+  # output_location_ids: false
+
   ##############################
   #  Algorithms configurations #
   ##############################
@@ -89,6 +92,16 @@ config:
 
   ## Activate if you want to run mode choice, will assign a mode to output trips
   mode_choice: true
+
+  ## Census data
+  # It is possible to pipe raw per-person or per-household data from the census to the generated persons:
+
+  # census_attributes:
+  # - name: household_type
+  #   raw: MODV
+  #   scope: household # optional: by default attributes are added to persons, but you can choose households
+  # - name: rooms
+  #   raw: NBPI
 
   ## Weekday selection
   # You can restrict the selected HTS to a specific weekday (if available in the HTS)
