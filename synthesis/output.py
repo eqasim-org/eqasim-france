@@ -1,5 +1,4 @@
 import shutil
-import gzip
 import geopandas as gpd
 import pandas as pd
 import shapely.geometry as geo
@@ -8,9 +7,9 @@ import sqlite3
 import math
 import numpy as np
 from analysis.synthesis.population import ANALYSIS_FOLDER
+import zstandard
 
 def configure(context):
-
     context.stage("synthesis.population.enriched")
 
     context.stage("synthesis.population.activities")
@@ -183,7 +182,7 @@ def execute(context):
     if context.config("mode_choice"):
         trips_path = "%s/mode_choice/output_trips.csv" % context.path("matsim.simulation.prepare")
         if not os.path.exists(trips_path):
-            trips_path = "%s/mode_choice/output_trips.csv.gz" % context.path("matsim.simulation.prepare")
+            trips_path = "%s/mode_choice/output_trips.csv.zst" % context.path("matsim.simulation.prepare")
 
         df_mode_choice = pd.read_csv(
             trips_path,
@@ -198,11 +197,11 @@ def execute(context):
 
         pt_legs_path = "%s/mode_choice/output_pt_legs.csv" % context.path("matsim.simulation.prepare")
         if not os.path.exists(pt_legs_path):
-            pt_legs_path = "%s/mode_choice/output_pt_legs.csv.gz" % context.path("matsim.simulation.prepare")
+            pt_legs_path = "%s/mode_choice/output_pt_legs.csv.zst" % context.path("matsim.simulation.prepare")
 
         output_pt_legs_path = "%s/%spt_legs.csv" % (output_path, output_prefix)
-        if pt_legs_path.endswith(".gz"):
-            with gzip.open(pt_legs_path, "rb") as f_in:
+        if pt_legs_path.endswith(".zst"):
+            with zstandard.open(pt_legs_path, "rb") as f_in:
                 with open(output_pt_legs_path, "wb") as f_out:
                     shutil.copyfileobj(f_in, f_out)
         else:
@@ -210,11 +209,11 @@ def execute(context):
 
         legs_path = "%s/mode_choice/output_legs.csv" % context.path("matsim.simulation.prepare")
         if not os.path.exists(legs_path):
-            legs_path = "%s/mode_choice/output_legs.csv.gz" % context.path("matsim.simulation.prepare")
+            legs_path = "%s/mode_choice/output_legs.csv.zst" % context.path("matsim.simulation.prepare")
 
         output_legs_path = "%s/%slegs.csv" % (output_path, output_prefix)
-        if legs_path.endswith(".gz"):
-            with gzip.open(legs_path, "rb") as f_in:
+        if legs_path.endswith(".zst"):
+            with zstandard.open(legs_path, "rb") as f_in:
                 with open(output_legs_path, "wb") as f_out:
                     shutil.copyfileobj(f_in, f_out)
         else:

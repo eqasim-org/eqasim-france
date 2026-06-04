@@ -183,7 +183,13 @@ def execute(context):
         # Newer standalone mode choice versions write compressed CSVs.
         trips_exists = (
             os.path.exists("%s/mode_choice/output_trips.csv" % context.path()) or
-            os.path.exists("%s/mode_choice/output_trips.csv.gz" % context.path())
+            os.path.exists("%s/mode_choice/output_trips.csv.gz" % context.path()) or
+            os.path.exists("%s/mode_choice/output_trips.csv.zst" % context.path())
+        )
+        legs_exists = (
+            os.path.exists("%s/mode_choice/output_legs.csv" % context.path()) or
+            os.path.exists("%s/mode_choice/output_legs.csv.gz" % context.path()) or
+            os.path.exists("%s/mode_choice/output_legs.csv.zst" % context.path())
         )
         legs_exists = (
             os.path.exists("%s/mode_choice/output_legs.csv" % context.path()) or
@@ -191,11 +197,13 @@ def execute(context):
         )
         pt_legs_exists = (
             os.path.exists("%s/mode_choice/output_pt_legs.csv" % context.path()) or
-            os.path.exists("%s/mode_choice/output_pt_legs.csv.gz" % context.path())
+            os.path.exists("%s/mode_choice/output_pt_legs.csv.gz" % context.path()) or
+            os.path.exists("%s/mode_choice/output_pt_legs.csv.zst" % context.path())
         )
 
         assert legs_exists
         assert trips_exists
+        assert legs_exists
         assert pt_legs_exists
 
         shutil.copy("%s/mode_choice/output_plans.xml.gz" % context.path(),
