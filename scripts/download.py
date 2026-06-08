@@ -218,20 +218,20 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
 
     registry.register(
         "Enterprise census (SIRENE), Etablissement",
-        "https://object.files.data.gouv.fr/data-pipeline-open/siren/stock/StockEtablissement_utf8.parquet",
-        "sirene/StockEtablissement_utf8.parquet"
+        "https://www.data.gouv.fr/api/1/datasets/r/a29c1297-1f92-4e2a-8f6b-8c902ce96c5f",
+        "sirene/stock-stocketablissement-parquet.parquet"
     )
 
     registry.register(
         "Enterprise census (SIRENE), Unité Legale",
-        "https://object.files.data.gouv.fr/data-pipeline-open/siren/stock/StockUniteLegale_utf8.parquet",
-        "sirene/StockUniteLegale_utf8.parquet"
+        "https://www.data.gouv.fr/api/1/datasets/r/350182c9-148a-46e0-8389-76c2ec1374a3",
+        "sirene/stock-stockunitelegale-parquet.parquet"
     )
 
     registry.register(
         "Enterprise census (SIRENE), Géolocalisé",
-        "https://object.files.data.gouv.fr/data-pipeline-open/siren/geoloc/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet",
-        "sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet"
+        "https://www.data.gouv.fr/api/1/datasets/r/672007af-0146-491f-835c-8314d63fa44e",
+        "sirene/geoloc-geolocalisationetablissement-sirene-pour-etudes-statistiques-parquet.parquet"
     )
 
     bdtopo_path = config["config"].get("bdtopo_path", "bdtopo_idf")
