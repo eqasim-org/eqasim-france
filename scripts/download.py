@@ -135,9 +135,9 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
         df_codes = df_codes[df_codes["region_id"].isin(regions)]
 
     if len(departments) > 0:
-        df_codes = df_codes[df_codes["department_id"].isin(departments)]
+        df_codes = df_codes[df_codes["departement_id"].isin(departments)]
     
-    departments = sorted(list(df_codes["department_id"].unique()))
+    departments = sorted(list(df_codes["departement_id"].unique()))
     print("  {}".format(departments))
 
     if not Confirm.ask("Continue checking missing files?"):
