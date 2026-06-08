@@ -8,8 +8,7 @@ This stage loads the raw data from the French enterprise registry.
 
 def configure(context):
     context.config("data_path")
-    context.config("siren_path", "sirene/StockUniteLegale_utf8.parquet")
-
+    context.config("siren_path", "sirene/stock-stockunitelegale-parquet.parquet")
     context.stage("data.sirene.raw_siret")
 
 

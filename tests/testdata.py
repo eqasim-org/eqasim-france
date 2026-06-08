@@ -766,12 +766,12 @@ def create(output_path):
     assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 17429090226711180196
 
     os.mkdir("%s/sirene" % output_path)
-    df_sirene.to_parquet(output_path + "/sirene/StockEtablissement_utf8.parquet", index = False)
+    df_sirene.to_parquet(output_path + "/sirene/stock-stocketablissement-parquet.parquet", index = False)
 
     df_sirene = df_sirene[["siren"]].copy()
     df_sirene["categorieJuridiqueUniteLegale"] = "1000"
 
-    df_sirene.to_parquet(output_path + "/sirene/StockUniteLegale_utf8.parquet", index = False)
+    df_sirene.to_parquet(output_path + "/sirene/stock-stockunitelegale-parquet.parquet", index = False)
 
     print("Hash", "SIRENE UL", pd.util.hash_pandas_object(df_sirene, index = True).sum())
     assert pd.util.hash_pandas_object(df_sirene, index = True).sum() == 8449205416520787779
@@ -795,7 +795,7 @@ def create(output_path):
     print("Hash", "SIRENE GEO", pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum())
     assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 12038323953301123794
 
-    df_sirene_geoloc.to_parquet("%s/sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet" % output_path, index = False)
+    df_sirene_geoloc.to_parquet("%s/sirene/geoloc-geolocalisationetablissement-sirene-pour-etudes-statistiques-parquet.parquet" % output_path, index = False)
 
     # Data set: Urban type
     print("Creating urban type ...")
