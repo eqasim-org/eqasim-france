@@ -90,10 +90,13 @@ the following files are accessible in the folder `data/egt_2010`:
 
 The IRIS zoning system is available from IGN:
 
-- [IRIS data](https://geoservices.ign.fr/contoursiris)
-- Download the **2024** edition.
+- [IRIS data](https://cartes.gouv.fr/rechercher-une-donnee/dataset/IGNF_CONTOURS-IRIS)
+- Scroll down to *API*
+- Click on *Contours... IRIS®* / *DATA DOWNLOAD*
+- Select *ZONE = FXX*, *FORMAT = GPKG*, *CRS = RGF93*
+- Download the **2024** edition (*CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_***2024***-01-01*).
 - Copy the *7z* file into the folder `data/iris_2024`
-
+- You can also use this [direct link](https://data.geopf.fr/telechargement/download/CONTOURS-IRIS/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01.7z)
 
 ## 8) Zoning registry (2023)
 
