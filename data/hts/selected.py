@@ -16,9 +16,28 @@ def configure(context):
         context.stage("data.hts.emp.reweighted", alias = "hts")
     else:
         raise RuntimeError("Unknown HTS: %s" % hts)
+    
+    context.config("weekday", "any")
 
 def execute(context):
     df_households, df_persons, df_trips = context.stage("hts")
+
+    # weekday filtering
+    weekday = context.config("weekday")
+    if weekday != "any":
+        if "weekday" not in df_persons:
+            raise RuntimeError("The weekday attribute has not been implemented yet for your selected survey. Cannot perform chain matching by weekday.")
+        
+        # select persons by weekday
+        if isinstance(weekday, str):
+            df_persons = df_persons[df_persons["weekday"] == weekday].copy()
+        else:
+            df_persons = df_persons[df_persons["weekday"].isin(weekday)].copy()
+
+        # adjust households and trips accordingly
+        df_households = df_households[df_households["household_id"].isin(df_persons["household_id"])]
+        df_trips = df_trips[df_trips["person_id"].isin(df_persons["person_id"])]
+
     # Set purpose to `other` for HTS purposes which are not primary purposes or declared secondary
     # purposes.
     all_purposes = {"home", "work", "education"} | set(context.config("activity_purposes"))
@@ -26,4 +45,5 @@ def execute(context):
     df_trips.loc[~df_trips["following_purpose"].isin(all_purposes), "following_purpose"] = "other"
     df_trips["following_purpose"] = df_trips["following_purpose"].astype("category")
     df_trips["preceding_purpose"] = df_trips["preceding_purpose"].astype("category")
+    
     return df_households, df_persons, df_trips
