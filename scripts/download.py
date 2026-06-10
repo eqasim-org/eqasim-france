@@ -41,7 +41,7 @@ def load_codes():
                 )[["CODE_IRIS", "DEPCOM", "DEP", "REG"]].rename(columns = {
                     "CODE_IRIS": "iris_id",
                     "DEPCOM": "commune_id",
-                    "DEP": "department_id",
+                    "DEP": "departement_id",
                     "REG": "region_id"
                 }).fillna("0")
 
