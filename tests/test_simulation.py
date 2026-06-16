@@ -1,17 +1,13 @@
 import synpp
 import os
-from . import testdata
 
 TEST_NOISE = False
 
-def test_simulation(tmpdir):
+def test_simulation(data_path, tmpdir):
 
     test_noise = TEST_NOISE
     if os.environ.get("TEST_NOISE") is not None:
         test_noise = os.environ.get("TEST_NOISE").lower() == "true"
-
-    data_path = str(tmpdir.mkdir("data"))
-    testdata.create(data_path)
 
     cache_path = str(tmpdir.mkdir("cache"))
     output_path = str(tmpdir.mkdir("output"))

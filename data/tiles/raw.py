@@ -45,7 +45,7 @@ def execute(context):
             columns={"idcar_200m": "home_location_id", "men": "weight"}
         )
 
-    df_tiles["home_location_id"] = df_tiles["home_location_id"].str[14:]
+    df_tiles["tile_id"] = df_tiles["home_location_id"].str[14:]
     df_tiles["geometry"] = df_tiles["geometry"].centroid
     df_tiles["department_id"] = df_tiles["lcog_geo"].str[:2]
     df_tiles = df_tiles.to_crs(context.config("crs"))
@@ -53,7 +53,7 @@ def execute(context):
     for department_id in df_departments["departement_id"].values:
         assert np.count_nonzero(df_tiles["department_id"] == department_id) > 0
 
-    return df_tiles[["home_location_id", "weight", "geometry"]]
+    return df_tiles[["tile_id", "weight", "geometry"]]
 
 
 def validate(context):

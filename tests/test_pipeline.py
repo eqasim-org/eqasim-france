@@ -1,46 +1,11 @@
 import synpp
 import os
-import hashlib
-from . import testdata
 import pandas as pd
 
-def test_data(tmpdir):
-    data_path = str(tmpdir.mkdir("data"))
-    testdata.create(data_path)
-
+def run_population(data_path, tmpdir, hts, update = {}, stages = []):
     cache_path = str(tmpdir.mkdir("cache"))
     output_path = str(tmpdir.mkdir("output"))
-    config = dict(
-        data_path = data_path, output_path = output_path,
-        regions = [10, 11], hts = "entd")
 
-    stages = [
-        dict(descriptor = "data.spatial.iris"),
-        dict(descriptor = "data.spatial.codes"),
-        dict(descriptor = "data.spatial.population"),
-        dict(descriptor = "data.bpe.cleaned"),
-        dict(descriptor = "data.income.municipality"),
-        dict(descriptor = "data.hts.entd.cleaned"),
-        dict(descriptor = "data.hts.egt.cleaned"),
-        dict(descriptor = "data.census.cleaned"),
-        dict(descriptor = "data.od.cleaned"),
-        dict(descriptor = "data.hts.output"),
-        dict(descriptor = "data.sirene.output"),
-    ]
-
-    synpp.run(stages, config, working_directory = cache_path)
-
-    assert os.path.isfile("%s/ile_de_france_hts_households.csv" % output_path)
-    assert os.path.isfile("%s/ile_de_france_hts_persons.csv" % output_path)
-    assert os.path.isfile("%s/ile_de_france_hts_trips.csv" % output_path)
-    assert os.path.isfile("%s/ile_de_france_sirene.gpkg" % output_path)
-
-def run_population(tmpdir, hts, update = {}):
-    data_path = str(tmpdir.mkdir("data"))
-    testdata.create(data_path)
-
-    cache_path = str(tmpdir.mkdir("cache"))
-    output_path = str(tmpdir.mkdir("output"))
     config = dict(
         data_path = data_path, output_path = output_path,
         regions = [10, 11], sampling_rate = 1.0, hts = hts,
@@ -52,7 +17,7 @@ def run_population(tmpdir, hts, update = {}):
 
     stages = [
         dict(descriptor = "synthesis.output"),
-    ]
+    ] + stages
 
     synpp.run(stages, config, working_directory = cache_path)
 
@@ -63,9 +28,9 @@ def run_population(tmpdir, hts, update = {}):
     assert os.path.isfile("%s/ile_de_france_trips.gpkg" % output_path)
     assert os.path.isfile("%s/ile_de_france_meta.json" % output_path)
 
-    expected_activities = 2400
-    expected_persons = 480
-    expected_households = 160
+    expected_activities = 2121
+    expected_persons = 441
+    expected_households = 147
     expected_vehicles = expected_persons * 2
     expected_vehicle_types = 2
 
@@ -84,28 +49,30 @@ def run_population(tmpdir, hts, update = {}):
     assert expected_vehicles == len(pd.read_csv("%s/ile_de_france_vehicles.csv" % output_path, usecols = ["vehicle_id"], sep = ";"))
     assert expected_vehicle_types == len(pd.read_csv("%s/ile_de_france_vehicle_types.csv" % output_path, usecols = ["type_id"], sep = ";"))
 
-def test_population_with_entd(tmpdir):
-    run_population(tmpdir, "entd")
+    return { "output_path": output_path }
 
-def test_population_with_egt(tmpdir):
-    run_population(tmpdir, "egt")
+def test_population_with_entd(data_path, tmpdir):
+    run_population(data_path, tmpdir, "entd")
 
-def test_population_with_mode_choice(tmpdir):
-    run_population(tmpdir, "entd", { "mode_choice": True })
+def test_population_with_egt(data_path, tmpdir):
+    run_population(data_path, tmpdir, "egt")
 
-def test_population_with_fleet_sample(tmpdir):
-    run_population(tmpdir, "entd", { 
+def test_population_with_mode_choice(data_path, tmpdir):
+    run_population(data_path, tmpdir, "entd", { "mode_choice": True })
+
+def test_population_with_fleet_sample(data_path, tmpdir):
+    run_population(data_path, tmpdir, "entd", { 
         "vehicles_method": "fleet_sample",
         "vehicles_year": 2021
     })
 
-def test_population_with_bhepop2_income(tmpdir):
-    run_population(tmpdir, "egt", { 
+def test_population_with_bhepop2_income(data_path, tmpdir):
+    run_population(data_path, tmpdir, "egt", { 
         "income_assignation_method": "bhepop2"
     })
 
-def test_population_with_urban_type(tmpdir):
-    run_population(tmpdir, "entd", { 
+def test_population_with_urban_type(data_path, tmpdir):
+    run_population(data_path, tmpdir, "entd", { 
         "use_urban_type": True, 
         "matching_attributes": [
             "urban_type", "*default*"
@@ -113,8 +80,8 @@ def test_population_with_urban_type(tmpdir):
         "matching_minimum_observations": 5
     })
 
-def test_population_with_urban_type_and_egt(tmpdir):
-    run_population(tmpdir, "egt", { 
+def test_population_with_urban_type_and_egt(data_path, tmpdir):
+    run_population(data_path, tmpdir, "egt", { 
         "use_urban_type": True, 
         "matching_attributes": [
             "urban_type", "*default*"
@@ -122,14 +89,51 @@ def test_population_with_urban_type_and_egt(tmpdir):
         "matching_minimum_observations": 5
     })
 
-def test_population_with_motorcycles(tmpdir):
-    run_population(tmpdir, "entd", {
+def test_population_with_motorcycles(data_path, tmpdir):
+    run_population(data_path, tmpdir, "entd", {
         "with_motorcycles": True,
         "vehicles_method": "fleet_sample",
         "vehicles_year": 2021
     })
 
-def test_population_with_secondary_activity_force_model(tmpdir):
-    run_population(tmpdir, "entd", { 
+def test_population_with_secondary_activity_force_model(data_path, tmpdir):
+    run_population(data_path, tmpdir, "entd", { 
         "secondary_activities": dict(chain_solver = "force_model", maximum_iterations = 10)
     })
+
+def test_population_with_location_information(data_path, tmpdir):
+    output_path = run_population(data_path, tmpdir, "entd", { 
+        "output_location_ids": True
+    }, [
+        dict(descriptor = "synthesis.locations.output.home"),
+        dict(descriptor = "synthesis.locations.output.work"),
+        dict(descriptor = "synthesis.locations.output.education"),
+        dict(descriptor = "synthesis.locations.output.secondary"),
+        dict(descriptor = "synthesis.locations.output.buildings")
+    ])["output_path"]
+
+    df = pd.read_csv("%s/ile_de_france_households.csv" % output_path, sep = ";", nrows = 1)
+    assert "location_id" in df
+
+    df = pd.read_csv("%s/ile_de_france_activities.csv" % output_path, sep = ";", nrows = 1)
+    assert "location_id" in df
+
+    os.path.isfile("{}/ile_de_france_home_locations.gpkg".format(output_path))
+    os.path.isfile("{}/ile_de_france_work_locations.gpkg".format(output_path))
+    os.path.isfile("{}/ile_de_france_education_locations.gpkg".format(output_path))
+    os.path.isfile("{}/ile_de_france_secondary_locations.gpkg".format(output_path))
+    os.path.isfile("{}/ile_de_france_buildings.gpkg".format(output_path))
+
+def test_population_with_census_attributes(data_path, tmpdir):
+    output_path = run_population(data_path, tmpdir, "entd", { 
+        "census_attributes": [
+            { "name": "household_type", "raw": "MODV", "scope": "household" },
+            { "name": "rooms", "raw": "NBPI" },
+        ]
+    })["output_path"]
+
+    df = pd.read_csv("%s/ile_de_france_persons.csv" % output_path, sep = ";", nrows = 2)
+    assert "rooms" in df
+
+    df = pd.read_csv("%s/ile_de_france_households.csv" % output_path, sep = ";", nrows = 2)
+    assert "household_type" in df

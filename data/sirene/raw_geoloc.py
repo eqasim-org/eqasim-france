@@ -10,7 +10,7 @@ def configure(context):
     context.config("data_path")
     context.config(
         "siret_geo_path",
-        "sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet",
+        "sirene/geoloc-geolocalisationetablissement-sirene-pour-etudes-statistiques-parquet.parquet",
     )
 
     context.stage("data.spatial.codes")

@@ -1,5 +1,4 @@
 import shutil
-import gzip
 import geopandas as gpd
 import pandas as pd
 import shapely.geometry as geo
@@ -8,9 +7,9 @@ import sqlite3
 import math
 import numpy as np
 from analysis.synthesis.population import ANALYSIS_FOLDER
+import zstandard
 
 def configure(context):
-
     context.stage("synthesis.population.enriched")
 
     context.stage("synthesis.population.activities")
@@ -26,7 +25,9 @@ def configure(context):
     context.config("output_prefix", "ile_de_france_")
     context.config("output_formats", ["csv", "gpkg"])
     context.config("sampling_rate")
+    context.config("output_location_ids", False)
     context.config("extra_enriched_attributes", [])
+    context.config("census_attributes", [])
 
     if context.config("mode_choice", False):
         context.stage("matsim.simulation.prepare")
@@ -66,6 +67,7 @@ def execute(context):
     output_path = context.config("output_path")
     output_prefix = context.config("output_prefix")
     output_formats = context.config("output_formats")
+    location_column = ["location_id"] if context.config("output_location_ids") else []
 
     # Prepare persons
     df_persons = context.stage("synthesis.population.enriched").rename(
@@ -77,8 +79,13 @@ def execute(context):
         "age", "employed", "studies", "sex", "socioprofessional_class",
         "professional_activity",
         "has_driving_license", "has_pt_subscription",
-        "census_person_id", "hts_id"
+        "census_person_id", "hts_person_id"
     ] + context.config("extra_enriched_attributes")
+    
+    for attribute in context.config("census_attributes"):
+        if attribute.get("scope", "person") == "person":
+            columns.append(attribute["name"])
+    
     df_persons = df_persons[columns]
     if "csv" in output_formats:
         df_persons.to_csv("%s/%spersons.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
@@ -99,11 +106,11 @@ def execute(context):
     # Prepare spatial data sets
     df_locations = context.stage("synthesis.population.spatial.locations")[[
         "person_id",  "iris_id", "commune_id","departement_id","region_id","activity_index", "geometry"
-    ]]
+    ] + location_column]
 
     df_activities = pd.merge(df_activities, df_locations[[
         "person_id", "iris_id", "commune_id","departement_id","region_id","activity_index", "geometry"
-    ]], how = "left", on = ["person_id", "activity_index"])
+    ] + location_column], how = "left", on = ["person_id", "activity_index"])
 
     # Prepare spatial activities
     df_spatial = gpd.GeoDataFrame(df_activities[[
@@ -112,7 +119,7 @@ def execute(context):
             "preceding_trip_index", "following_trip_index",
             "purpose", "start_time", "end_time",
             "is_first", "is_last", "geometry"
-        ]], crs = df_locations.crs)
+        ] + location_column], crs = df_locations.crs)
     df_spatial = df_spatial.astype({'purpose': 'str', "departement_id": 'str'})
 
     # Write activities
@@ -122,7 +129,7 @@ def execute(context):
         "preceding_trip_index", "following_trip_index",
         "purpose", "start_time", "end_time",
         "is_first", "is_last"
-    ]]
+    ] + location_column]
 
     if "csv" in output_formats:
         df_activities.to_csv("%s/%sactivities.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
@@ -130,20 +137,24 @@ def execute(context):
         df_activities.to_parquet("%s/%sactivities.parquet" % (output_path, output_prefix))
 
     # Prepare households
-    df_households = context.stage("synthesis.population.enriched").rename(
-        columns = { "household_income": "income" }
-    ).drop_duplicates("household_id")
-
-    df_households = pd.merge(df_households,df_activities[df_activities["purpose"] == "home"][["household_id",
-        "iris_id", "commune_id","departement_id","region_id"]].drop_duplicates("household_id"),how="left")
-    df_households = df_households[[
-        "household_id","iris_id", "commune_id", "departement_id","region_id",
-        "car_availability", "bike_availability", "use_motorcycle",
+    columns = [
+        "household_id", "car_availability", "bike_availability", "use_motorcycle",
         "number_of_cars", "number_of_motorcycles",
         "number_of_vehicles", "number_of_bikes",
-        "income",
-        "census_household_id"
-    ]]
+        "income", "census_household_id"
+    ]
+
+    for attribute in context.config("census_attributes"):
+        if attribute.get("scope", "person") == "household":
+            columns.append(attribute["name"])
+
+    df_households = context.stage("synthesis.population.enriched").rename(
+        columns = { "household_income": "income" }
+    ).drop_duplicates("household_id")[columns]
+
+    df_households = pd.merge(df_households,df_activities[df_activities["purpose"] == "home"][["household_id",
+        "iris_id", "commune_id","departement_id","region_id"] + location_column].drop_duplicates("household_id"),how="left")
+
     if "csv" in output_formats:
         df_households.to_csv("%s/%shouseholds.csv" % (output_path, output_prefix), sep = ";", index = None, lineterminator = "\n")
     if "parquet" in output_formats:
@@ -171,7 +182,7 @@ def execute(context):
     if context.config("mode_choice"):
         trips_path = "%s/mode_choice/output_trips.csv" % context.path("matsim.simulation.prepare")
         if not os.path.exists(trips_path):
-            trips_path = "%s/mode_choice/output_trips.csv.gz" % context.path("matsim.simulation.prepare")
+            trips_path = "%s/mode_choice/output_trips.csv.zst" % context.path("matsim.simulation.prepare")
 
         df_mode_choice = pd.read_csv(
             trips_path,
@@ -186,11 +197,11 @@ def execute(context):
 
         pt_legs_path = "%s/mode_choice/output_pt_legs.csv" % context.path("matsim.simulation.prepare")
         if not os.path.exists(pt_legs_path):
-            pt_legs_path = "%s/mode_choice/output_pt_legs.csv.gz" % context.path("matsim.simulation.prepare")
+            pt_legs_path = "%s/mode_choice/output_pt_legs.csv.zst" % context.path("matsim.simulation.prepare")
 
         output_pt_legs_path = "%s/%spt_legs.csv" % (output_path, output_prefix)
-        if pt_legs_path.endswith(".gz"):
-            with gzip.open(pt_legs_path, "rb") as f_in:
+        if pt_legs_path.endswith(".zst"):
+            with zstandard.open(pt_legs_path, "rb") as f_in:
                 with open(output_pt_legs_path, "wb") as f_out:
                     shutil.copyfileobj(f_in, f_out)
         else:
@@ -198,11 +209,11 @@ def execute(context):
 
         legs_path = "%s/mode_choice/output_legs.csv" % context.path("matsim.simulation.prepare")
         if not os.path.exists(legs_path):
-            legs_path = "%s/mode_choice/output_legs.csv.gz" % context.path("matsim.simulation.prepare")
+            legs_path = "%s/mode_choice/output_legs.csv.zst" % context.path("matsim.simulation.prepare")
 
         output_legs_path = "%s/%slegs.csv" % (output_path, output_prefix)
-        if legs_path.endswith(".gz"):
-            with gzip.open(legs_path, "rb") as f_in:
+        if legs_path.endswith(".zst"):
+            with zstandard.open(legs_path, "rb") as f_in:
                 with open(output_legs_path, "wb") as f_out:
                     shutil.copyfileobj(f_in, f_out)
         else:
@@ -238,8 +249,8 @@ def execute(context):
     df_spatial_homes = df_spatial[
         df_spatial["purpose"] == "home"
     ].drop_duplicates("household_id")[[
-        "household_id","iris_id", "commune_id","departement_id","region_id", "geometry"
-    ]]
+        "household_id","iris_id", "commune_id", "departement_id", "region_id", "geometry"
+    ] + location_column]
     if "gpkg" in output_formats:
         path = "%s/%shomes.gpkg" % (output_path, output_prefix)
         df_spatial_homes.to_file(path, driver = "GPKG")
@@ -250,8 +261,8 @@ def execute(context):
 
     # Write spatial commutes
     df_spatial = pd.merge(
-        df_spatial[df_spatial["purpose"] == "home"].drop_duplicates("person_id")[["person_id", "geometry"]].rename(columns = { "geometry": "home_geometry" }),
-        df_spatial[df_spatial["purpose"] == "work"].drop_duplicates("person_id")[["person_id", "geometry"]].rename(columns = { "geometry": "work_geometry" })
+        df_spatial[df_spatial["purpose"] == "home"].drop_duplicates("person_id")[["person_id", "geometry"] + location_column].rename(columns = { "geometry": "home_geometry", "location_id": "home_location_id" }),
+        df_spatial[df_spatial["purpose"] == "work"].drop_duplicates("person_id")[["person_id", "geometry"] + location_column].rename(columns = { "geometry": "work_geometry", "location_id": "work_location_id" })
     )
 
     df_spatial["geometry"] = gpd.GeoSeries([

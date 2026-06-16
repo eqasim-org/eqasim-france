@@ -1,4 +1,3 @@
-from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import data.hts.hts as hts
@@ -17,6 +16,8 @@ def configure(context):
 
     if context.config("use_urban_type", False):
         context.stage("data.spatial.urban_type")
+
+    context.config("census_attributes", [])
 
 def execute(context):
     df = context.stage("data.census.raw")
@@ -54,7 +55,7 @@ def execute(context):
     df["iris_id"] = df["iris_id"].astype("category")
 
     # Age
-    df["age"] = df["AGED"].apply(lambda x: "0" if x == "000" else x.lstrip("0")).astype(int)
+    df["age"] = df["AGEREV"].apply(lambda x: "0" if x == "000" else x.lstrip("0")).astype(int)
 
     # Clean COUPLE
     df["couple"] = df["COUPLE"] == "1"
@@ -146,7 +147,8 @@ def execute(context):
     # Consumption units
     df = pd.merge(df, hts.calculate_consumption_units(df), on = "household_id")
 
-    df = df[[
+    # additional attributes
+    selected_attributes = [
         "person_id", "household_id", "weight",
         "iris_id", "commune_id", "departement_id",
         "age", "sex", "couple",
@@ -154,7 +156,18 @@ def execute(context):
         "commute_mode", "employed", "studies",
         "number_of_cars", "number_of_motorcycles", "number_of_vehicles", "use_motorcycle",
         "household_size", "consumption_units", "socioprofessional_class"
-    ]]
+    ]
+
+    for attribute in context.config("census_attributes"):
+        if attribute["name"] in selected_attributes:
+            raise RuntimeError("Custom census attribute {} is already present".format(attribute["name"]))
+        
+        # copy column
+        df[attribute["name"]] = df[attribute["raw"]]
+        selected_attributes.append(attribute["name"])
+
+    # cleanup
+    df = df[selected_attributes]
 
     if context.config("use_urban_type"):
         df_urban_type = context.stage("data.spatial.urban_type")[[

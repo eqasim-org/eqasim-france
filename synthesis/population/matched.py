@@ -205,7 +205,7 @@ def execute(context):
         df_source["any_cars"] = df_source["number_of_vehicles"] > 0
 
     # Perform statistical matching
-    df_source = df_source.rename(columns = { "person_id": "hts_id" })
+    df_source = df_source.rename(columns = { "person_id": "hts_person_id" })
 
     for column in columns:
         if not column in df_source:
@@ -216,7 +216,7 @@ def execute(context):
 
     df_assignment, levels = parallel_statistical_matching(
         context,
-        df_source, "hts_id", "person_weight",
+        df_source, "hts_person_id", "person_weight",
         df_target, "person_id",
         columns,
         minimum_observations = context.config("matching_minimum_observations"))
@@ -231,4 +231,4 @@ def execute(context):
     for count in range(len(columns) + 1):
         print("%d matched levels:" % count, np.count_nonzero(levels >= count), "%.2f%%" % (100 * np.count_nonzero(levels >= count) / len(df_target),))
 
-    return df_target[["person_id", "hts_id"]]
+    return df_target[["person_id", "hts_person_id"]]
