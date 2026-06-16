@@ -250,6 +250,65 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
             "{}/adresses-{}.csv.gz".format(ban_path, department)
         )   
 
+    if "matsim.output" in config["run"]:
+        dom_tom_regions = ["01", "02", "03", "04", "06"]
+        osm_by_region = {
+            # The main entry point for these links is https://download.geofabrik.de/europe/france.html
+            # The sub-regions from geofabrik were mapped to region codes (many-to-one)
+            # For regions where at least is not working (on June 16th, 2026), the whole France osm file is used
+            # Note that the whole France file does't not include DOM-TOM
+            "01": ["https://download.geofabrik.de/europe/france/guadeloupe-latest.osm.pbf"],
+            "02": ["https://download.geofabrik.de/europe/france/martinique-latest.osm.pbf"],
+            "03": ["https://download.geofabrik.de/europe/france/guyane-latest.osm.pbf"],
+            "04": ["https://download.geofabrik.de/europe/france/reunion-latest.osm.pbf"],
+            "06": ["https://download.geofabrik.de/europe/france/mayotte-latest.osm.pbf"],
+            "11": ["https://download.geofabrik.de/europe/france/ile-de-france-latest.osm.pbf"],
+            "24": ["https://download.geofabrik.de/europe/france/centre-latest.osm.pbf"],
+            "27": ["https://download.geofabrik.de/europe/france/bourgogne-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/franche-comte-latest.osm.pbf"],
+            # "28": ["https://download.geofabrik.de/europe/france/haute-normandie-latest.osm.pbf",
+            #        "https://download.geofabrik.de/europe/france/basse-normandie-latest.osm.pbf"],
+            "28": ["https://download.geofabrik.de/europe/france-latest.osm.pbf"],
+            # "32": ["https://download.geofabrik.de/europe/france/nord-pas-de-calais-latest.osm.pbf",
+            #        "https://download.geofabrik.de/europe/france/picardie-latest.osm.pbf"],
+            "32": ["https://download.geofabrik.de/europe/france-latest.osm.pbf"],
+            "44": ["https://download.geofabrik.de/europe/france/alsace-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/lorraine-latest.osm.pbfl",
+                   "https://download.geofabrik.de/europe/france/champagne-ardenne-latest.osm.pbf"],
+            # "52": ["https://download.geofabrik.de/europe/france/pays-de-la-loire-latest.osm.pbf"],
+            "52": ["https://download.geofabrik.de/europe/france-latest.osm.pbf"],
+            "53": ["https://download.geofabrik.de/europe/france/bretagne-latest.osm.pbf"],
+            "75": ["https://download.geofabrik.de/europe/france/aquitaine-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/limousin-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/poitou-charentes-latest.osm.pbf"],
+            "76": ["https://download.geofabrik.de/europe/france/languedoc-roussillon-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/midi-pyrenees-latest.osm.pbf"],
+            "84": ["https://download.geofabrik.de/europe/france/rhone-alpes-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/auvergne-latest.osm.pbf"],
+            "93": ["https://download.geofabrik.de/europe/france/provence-alpes-cote-d-azur-latest.osm.pbf"],
+            "94": ["https://download.geofabrik.de/europe/france/corse-latest.osm.pbf"]
+        }
+
+        includes_dom_tom = False
+        osm_sources = []
+        for region in df_codes["region_id"].unique():
+            if region in dom_tom_regions:
+                includes_dom_tom = True
+            if region not in osm_by_region:
+                if not Confirm.ask("No known OSM source for region %s, proceed without it ?" % region):
+                    exit()
+                continue
+            osm_sources.extend(osm_by_region[region])
+        if "https://download.geofabrik.de/europe/france-latest.osm.pbf" in osm_sources and not includes_dom_tom:
+            osm_sources = ["https://download.geofabrik.de/europe/france-latest.osm.pbf"]
+
+        osm_path = config["config"].get("osm_path", "osm_idf")
+        for i, osm_source in enumerate(osm_sources):
+            registry.register("OSM file {}/{}".format(i+1, len(osm_sources)),
+                              osm_source,
+                              "{}/{}".format(osm_path, osm_source.split("/")[-1]))
+
+
     print("Checking the data sets that need to be downloaded ...")
     any = registry.report()
     if any:
