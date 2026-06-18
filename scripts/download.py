@@ -250,6 +250,14 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
             "{}/adresses-{}.csv.gz".format(ban_path, department)
         )   
 
+    if config["config"].get("use_urban_type", False):
+        urban_type_path = config["config"].get("urban_type_path", "urban_type/UU2020_au_01-01-2023.zip")
+        registry.register(
+            "Urban types",
+            "https://www.insee.fr/fr/statistiques/fichier/4802589/UU2020_au_01-01-2026.zip",
+            "{}/{}".format(data_path, urban_type_path),
+        )
+
     if "matsim.output" in config["run"]:
         dom_tom_regions = ["01", "02", "03", "04", "06"]
         osm_by_region = {
