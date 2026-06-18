@@ -1,5 +1,5 @@
 def configure(context):
-    context.config("activity_purposes", ["leisure", "shop", "escort", "task"])
+    context.config("activity_purposes", ["leisure", "shop"])
     hts = context.config("hts")
 
     if hts == "mobisurvstd":
