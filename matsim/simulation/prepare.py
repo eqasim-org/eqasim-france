@@ -91,7 +91,7 @@ def execute(context):
         "--threads", context.config("processes"),
         "--prefix", context.config("output_prefix"),
         "--random-seed", context.config("random_seed"),
-        "--activity-types", ",".join(context.config("activity_purposes") + ["home", "work", "education"]),
+        "--activity-types", ",".join(context.config("activity_purposes") + ["home", "work", "education", "other"]),
         "--output-path", "generic_config.xml"
     ])
     assert os.path.exists("%s/generic_config.xml" % context.path())
