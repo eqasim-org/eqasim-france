@@ -4,7 +4,7 @@ import os.path
 import matsim.runtime.eqasim as eqasim
 
 def configure(context):
-    context.config("activity_purposes", ["leisure", "shop", "escort", "task"])
+    context.config("activity_purposes", ["leisure", "shop"])
 
     context.config("mode_choice", False)
     context.config("with_motorcycles", False)
