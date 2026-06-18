@@ -258,7 +258,7 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
             "{}/{}".format(data_path, urban_type_path),
         )
 
-    if "matsim.output" in config["run"]:
+    if "matsim.output" in config["run"] or config["config"].get("mode_choice", False):
         dom_tom_regions = ["01", "02", "03", "04", "06"]
         osm_by_region = {
             # The main entry point for these links is https://download.geofabrik.de/europe/france.html
@@ -312,10 +312,35 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
 
         osm_path = config["config"].get("osm_path", "osm_idf")
         for i, osm_source in enumerate(osm_sources):
-            registry.register("OSM file {}/{}".format(i+1, len(osm_sources)),
+            registry.register("OSM file {}/{}".format(i + 1, len(osm_sources)),
                               osm_source,
                               "{}/{}".format(osm_path, osm_source.split("/")[-1]))
 
+    if "matsim.output" in config["run"] or config["config"].get("mode_choice", False):
+        gtfs_by_region = {
+            "11": ["https://eu.ftp.opendatasoft.com/stif/GTFS/IDFM-gtfs.zip"],
+            "75": ["https://eu.ftp.opendatasoft.com/sncf/plandata/Export_OpenData_SNCF_GTFS_NewTripId.zip",
+                   "https://www.pigma.org/public/opendata/nouvelle_aquitaine_mobilites/publication/naq-aggregated-gtfs.zip"]
+        }
+
+        gtfs_path = config["config"].get("gtfs_path", "gtfs_idf")
+        gtfs_feeds = []
+        non_covered_regions = []
+        for r in df_codes["region_id"].unique():
+            if r in gtfs_by_region:
+                gtfs_feeds.extend(gtfs_by_region[r])
+            else:
+                non_covered_regions.append(r)
+        if len(gtfs_feeds) > 0:
+            if Confirm.ask("Your regions match with {} known GTFS feeds".format(len(gtfs_feeds)) + (
+            "\n (but {} regions have no matching feed)".format(len(non_covered_regions)) if len(non_covered_regions) > 0 else "") + "\n You might need to download missing feeds \n Do you wish to download known feeds ?"):
+                for i, feed in enumerate(gtfs_feeds):
+                    registry.register("GTFS Feed {}/{}".format(i + 1, len(gtfs_feeds)),
+                                      feed,
+                                      "{}/{}".format(gtfs_path, feed.split("/")[-1]))
+        else:
+            if not Confirm("No matching GTFS feed found for your regions, do you want to proceed anyway?"):
+                exit()
 
     print("Checking the data sets that need to be downloaded ...")
     any = registry.report()
@@ -325,7 +350,7 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
 
         if not Confirm.ask("Continue downloading data?"):
             exit()
-        
+
         registry.download()
 
     print("[green]You are up to date![/green]")
