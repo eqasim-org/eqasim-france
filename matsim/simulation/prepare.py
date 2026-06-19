@@ -5,6 +5,7 @@ import matsim.runtime.eqasim as eqasim
 
 def configure(context):
     context.config("activity_purposes", ["leisure", "shop"])
+    context.config("crs", "EPSG:2154")
 
     context.config("mode_choice", False)
     context.config("with_motorcycles", False)
@@ -100,7 +101,8 @@ def execute(context):
     eqasim.run(context, "org.eqasim.ile_de_france.scenario.RunAdaptConfig", [
         "--input-path", "generic_config.xml",
         "--output-path", "%sconfig.xml" % context.config("output_prefix"),
-        "--prefix", context.config("output_prefix")
+        "--prefix", context.config("output_prefix"),
+        "--config:global.coordinateSystem", context.config("crs"),
     ])
     assert os.path.exists("%s/%sconfig.xml" % (context.path(), context.config("output_prefix")))
 
