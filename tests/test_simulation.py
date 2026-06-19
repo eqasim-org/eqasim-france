@@ -1,17 +1,13 @@
 import synpp
 import os
-from . import testdata
 
 TEST_NOISE = False
 
-def test_simulation(tmpdir):
+def test_simulation(data_path, tmpdir, config_overrides=None):
 
     test_noise = TEST_NOISE
     if os.environ.get("TEST_NOISE") is not None:
         test_noise = os.environ.get("TEST_NOISE").lower() == "true"
-
-    data_path = str(tmpdir.mkdir("data"))
-    testdata.create(data_path)
 
     cache_path = str(tmpdir.mkdir("cache"))
     output_path = str(tmpdir.mkdir("output"))
@@ -28,6 +24,9 @@ def test_simulation(tmpdir):
     config.update({
         "cutter.after_full_simulation": False,
     })
+
+    if config_overrides is not None:
+        config.update(config_overrides)
 
     stages = [
         dict(descriptor = "matsim.output"),
@@ -67,3 +66,6 @@ def test_simulation(tmpdir):
         dict(descriptor = "noise.simulation.run"),
     ]
     synpp.run(stages, config, working_directory = cache_path)
+
+def test_simulation_with_escort_and_task(data_path, tmpdir):
+    test_simulation(data_path, tmpdir, dict(activity_purposes=["shop", "leisure", "task", "escort"]))

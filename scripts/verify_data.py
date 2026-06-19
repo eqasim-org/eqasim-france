@@ -28,7 +28,7 @@ class Report:
 
                 while not success and retry < retries:
                     try:
-                        response = session.head(source["url"], timeout = timeout)
+                        response = session.head(source["url"], timeout = timeout, allow_redirects = True)
                         source["status"] = response.status_code
                         success = True
                     except TimeoutError:
@@ -115,17 +115,17 @@ report.register(
 
 report.register(
     "Enterprise census (SIRENE), Etablissement",
-    "https://object.files.data.gouv.fr/data-pipeline-open/siren/stock/StockEtablissement_utf8.parquet"
+    "https://www.data.gouv.fr/api/1/datasets/r/a29c1297-1f92-4e2a-8f6b-8c902ce96c5f"
 )
 
 report.register(
     "Enterprise census (SIRENE), Unité Legale",
-    "https://object.files.data.gouv.fr/data-pipeline-open/siren/stock/StockUniteLegale_utf8.parquet"
+    "https://www.data.gouv.fr/api/1/datasets/r/350182c9-148a-46e0-8389-76c2ec1374a3"
 )
 
 report.register(
     "Enterprise census (SIRENE), Géolocalisé",
-    "https://object.files.data.gouv.fr/data-pipeline-open/siren/geoloc/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet"
+    "https://www.data.gouv.fr/api/1/datasets/r/672007af-0146-491f-835c-8314d63fa44e"
 )
 
 for department in (75, 77, 78, 91, 92, 93, 94, 95):

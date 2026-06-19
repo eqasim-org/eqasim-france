@@ -20,7 +20,7 @@ PERSON_FIELDS = [
     "person_id", "household_income", "car_availability", "bike_availability",
     "census_household_id", "census_person_id", "household_id",
     "has_license", "has_pt_subscription", "is_passenger",
-    "hts_id", "hts_household_id",
+    "hts_person_id", "hts_household_id",
     "age", "employed", "sex"
 ]
 
@@ -58,7 +58,7 @@ def add_person(writer, person, activities, trips, vehicles):
     writer.add_attribute("censusPersonId", "java.lang.Long", person[PERSON_FIELDS.index("census_person_id")])
 
     writer.add_attribute("htsHouseholdId", "java.lang.Long", person[PERSON_FIELDS.index("hts_household_id")])
-    writer.add_attribute("htsPersonId", "java.lang.Long", person[PERSON_FIELDS.index("hts_id")])
+    writer.add_attribute("htsPersonId", "java.lang.Long", person[PERSON_FIELDS.index("hts_person_id")])
 
     writer.add_attribute("hasPtSubscription", "java.lang.Boolean", person[PERSON_FIELDS.index("has_pt_subscription")])
     writer.add_attribute("hasLicense", "java.lang.String", writer.yes_no(person[PERSON_FIELDS.index("has_license")]))

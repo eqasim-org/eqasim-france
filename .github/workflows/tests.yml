@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ "ubuntu-latest", "windows-latest" ]
+        os: [ "ubuntu-latest", "windows-latest", "macos-latest" ]
 
     steps:
     - uses: actions/checkout@v6
@@ -28,13 +28,11 @@ jobs:
         python-version-file: ".python-version"
     - name: Prepare git for Windows
       if: matrix.os == 'windows-latest'
-      shell: bash -el {0}
       run: |
         git config --global user.email "you@example.com"
         git config --global user.name "Your Name"
         git config --system core.longpaths true
     - name: Test versions
-      shell: bash -el {0}
       run: |
         java -version
         mvn -v
@@ -42,9 +40,8 @@ jobs:
         python --version
         git --version
     - name: Run pipeline tests
-      shell: bash -el {0}
       run: |
-        MKL_CBWR=AUTO uv run pytest tests/
+        uv run pytest tests/
 
     - name: Archive failed tests data
       uses: actions/upload-artifact@v7
