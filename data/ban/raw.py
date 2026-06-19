@@ -12,11 +12,12 @@ def configure(context):
 
     context.config("data_path")
     context.config("ban_path", "ban_idf")
+    context.config("crs", "EPSG:2154")
 
 BAN_DTYPES = {
     "code_insee": str,
-    "x": float, 
-    "y": float
+    "lon": float,
+    "lat": float
 }
 
 def execute(context):
@@ -30,12 +31,15 @@ def execute(context):
     for source_path in find_ban("{}/{}".format(context.config("data_path"), context.config("ban_path"))):
         print("Reading {} ...".format(source_path))
 
+        dep = os.path.basename(source_path).split(".")[0].split("-")[1]
+        assert len(dep) in [2, 3]
+
         df_partial = pd.read_csv(source_path, 
             compression = "gzip", sep = ";", usecols = BAN_DTYPES.keys(), dtype = BAN_DTYPES)
-        
+
         # Filter by departments
-        df_partial["department_id"] = df_partial["code_insee"].str[:2]
-        df_partial = df_partial[["department_id", "x", "y"]]
+        df_partial["department_id"] = df_partial["code_insee"].str[:len(dep)]
+        df_partial = df_partial[["department_id", "lon", "lat"]]
         df_partial = df_partial[df_partial["department_id"].isin(requested_departments)]
 
         if len(df_partial) > 0:
@@ -43,7 +47,9 @@ def execute(context):
     
     df_ban = pd.concat(df_ban)
     df_ban = gpd.GeoDataFrame(
-        df_ban, geometry = gpd.points_from_xy(df_ban.x, df_ban.y), crs = "EPSG:2154")
+        df_ban, geometry = gpd.points_from_xy(df_ban.lon, df_ban.lat), crs = "EPSG:4326")
+
+    df_ban = df_ban.to_crs(context.config("crs"))
     
     # Check that we cover all requested departments at least once
     for department_id in requested_departments:

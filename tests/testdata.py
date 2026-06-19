@@ -241,6 +241,7 @@ def create(output_path):
     df_bpe["DEP"] = df_bpe["department"]
     df_bpe["LAMBERT_X"] = df_bpe["geometry"].centroid.x
     df_bpe["LAMBERT_Y"] = df_bpe["geometry"].centroid.y
+    df_bpe["EPSG"] = "2154"
     df_bpe["TYPEQU"] = categories[random.integers(0, len(categories), size = len(df_bpe))]
 
     # Deliberately set coordinates for some to NaN
@@ -248,9 +249,9 @@ def create(output_path):
     df_bpe.iloc[-10:, df_bpe.columns.get_loc("LAMBERT_Y")] = np.nan
 
     print("Hash", "df_bpe", pd.util.hash_pandas_object(df_bpe, index = True).sum())
-    assert pd.util.hash_pandas_object(df_bpe, index = True).sum() == 875998870050180323
+    assert pd.util.hash_pandas_object(df_bpe, index = True).sum() == 17856362546933168307
 
-    columns = ["CAPACITE","DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"]
+    columns = ["CAPACITE","DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP", "EPSG"]
 
     os.mkdir("%s/bpe_2024" % output_path)
 
@@ -770,8 +771,8 @@ def create(output_path):
 
     df_ban = pd.DataFrame({
         "code_insee": municipality[random.integers(0, len(municipality), observations)],
-        "x": x,
-        "y": y})
+        "lon": x,
+        "lat": y})
 
     df_ban = df_ban[:round(len(x)*.8)]
 
@@ -828,11 +829,12 @@ def create(output_path):
         "siret": identifiers,
         "x": x,
         "y": y,
+        "epsg": "2154",
         "plg_code_commune":codes_com,
     })
 
     print("Hash", "SIRENE GEO", pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum())
-    assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 12038323953301123794
+    assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 16147264283833352948
 
     df_sirene_geoloc.to_parquet("%s/sirene/geoloc-geolocalisationetablissement-sirene-pour-etudes-statistiques-parquet.parquet" % output_path, index = False)
 
