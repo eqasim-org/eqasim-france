@@ -107,7 +107,8 @@ class Registry:
 
 HELP_CONFIG_PATH = "Path to your config file"
 
-def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
+def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)],
+         yes: Annotated[bool, typer.Option("--yes", "-y", help="Automatically answer yes")] = False):
     if not os.path.exists(config_path):
         print("[red]Config path does not exist[/red]")
         exit()
@@ -140,7 +141,7 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
     departments = sorted(list(df_codes["departement_id"].unique()))
     print("  {}".format(departments))
 
-    if not Confirm.ask("Continue checking missing files?"):
+    if not yes and not Confirm.ask("Continue checking missing files?"):
         exit()
 
     # identify data sets
@@ -303,7 +304,7 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
             if region in dom_tom_regions:
                 includes_dom_tom = True
             if region not in osm_by_region:
-                if not Confirm.ask("No known OSM source for region %s, proceed without it ?" % region):
+                if not yes and not Confirm.ask("No known OSM source for region %s, proceed without it ?" % region):
                     exit()
                 continue
             osm_sources.extend(osm_by_region[region])
@@ -332,14 +333,14 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
             else:
                 non_covered_regions.append(r)
         if len(gtfs_feeds) > 0:
-            if Confirm.ask("Your regions match with {} known GTFS feeds".format(len(gtfs_feeds)) + (
+            if yes or Confirm.ask("Your regions match with {} known GTFS feeds".format(len(gtfs_feeds)) + (
             "\n (but {} regions have no matching feed)".format(len(non_covered_regions)) if len(non_covered_regions) > 0 else "") + "\n You might need to download missing feeds \n Do you wish to download known feeds ?"):
                 for i, feed in enumerate(gtfs_feeds):
                     registry.register("GTFS Feed {}/{}".format(i + 1, len(gtfs_feeds)),
                                       feed,
                                       "{}/{}".format(gtfs_path, feed.split("/")[-1]))
         else:
-            if not Confirm("No matching GTFS feed found for your regions, do you want to proceed anyway?"):
+            if not yes and not Confirm("No matching GTFS feed found for your regions, do you want to proceed anyway?"):
                 exit()
 
     print("Checking the data sets that need to be downloaded ...")
@@ -348,7 +349,7 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)]):
         print("[yellow]In case a download aborts, try starting the script again.[/yellow]")
         print("[yellow]Note that for most data sources progress cannot be shown.[/yellow]")
 
-        if not Confirm.ask("Continue downloading data?"):
+        if not yes and not Confirm.ask("Continue downloading data?"):
             exit()
 
         registry.download()
