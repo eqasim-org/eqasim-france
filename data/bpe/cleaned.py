@@ -18,18 +18,19 @@ def configure(context):
     context.config("education_location_source","bpe")
 
     context.config("bpe_random_seed", 0)
+    context.config("crs", "EPSG:2154")
 
 ACTIVITY_TYPE_MAP = [
-    ("A", "other"),         # Police, post office, etc ...
+    ("A", "task"),          # Police, post office, etc ...
     ("A504", "leisure"),    # Restaurant
     ("B", "shop"),          # Shopping
     ("C", "education"),     # Education
-    ("C701","other"),       # CROUS Residence
-    ("C702","other"),       # CROUS Restaurant
-    ("D", "other"),         # Health
-    ("E", "other"),         # Transport
+    ("C701", "task"),       # CROUS Residence
+    ("C702", "leisure"),    # CROUS Restaurant
+    ("D", "task"),          # Health
+    ("E", "transport"),     # Transport
     ("F", "leisure"),       # Sports & Culture
-    ("G", "other"),         # Tourism, hotels, etc. (Hôtel = G102)
+    ("G", "task"),          # Tourism, hotels, etc. (Hôtel = G102)
 ]
 
 def find_outside(context, commune_id):
@@ -60,7 +61,7 @@ def execute(context):
 
     df["activity_type"] = df["activity_type"].astype("category")
 
-    #Add 
+    #Add
     df = df.rename(columns={"TYPEQU":"education_type"})
     df["weight"] = df["CAPACITE"].fillna(500) if context.config("education_location_source") != "bpe" else 500
     # Clean coordinates
@@ -140,8 +141,12 @@ def execute(context):
         df.loc[outside_indices, "imputed"] = True
 
     # Package up data set
-    df = df[["enterprise_id", "activity_type","education_type", "commune_id", "imputed", "x", "y","weight"]]
+    df = df[["enterprise_id", "activity_type","education_type", "commune_id", "imputed", "x", "y","weight", "EPSG"]]
 
-    df = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.x, df.y),crs="EPSG:2154")
+    df = df.groupby("EPSG")[df.columns].apply(lambda group_df: gpd.GeoDataFrame(group_df,
+                                                                                geometry=gpd.points_from_xy(group_df.x,
+                                                                                                            group_df.y),
+                                                                                crs="EPSG:"+group_df["EPSG"].iloc[0]).to_crs(context.config("crs")))
+    df = gpd.GeoDataFrame(df.drop(columns="EPSG"), crs=context.config("crs"))
 
     return df

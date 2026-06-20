@@ -1,14 +1,13 @@
-import geopandas as gpd
-
 def configure(context):
     context.config("output_path")
     context.config("output_prefix", "ile_de_france_")
 
-    context.stage("data.bdtopo.raw")
+    context.stage("synthesis.locations.education")
 
 def execute(context):
-    df_buildings = context.stage("data.bdtopo.raw")
+    # load data
+    df_locations = context.stage("synthesis.locations.education")
 
-    df_buildings.to_file("%s/%sbdtopo.gpkg" % (
+    df_locations.to_file("%s/%seducation_locations.gpkg" % (
         context.config("output_path"), context.config("output_prefix")
     ))

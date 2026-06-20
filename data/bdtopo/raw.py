@@ -15,6 +15,7 @@ def configure(context):
     context.config("bdtopo_path", "bdtopo_idf")
 
     context.stage("data.spatial.departments")
+    context.config("crs", "EPSG:2154")
 
 def get_department_string(department_id):
     department_id = str(department_id)
@@ -53,7 +54,7 @@ def execute(context):
 
         if geometry_path is not None:
             df_buildings = pyogrio.read_dataframe(geometry_path, layer = "batiment", columns = [
-                "cleabs", "nombre_de_logements"]).to_crs("EPSG:2154")
+                "cleabs", "nombre_de_logements"]).to_crs(context.config("crs"))
             
             df_buildings["building_id"] = df_buildings["cleabs"].apply(lambda x: int(x[8:]))
             df_buildings["housing"] = df_buildings["nombre_de_logements"].fillna(0).astype(int)

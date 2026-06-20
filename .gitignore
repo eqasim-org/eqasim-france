@@ -1,7 +1,7 @@
 __pycache__
 env
 cache
-output
+/output
 
 data/nantes_2015
 data/lyon_2015

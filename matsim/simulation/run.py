@@ -22,4 +22,4 @@ def execute(context):
         "--config:controler.writeEventsInterval", str(1),
         "--config:controler.writePlansInterval", str(1),
     ])
-    assert os.path.exists("%s/simulation_output/output_events.xml.gz" % context.path())
+    assert os.path.exists("%s/simulation_output/output_events.xml.zst" % context.path())

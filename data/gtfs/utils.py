@@ -83,6 +83,7 @@ def read_feed(path):
         if not "parent_station" in df_stops:
             print("WARNING Missing parent_station in stops, setting to empty string")
             df_stops["parent_station"] = ""
+        df_stops.loc[df_stops["parent_station"].isna() & (df_stops["location_type"] == 0), "location_type"] = 1
 
     if "transfers" in feed:
         df_transfers = feed["transfers"]
@@ -100,6 +101,8 @@ def read_feed(path):
 
     if "agency" in feed:
         df_agency = feed["agency"]
+        if "agency_id" not in df_agency.columns:
+            df_agency["agency_id"] = "generic"
         df_agency.loc[df_agency["agency_id"].isna(), "agency_id"] = "generic"
 
     if "routes" in feed:
@@ -310,7 +313,7 @@ def merge_two_feeds(first, second, suffix = "_merged"):
                     )
 
                     for ref_slot, ref_identifier in collision["references"]:
-                        if ref_slot in first and ref_slot in second:
+                        if ref_slot in second:
                             second[ref_slot][ref_identifier] = second[ref_slot][ref_identifier].replace(
                                 duplicate_ids, replacement_ids
                             )
