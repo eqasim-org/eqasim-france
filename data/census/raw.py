@@ -37,6 +37,8 @@ COLUMNS = {
 def execute(context):
     df_codes = context.stage("data.spatial.codes")
 
+    requested_iris = df_codes["iris_id"].unique()
+    requested_communes = df_codes["commune_id"].unique()
     requested_departements = df_codes["departement_id"].unique()
     census_attributes = { attribute["raw"] for attribute in context.config("census_attributes") }
 
@@ -45,7 +47,12 @@ def execute(context):
                         columns=COLUMNS | census_attributes)
 
         parquet = parquet.cast(pl.String)
-        parquet = parquet.filter(pl.col("DEPT").is_in(requested_departements))
+        if len(requested_iris) > 0:
+            parquet = parquet.filter(pl.col("IRIS").is_in(requested_iris))
+        elif len(requested_communes) > 0:
+            parquet = parquet.filter(pl.col("IRIS").str.slice(0, 5).is_in(requested_communes))
+        else:
+            parquet = parquet.filter(pl.col("DEPT").is_in(requested_departements))
 
         progress.update(len(parquet))
 

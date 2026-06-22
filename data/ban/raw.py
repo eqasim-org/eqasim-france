@@ -20,9 +20,9 @@ BAN_DTYPES = {
 }
 
 def execute(context):
-    # Find relevant departments
+    # Find relevant communes.
     df_codes = context.stage("data.spatial.codes")
-    requested_departments = set(df_codes["departement_id"].unique())
+    requested_communes = set(df_codes["commune_id"].unique())
 
     # Load BAN
     df_ban = []
@@ -33,10 +33,10 @@ def execute(context):
         df_partial = pd.read_csv(source_path, 
             compression = "gzip", sep = ";", usecols = BAN_DTYPES.keys(), dtype = BAN_DTYPES)
         
-        # Filter by departments
-        df_partial["department_id"] = df_partial["code_insee"].str[:2]
-        df_partial = df_partial[["department_id", "x", "y"]]
-        df_partial = df_partial[df_partial["department_id"].isin(requested_departments)]
+        # Filter by commune.
+        df_partial["commune_id"] = df_partial["code_insee"].str[:5]
+        df_partial = df_partial[["commune_id", "x", "y"]]
+        df_partial = df_partial[df_partial["commune_id"].isin(requested_communes)]
 
         if len(df_partial) > 0:
             df_ban.append(df_partial)
@@ -45,9 +45,9 @@ def execute(context):
     df_ban = gpd.GeoDataFrame(
         df_ban, geometry = gpd.points_from_xy(df_ban.x, df_ban.y), crs = "EPSG:2154")
     
-    # Check that we cover all requested departments at least once
-    for department_id in requested_departments:
-        assert np.count_nonzero(df_ban["department_id"] == department_id) > 0
+    # Check that we cover all requested communes at least once
+    for commune_id in requested_communes:
+        assert np.count_nonzero(df_ban["commune_id"] == commune_id) > 0
 
     return df_ban[["geometry"]]
 

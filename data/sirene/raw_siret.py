@@ -14,22 +14,14 @@ def configure(context):
 
 
 def execute(context):
-    # Filter by departement
+    # Filter by commune.
     df_codes = context.stage("data.spatial.codes")
-    requested_departements = set(df_codes["departement_id"].unique())
+    requested_communes = set(df_codes["commune_id"].unique())
 
     filename = os.path.join(context.config("data_path"), context.config("siret_path"))
     lf = pl.scan_parquet(filename)
     lf = lf.filter(pl.col("codeCommuneEtablissement").is_not_null())
-    # The departement code can be read from the 2 first characters of the INSEE commune code, or
-    # from the 3 first characters for oversea departements (e.g., Fort-de-France: 97209).
-    deps2 = {dep for dep in requested_departements if len(dep) == 2}
-    deps3 = {dep for dep in requested_departements if len(dep) == 3}
-    assert len(deps2) + len(deps3) == len(requested_departements)
-    if deps2:
-        lf = lf.filter(pl.col("codeCommuneEtablissement").str.slice(0, 2).is_in(deps2))
-    if deps3:
-        lf = lf.filter(pl.col("codeCommuneEtablissement").str.slice(0, 3).is_in(deps3))
+    lf = lf.filter(pl.col("codeCommuneEtablissement").is_in(requested_communes))
 
     df_siret = lf.select(
         "siren",

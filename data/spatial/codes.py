@@ -13,6 +13,8 @@ def configure(context):
 
     context.config("regions", [11])
     context.config("departments", [])
+    context.config("communes", [])
+    context.config("iris", [])
     context.config("codes_path", "codes_2024/reference_IRIS_geo2024.zip")
     context.config("codes_xlsx", "reference_IRIS_geo2024.xlsx")
 
@@ -35,15 +37,21 @@ def execute(context):
     df_codes["departement_id"] = df_codes["departement_id"].astype("category")
     df_codes["region_id"] = df_codes["region_id"].astype(int)
 
-    # Filter zones
+    # Filter zones. Prefer the most specific selector available:
+    # explicit IRIS, then communes, then departments, then regions.
     requested_regions = list(map(int, context.config("regions")))
     requested_departments = list(map(str, context.config("departments")))
+    requested_communes = list(map(str, context.config("communes")))
+    requested_iris = list(map(str, context.config("iris")))
 
-    if len(requested_regions) > 0:
-        df_codes = df_codes[df_codes["region_id"].isin(requested_regions)]
-
-    if len(requested_departments) > 0:
+    if len(requested_iris) > 0:
+        df_codes = df_codes[df_codes["iris_id"].isin(requested_iris)]
+    elif len(requested_communes) > 0:
+        df_codes = df_codes[df_codes["commune_id"].isin(requested_communes)]
+    elif len(requested_departments) > 0:
         df_codes = df_codes[df_codes["departement_id"].isin(requested_departments)]
+    elif len(requested_regions) > 0:
+        df_codes = df_codes[df_codes["region_id"].isin(requested_regions)]
 
     df_codes["iris_id"] = df_codes["iris_id"].cat.remove_unused_categories()
     df_codes["commune_id"] = df_codes["commune_id"].cat.remove_unused_categories()

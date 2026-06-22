@@ -84,12 +84,10 @@ def execute(context):
         (df["iris_id"] == "undefined").sum(), len(df), 100 * (df["iris_id"] == "undefined").mean()
     ))
 
-    # Check whether all communes in BPE are within our set of requested data
+    # Keep only enterprises that fall inside the selected spatial area.
     df_municipalities = context.stage("data.spatial.municipalities")
-    excess_communes = set(df["commune_id"].unique()) - set(df_municipalities["commune_id"].unique())
-
-    if len(excess_communes) > 0:
-        raise RuntimeError("Found additional communes: %s" % excess_communes)
+    requested_communes = set(df_municipalities["commune_id"].unique())
+    df = df[df["commune_id"].isin(requested_communes)]
 
     # We notice that we have some additional IRIS. Make sure they will be placed randomly in there commune later.
     df_iris = context.stage("data.spatial.iris")

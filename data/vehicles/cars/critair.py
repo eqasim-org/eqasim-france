@@ -37,11 +37,11 @@ def execute(context):
 
     df_regions["region_id"] = df_regions["Code région"].astype("category")
 
-    requested_departements = set(df_codes["departement_id"].unique())
+    requested_communes = set(df_codes["commune_id"].unique())
     requested_regions = set(df_codes["region_id"].astype(str).unique())
 
-    if len(requested_departements) > 0:
-        df_municipalities = df_municipalities[df_municipalities["departement_id"].isin(requested_departements)]
+    if len(requested_communes) > 0:
+        df_municipalities = df_municipalities[df_municipalities["commune_id"].isin(requested_communes)]
 
     if len(requested_regions) > 0:
         df_regions = df_regions[df_regions["region_id"].isin(requested_regions)]
