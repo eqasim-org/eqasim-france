@@ -20,14 +20,23 @@ BAN_DTYPES = {
 }
 
 def execute(context):
-    # Find relevant departments
+    # Find relevant departments.
     df_codes = context.stage("data.spatial.codes")
-    requested_departments = set(df_codes["departement_id"].unique())
+    requested_departments = set(df_codes["departement_id"].astype(str).unique())
 
     # Load BAN
     df_ban = []
 
-    for source_path in find_ban("{}/{}".format(context.config("data_path"), context.config("ban_path"))):
+    source_paths = find_ban("{}/{}".format(context.config("data_path"), context.config("ban_path")))
+    source_paths = [
+        source_path for source_path in source_paths
+        if any(f"adresses-{department_id}.csv.gz" in os.path.basename(source_path) for department_id in requested_departments)
+    ]
+
+    if len(source_paths) == 0:
+        raise RuntimeError("No BAN files match the requested departments")
+
+    for source_path in source_paths:
         print("Reading {} ...".format(source_path))
 
         df_partial = pd.read_csv(source_path, 

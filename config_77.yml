@@ -1,0 +1,37 @@
+## Synthetic population pipeline for Île-de-France
+## based on the synpp package
+
+# This is the path to a directory where the pipeline can store temporary data
+working_directory: ../cache
+
+# This section defines which parts of the pipeline should be run
+run:
+  - synthesis.output # To create the output population in the output_path (see below)
+  #- matsim.output # Uncomment, if you want to run the full simulation (you'll need Java for that)
+
+# Here the configuraiton of the pipeline starts
+config:
+  # Some general configuration
+  departments: [77]
+  processes: 30
+
+  # Define whether to use ENTD or EGT as the household travel survey (HTS)
+  hts: entd
+
+  # Define sampling rate and random seed for the output population
+  sampling_rate: 0.0001
+  random_seed: 1234
+
+  # Paths to the input data and where the output should be stored
+  data_path: ../data
+  output_path: ../output
+  output_prefix: test_77_
+
+  # Only interesting if you run the simulation
+  java_memory: 14G
+
+  # Activate if you want to run mode choice
+  mode_choice: false
+
+  # Uncomment to use the bhepop2 package for attributing income
+  # income_assignation_method: bhepop2
