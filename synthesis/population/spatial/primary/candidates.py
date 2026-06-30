@@ -116,12 +116,14 @@ def process(context, purpose, random, df_persons, df_od, df_locations,step_name)
 
 def execute(context):
     # Prepare population data
-    df_persons = context.stage("synthesis.population.enriched")[["person_id", "household_id", "age_range"]].copy()
+    df_persons = context.stage("synthesis.population.enriched")[["person_id", "household_id", "age_range", "employed"]].copy()
     df_trips = context.stage("synthesis.population.trips")
 
     df_persons["has_work_trip"] = df_persons["person_id"].isin(df_trips[
         (df_trips["following_purpose"] == "work") | (df_trips["preceding_purpose"] == "work")
     ]["person_id"])
+
+    df_persons["has_work_trip"] |= df_persons["employed"]
     
     df_persons["has_education_trip"] = df_persons["person_id"].isin(df_trips[
         (df_trips["following_purpose"] == "education") | (df_trips["preceding_purpose"] == "education")
