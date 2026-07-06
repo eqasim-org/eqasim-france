@@ -39,6 +39,9 @@ def execute(context):
         "code_insee": "commune_id"
     })
 
+    # DEPRECATED: remove with next version of the data sets
+    df_iris = fix_2024(df_iris)
+
     df_iris = df_iris.to_crs(context.config("crs"))
 
     df_iris["iris_id"] = df_iris["iris_id"].astype("category")
@@ -70,3 +73,21 @@ def find_iris(path):
 def validate(context):
     path = find_iris("{}/{}".format(context.config("data_path"), context.config("iris_path")))
     return os.path.getsize(path)
+
+
+def fix_2024(df_iris):
+    """_summary_
+    The 2024 edition of IRIS contains the municipality 14581. Therefore, the data is a bit ahead
+    of time since all other data sets that refer to 2024 still contain the this municipality
+    with the code 14011. Therefore, we replace the identifier here. This fix can be removed
+    for future versions of the data.
+    """
+    f = df_iris["commune_id"] == "14581"
+
+    # replace municipality
+    df_iris.loc[f, "commune_id"] = "14011"
+
+    # replace IRIS
+    df_iris.loc[f, "iris_id"] = df_iris.loc[f, "iris_id"].str.replace("14581", "14011")
+
+    return df_iris
