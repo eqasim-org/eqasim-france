@@ -82,7 +82,7 @@ def sample_locations(context, arguments):
     return df_result
 
 def process(context, purpose, random, df_persons, df_od, df_locations,step_name):
-    df_persons = df_persons[df_persons["has_%s_trip" % purpose]]
+    df_persons = df_persons[df_persons["requires_{}_location".format(purpose)]]
 
     # Sample commute flows based on population
     df_demand = df_persons.groupby("commune_id",observed=False).size().reset_index(name = "count")
@@ -116,18 +116,17 @@ def process(context, purpose, random, df_persons, df_od, df_locations,step_name)
 
 def execute(context):
     # Prepare population data
-    df_persons = context.stage("synthesis.population.enriched")[["person_id", "household_id", "age_range", "employed"]].copy()
+    df_persons = context.stage("synthesis.population.enriched")[["person_id", "household_id", "age_range", 
+        "employed", "studies"]].copy()
     df_trips = context.stage("synthesis.population.trips")
 
-    df_persons["has_work_trip"] = df_persons["person_id"].isin(df_trips[
+    df_persons["requires_work_location"] = df_persons["person_id"].isin(df_trips[
         (df_trips["following_purpose"] == "work") | (df_trips["preceding_purpose"] == "work")
-    ]["person_id"])
-
-    df_persons["has_work_trip"] |= df_persons["employed"]
+    ]["person_id"]) | df_persons["employed"]
     
-    df_persons["has_education_trip"] = df_persons["person_id"].isin(df_trips[
+    df_persons["requires_education_location"] = df_persons["person_id"].isin(df_trips[
         (df_trips["following_purpose"] == "education") | (df_trips["preceding_purpose"] == "education")
-    ]["person_id"])
+    ]["person_id"]) | df_persons["studies"]
 
     df_homes = context.stage("synthesis.population.spatial.home.zones")
     df_persons = pd.merge(df_persons, df_homes, on = "household_id")
@@ -160,7 +159,7 @@ def execute(context):
     return dict(
         work_candidates = df_work,
         education_candidates = df_education,
-        persons = df_persons[df_persons["has_work_trip"] | df_persons["has_education_trip"]][[
-            "person_id", "household_id", "age_range", "commune_id", "has_work_trip", "has_education_trip"
+        persons = df_persons[df_persons["requires_work_location"] | df_persons["requires_education_location"]][[
+            "person_id", "household_id", "age_range", "commune_id", "requires_work_location", "requires_education_location"
         ]]
     )
