@@ -13,8 +13,6 @@ def configure(context):
 RENAME = { "COMMUNE" : "origin_id", "DCLT" : "destination_id", "IPONDI" : "weight", "DCETUF" : "destination_id" }
 
 def execute(context):
-    
-    
     # Load data
     df_work, df_education = context.stage("data.od.raw")
 
@@ -29,8 +27,8 @@ def execute(context):
     # Verify spatial data for work
     df_codes = context.stage("data.spatial.codes")
 
-    df_work["origin_id"] = df_work["origin_id"].astype("category")
-    df_work["destination_id"] = df_work["destination_id"].astype("category")
+    df_work["origin_id"] = df_work["origin_id"].astype(df_codes["commune_id"].dtype)
+    df_work["destination_id"] = df_work["destination_id"].astype(df_codes["commune_id"].dtype)
 
     excess_communes = (set(df_work["origin_id"].unique()) | set(df_work["destination_id"].unique())) - set(df_codes["commune_id"].unique())
     if len(excess_communes) > 0:
@@ -39,8 +37,8 @@ def execute(context):
     # Verify spatial data for education
     df_codes = context.stage("data.spatial.codes")
 
-    df_education["origin_id"] = df_education["origin_id"].astype("category")
-    df_education["destination_id"] = df_education["destination_id"].astype("category")
+    df_education["origin_id"] = df_education["origin_id"].astype(df_codes["commune_id"].dtype)
+    df_education["destination_id"] = df_education["destination_id"].astype(df_codes["commune_id"].dtype)
 
     excess_communes = (set(df_education["origin_id"].unique()) | set(df_education["destination_id"].unique())) - set(df_codes["commune_id"].unique())
     if len(excess_communes) > 0:
@@ -74,12 +72,12 @@ def execute(context):
 
     # Aggregate the flows
     print("Aggregating work ...")
-    df_work = df_work.groupby(["origin_id", "destination_id", "commute_mode"],observed=False)["weight"].sum().reset_index()
+    df_work = df_work.groupby(["origin_id", "destination_id", "commute_mode"], observed = True)["weight"].sum().reset_index()
 
     print("Aggregating education ...")
-    df_education = df_education.groupby(["origin_id", "destination_id","age_range"],observed=False)["weight"].sum().reset_index()
+    df_education = df_education.groupby(["origin_id", "destination_id", "age_range"], observed = True)["weight"].sum().reset_index()
 
-    df_work["weight"] = df_work["weight"].fillna(0.0)
-    df_education["weight"] = df_education["weight"].fillna(0.0)
+    df_work = df_work[df_work["weight"] > 0.0]
+    df_education = df_education[df_education["weight"] > 0.0]
 
     return df_work, df_education
