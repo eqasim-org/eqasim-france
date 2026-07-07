@@ -62,13 +62,6 @@ def execute(context):
             df_buildings["centroid"] = df_buildings["geometry"].centroid
             df_buildings = df_buildings.set_geometry("centroid")
 
-            print("  Filtering ...")
-
-            initial_count = len(df_buildings)
-            df_buildings = df_buildings[df_buildings["housing"] > 0]
-            final_count = len(df_buildings)
-            print("    {}/{} filtered by dwellings".format(initial_count - final_count, initial_count))
-
             initial_count = len(df_buildings)
             df_buildings = df_buildings[~df_buildings["building_id"].isin(known_ids)]
             final_count = len(df_buildings)
@@ -79,7 +72,22 @@ def execute(context):
             final_count = len(df_buildings)
             print("    {}/{} filtered spatially".format(initial_count - final_count, initial_count))
 
-            df_buildings["department_id"] = df_buildings["departement_id"]
+            f = df_buildings["department_id"] == "08"
+            if np.count_nonzero(f) > 0:
+                print("    ATTENTION: fixing missing information for Ardennes (08)")
+                df_buildings.loc[f, "housing"] = 1
+
+                # Attention: In Ardennes no information on the number of housing units is
+                # available. To be sure that we don't throw away all buildings, we set the 
+                # number of housing units to one by default. This has, however, implications
+                # in later steps: All buildings are considered as residential candidates and
+                # all buildings are weighted uniformly.
+
+            initial_count = len(df_buildings)
+            df_buildings = df_buildings[df_buildings["housing"] > 0]
+            final_count = len(df_buildings)
+            print("    {}/{} filtered by dwellings".format(initial_count - final_count, initial_count))
+
             df_buildings = df_buildings.set_geometry("geometry")
 
             print("    {} remaining".format(final_count))
@@ -91,13 +99,10 @@ def execute(context):
 
     df_bdtopo = pd.concat(df_bdtopo)
 
-    any_missing = False
     for department_id in df_departments["departement_id"].values:
-        if np.count_nonzero(df_bdtopo["department_id"] == department_id) == 0:
-            any_missing = True
-            print("MISSING", department_id)
+        assert np.count_nonzero(df_bdtopo["department_id"] == department_id) > 0
 
-    assert not any_missing
+    assert np.count_nonzero(df_bdtopo["department_id"] == department_id) > 0
 
     return df_bdtopo[["building_id", "housing", "geometry"]]
 
