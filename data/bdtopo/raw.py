@@ -82,6 +82,8 @@ def execute(context):
             df_buildings["department_id"] = df_buildings["departement_id"]
             df_buildings = df_buildings.set_geometry("geometry")
 
+            print("    {} remaining".format(final_count))
+
             df_bdtopo.append(df_buildings[["building_id", "housing", "department_id", "geometry"]])
             known_ids |= set(df_buildings["building_id"].unique())
 
@@ -89,8 +91,13 @@ def execute(context):
 
     df_bdtopo = pd.concat(df_bdtopo)
 
+    any_missing = False
     for department_id in df_departments["departement_id"].values:
-        assert np.count_nonzero(df_bdtopo["department_id"] == department_id) > 0
+        if np.count_nonzero(df_bdtopo["department_id"] == department_id) == 0:
+            any_missing = True
+            print("MISSING", department_id)
+
+    assert not any_missing
 
     return df_bdtopo[["building_id", "housing", "geometry"]]
 
