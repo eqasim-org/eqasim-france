@@ -72,7 +72,7 @@ def execute(context):
             final_count = len(df_buildings)
             print("    {}/{} filtered spatially".format(initial_count - final_count, initial_count))
 
-            f = df_buildings["department_id"] == "08"
+            f = df_buildings["departement_id"] == "08"
             if np.count_nonzero(f) > 0:
                 print("    ATTENTION: fixing missing information for Ardennes (08)")
                 df_buildings.loc[f, "housing"] = 1
@@ -88,6 +88,7 @@ def execute(context):
             final_count = len(df_buildings)
             print("    {}/{} filtered by dwellings".format(initial_count - final_count, initial_count))
 
+            df_buildings["department_id"] = df_buildings["departement_id"]
             df_buildings = df_buildings.set_geometry("geometry")
 
             print("    {} remaining".format(final_count))
