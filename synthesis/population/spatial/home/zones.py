@@ -61,6 +61,9 @@ def execute(context):
     df_iris = context.stage("data.spatial.iris").set_index("iris_id")
     df_iris["population"] = context.stage("data.spatial.population").set_index("iris_id")["population"]
 
+    print("missing in households:", set(df_iris.index.unique()) - set(df_households["iris_id"].cat.categories))
+    print("missing in iris:", set(df_households["iris_id"].cat.categories) - set(df_iris.index.unique()))
+
     df_households["iris_id"] = df_households["iris_id"].cat.add_categories(
         sorted(set(df_iris.index.unique()) - set(df_households["iris_id"].cat.categories)))
 
