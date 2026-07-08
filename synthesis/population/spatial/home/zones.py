@@ -35,11 +35,11 @@ def execute(context):
     df_municipalities = context.stage("data.spatial.municipalities").set_index("commune_id")
     df_municipalities["population"] = context.stage("data.spatial.population").groupby("commune_id")["population"].sum()
 
-    print("missing in households:", set(df_municipalities.index.unique()) - set(df_households["commune_id"].cat.categories))
-    print("missing in iris:", set(df_households["commune_id"].cat.categories) - set(df_municipalities.index.unique()))
-
     df_households["commune_id"] = df_households["commune_id"].cat.add_categories(
         sorted(set(df_municipalities.index.unique()) - set(df_households["commune_id"].cat.categories)))
+
+    # for compatibility when setting replacement values further below
+    df_municipalities["commune_id"] = df_municipalities["commune_id"].cat.add_categories(["undefined"])
 
     departements = df_households[~f_has_commune]["departement_id"].unique()
 
@@ -66,6 +66,9 @@ def execute(context):
 
     df_households["iris_id"] = df_households["iris_id"].cat.add_categories(
         sorted(set(df_iris.index.unique()) - set(df_households["iris_id"].cat.categories)))
+
+    # for compatibility when setting replacement values further below
+    df_iris["iris_id"] = df_iris["iris_id"].cat.add_categories(["undefined"])
 
     communes = df_households[~f_has_iris & f_has_commune]["commune_id"].unique()
 
