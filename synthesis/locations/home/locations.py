@@ -27,9 +27,9 @@ def execute(context):
     df_addresses = gpd.sjoin(df_addresses,
         df_iris[["iris_id", "commune_id", "geometry"]], predicate = "within")
     del df_addresses["index_right"]
-    
+
+    df_addresses["iris_id"] = df_addresses["iris_id"].cat.add_categories(["unknown"])    
     df_addresses.loc[df_addresses["iris_id"].isna(), "iris_id"] = "unknown"
-    df_addresses["iris_id"] = df_addresses["iris_id"].astype("category")
 
     df_addresses["fake"] = False
 
