@@ -47,27 +47,30 @@ def execute(context):
         raise RuntimeError("Found additional communes: %s" % excess_communes)
 
     # Clean commute mode for work
-    df_work["commute_mode"] = ""
-    df_work.loc[df_work["TRANS"] == 1, "commute_mode"] = "no transport"
-    df_work.loc[df_work["TRANS"] == 2, "commute_mode"] = "walk"
-    df_work.loc[df_work["TRANS"] == 3, "commute_mode"] = "bike"
-    df_work.loc[df_work["TRANS"] == 4, "commute_mode"] = "car"
-    df_work.loc[df_work["TRANS"] == 5, "commute_mode"] = "car"
-    df_work.loc[df_work["TRANS"] == 6, "commute_mode"] = "pt"
-    assert not np.any(df_work["commute_mode"] == "")
-    df_work["commute_mode"] = df_work["commute_mode"].astype("category")
-    
-    
+    categories = ["no transport", "walk", "bike", "car", "pt"]
+
+    df_work["commute_mode"] = pd.Categorical.from_codes(df_work["TRANS"].map({
+        1: categories.index("no transport"),
+        2: categories.index("walk"),
+        3: categories.index("bike"),
+        4: categories.index("car"), 
+        5: categories.index("car"),
+        6: categories.index("pt"),
+    }), categories)
 
     # Clean age range for education
+    categories = ["primary_school", "middle_school", "high_school", "higher_education"]
+
     df_education["AGEREV10"] = df_education["AGEREV10"].astype(int)
-    df_education["age_range"] = ""
-    df_education.loc[df_education["AGEREV10"] <= 6, "age_range"] = "primary_school"
-    df_education.loc[df_education["AGEREV10"] == 11, "age_range"] = "middle_school"
-    df_education.loc[df_education["AGEREV10"] == 15, "age_range"] = "high_school"
-    df_education.loc[df_education["AGEREV10"] >= 18, "age_range"] = "higher_education"
-    assert not np.any(df_education["age_range"] == "")
-    df_education["age_range"] = df_education["age_range"].astype("category")
+    df_education["age_code"] = 0
+
+    df_education.loc[df_education["AGEREV10"] <= 6, "age_code"] = 0
+    df_education.loc[df_education["AGEREV10"] == 11, "age_code"] = 1
+    df_education.loc[df_education["AGEREV10"] == 15, "age_code"] = 2
+    df_education.loc[df_education["AGEREV10"] >= 18, "age_code"] = 3
+
+    df_education["age_range"] = pd.Categorical.from_codes(
+        df_education["age_code"], categories)
 
     # Aggregate the flows
     print("Aggregating work ...")
