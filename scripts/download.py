@@ -1,0 +1,361 @@
+from typing import Annotated
+from pathlib import Path
+
+import typer
+from rich import print
+from rich.progress import Progress
+from rich.prompt import Confirm
+
+import os, yaml, requests, sys, shutil
+
+import pandas as pd
+import zipfile
+import rich
+
+TEMPORARY_PATH = Path(".script_data")
+CODES_URL = "https://www.insee.fr/fr/statistiques/fichier/7708995/reference_IRIS_geo2024.zip"
+
+def load_codes():
+    if not os.path.exists(TEMPORARY_PATH / "codes.zip"):
+        os.makedirs(TEMPORARY_PATH, exist_ok = True)
+
+        print("Downloading zoning codes from INSEE ...")
+        response = requests.get(CODES_URL, stream = True)
+        response.raise_for_status()
+
+        total = int(response.headers.get('content-length', 0))
+        with Progress() as progress:
+            task = progress.add_task("Downloading ...", total=total)
+
+            with open(TEMPORARY_PATH / "codes.zip", "wb+") as file:
+                for chunk in response.iter_content(chunk_size = 8192):
+                    if chunk:
+                        file.write(chunk)
+                        progress.update(task, advance = len(chunk))
+        
+    if not os.path.exists(TEMPORARY_PATH / "codes.parquet"):
+        with zipfile.ZipFile(TEMPORARY_PATH / "codes.zip") as archive:
+            with archive.open("reference_IRIS_geo2024.xlsx") as f:
+                df_codes = pd.read_excel(f,
+                    skiprows = 5, sheet_name = "Emboitements_IRIS",dtype={"CODE_IRIS":str,"DEPCOM":str,"REG":str}
+                )[["CODE_IRIS", "DEPCOM", "DEP", "REG"]].rename(columns = {
+                    "CODE_IRIS": "iris_id",
+                    "DEPCOM": "commune_id",
+                    "DEP": "departement_id",
+                    "REG": "region_id"
+                }).fillna("0")
+
+                df_codes.to_parquet(TEMPORARY_PATH / "codes.parquet")
+
+    return pd.read_parquet(TEMPORARY_PATH / "codes.parquet")
+
+class Registry:
+    def __init__(self, data_path: Path):
+        self.data_path = data_path
+        self.registry = []
+
+    def register(self, name, url, target):
+        self.registry.append({ "name": name, "url": url , "target": target})
+
+    def report(self):
+        any = False
+
+        for item in self.registry:
+            path = self.data_path / item["target"]
+
+            if not path.exists():
+                any = True
+                print("")
+                print("  [bold]{}[/bold]".format(item["name"]))
+                print("  URL: {}".format(item["url"]))
+                print("  Location: {}".format(item["target"]))
+
+        if any:
+            print("")
+
+        return any
+
+    def download(self):
+        queue = []
+
+        for item in self.registry:
+            path = self.data_path / item["target"]
+
+            if not path.exists():
+                queue.append(item)
+
+        for index, item in enumerate(queue):
+            os.makedirs(TEMPORARY_PATH, exist_ok = True)
+            os.makedirs((self.data_path / item["target"]).parent, exist_ok = True)
+
+            response = requests.get(item["url"], stream = True)
+            response.raise_for_status()
+
+            total = int(response.headers.get('content-length', 0))
+            if total == 0: total = None
+
+            with Progress() as progress:
+                task = progress.add_task("Downloading {}/{} {} ...".format(index + 1, len(queue), item["name"]), total=total)
+
+                with open(TEMPORARY_PATH / "current", "wb+") as file:
+                    for chunk in response.iter_content(chunk_size = 8192):
+                        if chunk:
+                            file.write(chunk)
+                            progress.update(task, advance = len(chunk))
+
+                shutil.copy(TEMPORARY_PATH / "current", self.data_path / item["target"])
+
+HELP_CONFIG_PATH = "Path to your config file"
+
+def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)],
+         yes: Annotated[bool, typer.Option("--yes", "-y", help="Automatically answer yes")] = False):
+    if not os.path.exists(config_path):
+        print("[red]Config path does not exist[/red]")
+        exit()
+
+    print("Loading input config ...")
+    with open(config_path) as f:
+        config = yaml.load(f, yaml.FullLoader)
+
+    data_path = Path(config["config"]["data_path"])
+    print("Identified data path: {}".format(data_path))
+
+    if not os.path.exists(data_path):
+        print("[red]Data path does not exist.[/red]")
+    else:
+        print("  [green]exists[/green]")
+
+    print("Loading zoning data ...")
+    df_codes = load_codes()
+
+    print("Identifying requested departments ...")
+    regions = [str(item) for item in config["config"].get("regions", ["11"])]
+    departments = [str(item) for item in config["config"].get("departments", [])]
+    
+    if len(regions) > 0:
+        df_codes = df_codes[df_codes["region_id"].isin(regions)]
+
+    if len(departments) > 0:
+        df_codes = df_codes[df_codes["departement_id"].isin(departments)]
+    
+    departments = sorted(list(df_codes["departement_id"].unique()))
+    print("  {}".format(departments))
+
+    if not yes and not Confirm.ask("Continue checking missing files?"):
+        exit()
+
+    # identify data sets
+    registry = Registry(data_path)
+
+    registry.register(
+        "Census data (RP 2022)",
+        "https://www.insee.fr/fr/statistiques/fichier/8647104/RP2022_indcvi.parquet",
+        "rp_2022/RP2022_indcvi.parquet"
+    )
+
+    registry.register(
+        "Population totals (RP 2022)",
+        "https://www.insee.fr/fr/statistiques/fichier/8647014/base-ic-evol-struct-pop-2022_csv.zip",
+        "rp_2022/base-ic-evol-struct-pop-2022_csv.zip"
+    )
+
+    registry.register(
+        "Origin-destination data (RP-MOBPRO 2022)",
+        "https://www.insee.fr/fr/statistiques/fichier/8589904/RP2022_mobpro.parquet",
+        "rp_2022/RP2022_mobpro.parquet"
+    )
+
+    registry.register(
+        "Origin-destination data (RP-MOBSCO 2022)",
+        "https://www.insee.fr/fr/statistiques/fichier/8589945/RP2022_mobsco.parquet",
+        "rp_2022/RP2022_mobsco.parquet"
+    )
+
+    registry.register(
+        "Income tax data (Filosofi 2021), municipalities",
+        "https://www.insee.fr/fr/statistiques/fichier/7756855/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip",
+        "filosofi_2021/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip"
+    )
+
+    registry.register(
+        "Income tax data (Filosofi 2021), administrative",
+        "https://www.insee.fr/fr/statistiques/fichier/7756855/indic-struct-distrib-revenu-2021-SUPRA_XLSX.zip",
+        "filosofi_2021/indic-struct-distrib-revenu-2021-SUPRA_XLSX.zip"
+    )
+
+    registry.register(
+        "Service and facility census (BPE 2025)",
+        "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE25.parquet",
+        "bpe_2025/BPE25.parquet"
+    )
+
+    entd_sources = [
+        (2339, "Q_tcm_menage_0"),
+        (2555, "Q_tcm_individu"),
+        (2556, "Q_menage"),
+        (2565, "Q_individu"),
+        (2566, "Q_ind_lieu_teg"),
+        (2568, "K_deploc")
+    ]
+
+    for identifier, name in entd_sources:
+        registry.register(
+            "National household travel survey (ENTD 2008), {}".format(name),
+            "https://www.statistiques.developpement-durable.gouv.fr/media/{}/download?inline".format(identifier),
+            "entd_2008/{}.csv".format(name)
+        )
+
+    registry.register(
+        "IRIS zoning system (2024)",
+        "https://data.geopf.fr/telechargement/download/CONTOURS-IRIS/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01.7z",
+        "iris_2024/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01.7z"
+    )
+
+    registry.register(
+        "Zoning registry (2024)",
+        "https://www.insee.fr/fr/statistiques/fichier/7708995/reference_IRIS_geo2024.zip",
+        "codes_2024/reference_IRIS_geo2024.zip"
+    )
+
+    registry.register(
+        "Enterprise census (SIRENE), Etablissement",
+        "https://www.data.gouv.fr/api/1/datasets/r/a29c1297-1f92-4e2a-8f6b-8c902ce96c5f",
+        "sirene/stock-stocketablissement-parquet.parquet"
+    )
+
+    registry.register(
+        "Enterprise census (SIRENE), Unité Legale",
+        "https://www.data.gouv.fr/api/1/datasets/r/350182c9-148a-46e0-8389-76c2ec1374a3",
+        "sirene/stock-stockunitelegale-parquet.parquet"
+    )
+
+    registry.register(
+        "Enterprise census (SIRENE), Géolocalisé",
+        "https://www.data.gouv.fr/api/1/datasets/r/672007af-0146-491f-835c-8314d63fa44e",
+        "sirene/geoloc-geolocalisationetablissement-sirene-pour-etudes-statistiques-parquet.parquet"
+    )
+
+    bdtopo_path = config["config"].get("bdtopo_path", "bdtopo_idf")
+    for department in departments:
+        registry.register(
+            "Buildings database (BD TOPO), {}".format(department),
+            "https://data.geopf.fr/telechargement/download/BDTOPO/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D0{}_2022-03-15/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D0{}_2022-03-15.7z".format(department, department),
+            "{}/BDTOPO_3-5_TOUSTHEMES_GPKG_LAMB93_D0{}_2025-12-15.7z".format(bdtopo_path, department)
+        )
+
+    ban_path = config["config"].get("ban_path", "ban_idf")
+    for department in departments:
+        registry.register(
+            "Adresses database (BAN), {}".format(department),
+            "https://adresse.data.gouv.fr/data/ban/adresses/latest/csv/adresses-{}.csv.gz".format(department),
+            "{}/adresses-{}.csv.gz".format(ban_path, department)
+        )   
+
+    if config["config"].get("use_urban_type", False):
+        urban_type_path = config["config"].get("urban_type_path", "urban_type/UU2020_au_01-01-2023.zip")
+        registry.register(
+            "Urban types",
+            "https://www.insee.fr/fr/statistiques/fichier/4802589/UU2020_au_01-01-2026.zip",
+            "{}/{}".format(data_path, urban_type_path),
+        )
+
+    if "matsim.output" in config["run"] or config["config"].get("mode_choice", False):
+        dom_tom_regions = ["01", "02", "03", "04", "06"]
+        osm_by_region = {
+            # The main entry point for these links is https://download.geofabrik.de/europe/france.html
+            # The sub-regions from geofabrik were mapped to region codes (many-to-one)
+            # For regions where at least is not working (on June 16th, 2026), the whole France osm file is used
+            # Note that the whole France file does't not include DOM-TOM
+            "01": ["https://download.geofabrik.de/europe/france/guadeloupe-latest.osm.pbf"],
+            "02": ["https://download.geofabrik.de/europe/france/martinique-latest.osm.pbf"],
+            "03": ["https://download.geofabrik.de/europe/france/guyane-latest.osm.pbf"],
+            "04": ["https://download.geofabrik.de/europe/france/reunion-latest.osm.pbf"],
+            "06": ["https://download.geofabrik.de/europe/france/mayotte-latest.osm.pbf"],
+            "11": ["https://download.geofabrik.de/europe/france/ile-de-france-latest.osm.pbf"],
+            "24": ["https://download.geofabrik.de/europe/france/centre-latest.osm.pbf"],
+            "27": ["https://download.geofabrik.de/europe/france/bourgogne-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/franche-comte-latest.osm.pbf"],
+            # "28": ["https://download.geofabrik.de/europe/france/haute-normandie-latest.osm.pbf",
+            #        "https://download.geofabrik.de/europe/france/basse-normandie-latest.osm.pbf"],
+            "28": ["https://download.geofabrik.de/europe/france-latest.osm.pbf"],
+            # "32": ["https://download.geofabrik.de/europe/france/nord-pas-de-calais-latest.osm.pbf",
+            #        "https://download.geofabrik.de/europe/france/picardie-latest.osm.pbf"],
+            "32": ["https://download.geofabrik.de/europe/france-latest.osm.pbf"],
+            "44": ["https://download.geofabrik.de/europe/france/alsace-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/lorraine-latest.osm.pbfl",
+                   "https://download.geofabrik.de/europe/france/champagne-ardenne-latest.osm.pbf"],
+            # "52": ["https://download.geofabrik.de/europe/france/pays-de-la-loire-latest.osm.pbf"],
+            "52": ["https://download.geofabrik.de/europe/france-latest.osm.pbf"],
+            "53": ["https://download.geofabrik.de/europe/france/bretagne-latest.osm.pbf"],
+            "75": ["https://download.geofabrik.de/europe/france/aquitaine-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/limousin-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/poitou-charentes-latest.osm.pbf"],
+            "76": ["https://download.geofabrik.de/europe/france/languedoc-roussillon-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/midi-pyrenees-latest.osm.pbf"],
+            "84": ["https://download.geofabrik.de/europe/france/rhone-alpes-latest.osm.pbf",
+                   "https://download.geofabrik.de/europe/france/auvergne-latest.osm.pbf"],
+            "93": ["https://download.geofabrik.de/europe/france/provence-alpes-cote-d-azur-latest.osm.pbf"],
+            "94": ["https://download.geofabrik.de/europe/france/corse-latest.osm.pbf"]
+        }
+
+        includes_dom_tom = False
+        osm_sources = []
+        for region in df_codes["region_id"].unique():
+            if region in dom_tom_regions:
+                includes_dom_tom = True
+            if region not in osm_by_region:
+                if not yes and not Confirm.ask("No known OSM source for region %s, proceed without it ?" % region):
+                    exit()
+                continue
+            osm_sources.extend(osm_by_region[region])
+        if "https://download.geofabrik.de/europe/france-latest.osm.pbf" in osm_sources and not includes_dom_tom:
+            osm_sources = ["https://download.geofabrik.de/europe/france-latest.osm.pbf"]
+
+        osm_path = config["config"].get("osm_path", "osm_idf")
+        for i, osm_source in enumerate(osm_sources):
+            registry.register("OSM file {}/{}".format(i + 1, len(osm_sources)),
+                              osm_source,
+                              "{}/{}".format(osm_path, osm_source.split("/")[-1]))
+
+    if "matsim.output" in config["run"] or config["config"].get("mode_choice", False):
+        gtfs_by_region = {
+            "11": ["https://eu.ftp.opendatasoft.com/stif/GTFS/IDFM-gtfs.zip"],
+            "75": ["https://eu.ftp.opendatasoft.com/sncf/plandata/Export_OpenData_SNCF_GTFS_NewTripId.zip",
+                   "https://www.pigma.org/public/opendata/nouvelle_aquitaine_mobilites/publication/naq-aggregated-gtfs.zip"]
+        }
+
+        gtfs_path = config["config"].get("gtfs_path", "gtfs_idf")
+        gtfs_feeds = []
+        non_covered_regions = []
+        for r in df_codes["region_id"].unique():
+            if r in gtfs_by_region:
+                gtfs_feeds.extend(gtfs_by_region[r])
+            else:
+                non_covered_regions.append(r)
+        if len(gtfs_feeds) > 0:
+            if yes or Confirm.ask("Your regions match with {} known GTFS feeds".format(len(gtfs_feeds)) + (
+            "\n (but {} regions have no matching feed)".format(len(non_covered_regions)) if len(non_covered_regions) > 0 else "") + "\n You might need to download missing feeds \n Do you wish to download known feeds ?"):
+                for i, feed in enumerate(gtfs_feeds):
+                    registry.register("GTFS Feed {}/{}".format(i + 1, len(gtfs_feeds)),
+                                      feed,
+                                      "{}/{}".format(gtfs_path, feed.split("/")[-1]))
+        else:
+            if not yes and not Confirm("No matching GTFS feed found for your regions, do you want to proceed anyway?"):
+                exit()
+
+    print("Checking the data sets that need to be downloaded ...")
+    any = registry.report()
+    if any:
+        print("[yellow]In case a download aborts, try starting the script again.[/yellow]")
+        print("[yellow]Note that for most data sources progress cannot be shown.[/yellow]")
+
+        if not yes and not Confirm.ask("Continue downloading data?"):
+            exit()
+
+        registry.download()
+
+    print("[green]You are up to date![/green]")
+
+
+if __name__ == "__main__":
+    typer.run(main)
