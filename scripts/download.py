@@ -184,9 +184,9 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)],
     )
 
     registry.register(
-        "Service and facility census (BPE 2024)",
-        "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE24.parquet",
-        "bpe_2024/BPE24.parquet"
+        "Service and facility census (BPE 2025)",
+        "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE25.parquet",
+        "bpe_2025/BPE25.parquet"
     )
 
     entd_sources = [
