@@ -253,9 +253,9 @@ def create(output_path):
 
     columns = ["CAPACITE","DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP", "EPSG"]
 
-    os.mkdir("%s/bpe_2024" % output_path)
+    os.mkdir("%s/bpe_2025" % output_path)
 
-    df_bpe[columns].to_parquet("%s/bpe_2024/BPE24.parquet" % output_path,
+    df_bpe[columns].to_parquet("%s/bpe_2025/BPE25.parquet" % output_path,
              index = False)
 
     # Dataset: Tax data
