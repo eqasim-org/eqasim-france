@@ -84,8 +84,8 @@ report.register(
 )
 
 report.register(
-    "Service and facility census (BPE 2024)",
-    "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE24.parquet"
+    "Service and facility census (BPE 2025)",
+    "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE25.parquet"
 )
 
 entd_sources = [
