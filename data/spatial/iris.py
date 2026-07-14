@@ -48,6 +48,8 @@ def execute(context):
     df_iris["commune_id"] = df_iris["commune_id"].astype("category")
 
     # Merge with requested codes and verify integrity
+    df_iris["iris_id"] = df_iris["iris_id"].astype(df_codes["iris_id"].dtype)
+    df_iris["commune_id"] = df_iris["commune_id"].astype(df_codes["commune_id"].dtype)
     df_iris = pd.merge(df_iris, df_codes, on = ["iris_id", "commune_id"])
 
     requested_iris = set(df_codes["iris_id"].unique())
@@ -55,7 +57,7 @@ def execute(context):
 
     if requested_iris != merged_iris:
         raise RuntimeError("Some IRIS are missing: %s" % (requested_iris - merged_iris,))
-
+    
     return df_iris
 
 def find_iris(path):
