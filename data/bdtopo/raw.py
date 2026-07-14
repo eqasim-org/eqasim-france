@@ -69,13 +69,13 @@ def execute(context):
             final_count = len(df_buildings)
             print("    {}/{} filtered duplicates".format(initial_count - final_count, initial_count))
 
-            # special fix for Ardennes
-            fix_ardennes(df_buildings)
-
             initial_count = len(df_buildings)
             df_buildings = gpd.sjoin(df_buildings, df_departments, predicate = "within")
             final_count = len(df_buildings)
             print("    {}/{} filtered spatially".format(initial_count - final_count, initial_count))
+
+            # special fix for Ardennes
+            fix_ardennes(df_buildings)
 
             initial_count = len(df_buildings)
             df_buildings = df_buildings[df_buildings["housing"] > 0]
