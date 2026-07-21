@@ -6,6 +6,7 @@ import numba
 
 import data.hts.egt.cleaned
 import data.hts.entd.cleaned
+from synthesis.population.commutes.utils import calculate_distance_class
 
 import multiprocessing as mp
 
@@ -29,13 +30,17 @@ def configure(context):
     context.config("random_seed")
     context.config("matching_minimum_observations", 20)
     context.config("matching_minimum_age", 5)
-    context.config("matching_attributes", DEFAULT_MATCHING_ATTRIBUTES)
+    matching = context.config("matching_attributes", DEFAULT_MATCHING_ATTRIBUTES)
 
     context.stage("synthesis.population.sampled")
     context.stage("synthesis.population.income.selected")
 
     hts = context.config("hts")
     context.stage("data.hts.selected", alias = "hts")
+    if "distance_class" in matching:
+        context.stage("data.hts.commute_distance")
+
+        context.stage("synthesis.population.commutes.enriched")
 
 @numba.jit(nopython = True) # Already parallelized parallel = True)
 def sample_indices(uniform, cdf, selected_indices):
@@ -62,7 +67,7 @@ def statistical_matching(progress, df_source, source_identifier, weight, df_targ
 
     for column in columns:
         unique_values[column] = list(sorted(set(df_source[column].unique()) | set(df_target[column].unique())))
-
+        print(unique_values[column])
     # Generate filters for all columns and values
     source_filters, target_filters = {}, {}
 
@@ -174,7 +179,7 @@ def execute(context):
     # Load data
     df_source_households, df_source_persons, df_source_trips = context.stage("hts")
     df_source = pd.merge(df_source_persons, df_source_households)
-
+    
     df_target = context.stage("synthesis.population.sampled")
 
     # Do not match persons whose age is below "matching_minimum_age".
@@ -200,6 +205,34 @@ def execute(context):
         df_target = pd.merge(df_target, df_income)
         df_target["income_class"] = INCOME_CLASS[hts](df_target)
 
+    if "distance_class" in columns:
+        df_commutes = context.stage("synthesis.population.commutes.enriched")[["person_id","household_id", "socioprofessional_class", "distance_class"]]
+        #df_commute_distance = context.stage("data.hts.commute_distance")["work"]
+
+        #df_commute_distance.loc[df_commute_distance["employed"],"distance_class"] = calculate_distance_class(df_commute_distance[df_commute_distance["employed"]])
+        df_target = pd.merge(df_target, df_commutes,on=["person_id","household_id", "socioprofessional_class"],how="left")
+        df_target["distance_class"] = df_target["distance_class"].fillna(99)
+        #df_source = pd.merge(df_source,df_commute_distance,how="left")
+        df_source.loc[~(df_source["commute_distance"].isna())&(df_source["employed"]),"distance_class"] = calculate_distance_class(df_source[~(df_source["commute_distance"].isna())&(df_source["employed"])])
+        df_source["distance_class"] = df_source["distance_class"].fillna(99)
+
+        # fill missing commute distance in source for employed persons in hts data
+        # for each socioprofessional_class 1 to 6, apply known distribution of distance class on distance_class 99
+        random = np.random.RandomState(0)
+        for socioprofessional_class in [1, 2, 3, 4, 5, 6]:
+            distance_distribution = df_source[
+                    (df_source["distance_class"]!=99) & (df_source["socioprofessional_class"]==socioprofessional_class)
+                ].groupby(["socioprofessional_class", "distance_class"], as_index=False)["person_weight"].sum()
+            distance_distribution["probability"] =  distance_distribution["person_weight"] / distance_distribution["person_weight"].sum()
+
+            df_source.loc[
+                (df_source["distance_class"]==99) & (df_source["socioprofessional_class"]==socioprofessional_class), "distance_class"
+            ] = random.choice(
+                    distance_distribution["distance_class"],
+                    size=len(df_source[(df_source["distance_class"]==99) & (df_source["socioprofessional_class"]==socioprofessional_class)]),
+                    p=distance_distribution["probability"])
+
+        
     if "any_cars" in columns:
         df_target["any_cars"] = df_target["number_of_vehicles"] > 0
         df_source["any_cars"] = df_source["number_of_vehicles"] > 0

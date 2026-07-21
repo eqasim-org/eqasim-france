@@ -12,14 +12,15 @@ def get_commuting_distance(df_persons, df_trips, activity_type, random):
     else:
         distance_slot = "routed_distance"
         distance_factor = 1.0 # / 1.3
+        
+    if "commute_distance" not in df_persons :
+        # Add commuting distances
+        df_commute_distance = df_trips[
+            ((df_trips["preceding_purpose"] == "home") & (df_trips["following_purpose"] == activity_type)) |
+            ((df_trips["preceding_purpose"] == activity_type) & (df_trips["following_purpose"] == "home"))
+        ].drop_duplicates("person_id", keep = "first")[["person_id", distance_slot]].rename(columns = { distance_slot: "commute_distance" })
 
-    # Add commuting distances
-    df_commute_distance = df_trips[
-        ((df_trips["preceding_purpose"] == "home") & (df_trips["following_purpose"] == activity_type)) |
-        ((df_trips["preceding_purpose"] == activity_type) & (df_trips["following_purpose"] == "home"))
-    ].drop_duplicates("person_id", keep = "first")[["person_id", distance_slot]].rename(columns = { distance_slot: "commute_distance" })
-
-    df_persons = pd.merge(df_persons, df_commute_distance, on = "person_id", how = "left")
+        df_persons = pd.merge(df_persons, df_commute_distance, on = "person_id", how = "left")
 
     # For the ones without commuting distance, sample from the distribution
     f_missing = df_persons["commute_distance"].isna()
