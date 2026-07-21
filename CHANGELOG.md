@@ -1,5 +1,50 @@
 # Changelog
 
+## [1.5.0](https://github.com/eqasim-org/eqasim-france/compare/v1.4.0...v1.5.0) (2026-07-21)
+
+
+### Features
+
+* add escort purpose ([#495](https://github.com/eqasim-org/eqasim-france/issues/495)) ([896e2d1](https://github.com/eqasim-org/eqasim-france/commit/896e2d1cf63071d7aa9171fa076758379459365e))
+* add motorcycles ([#384](https://github.com/eqasim-org/eqasim-france/issues/384)) ([5f1796b](https://github.com/eqasim-org/eqasim-france/commit/5f1796ba0b10d9fa973c7b8338ab54caecdb9004))
+* add number of cars and motorcycles to output ([#494](https://github.com/eqasim-org/eqasim-france/issues/494)) ([3e075f3](https://github.com/eqasim-org/eqasim-france/commit/3e075f32382e144f41e0e7eb86f52f91007bec93))
+* add output generation for primary and secondary locations ([#390](https://github.com/eqasim-org/eqasim-france/issues/390)) ([d78e8f9](https://github.com/eqasim-org/eqasim-france/commit/d78e8f9b9b1302124dd17ad8c76b50c71ff4e775))
+* add professional_activity variable ([#487](https://github.com/eqasim-org/eqasim-france/issues/487)) ([786d28e](https://github.com/eqasim-org/eqasim-france/commit/786d28ed55b8d23c68b79a417da97a2bf234e05a))
+* add support for HTS import with MobiSurvStd ([#346](https://github.com/eqasim-org/eqasim-france/issues/346)) ([5cd2196](https://github.com/eqasim-org/eqasim-france/commit/5cd2196051375b463417b51b1cc2e117c06b8d33))
+* configurable CRS and better consideration of DOM/TOM territories ([#511](https://github.com/eqasim-org/eqasim-france/issues/511)) ([860772d](https://github.com/eqasim-org/eqasim-france/commit/860772d097f4e89bcccd40ac16428fe4b8d7b471))
+* custom census attributes ([#516](https://github.com/eqasim-org/eqasim-france/issues/516)) ([2191d79](https://github.com/eqasim-org/eqasim-france/commit/2191d798f73da419e7de8128b0e5e9fbdcf424c6))
+* extend primary location for employed persons ([#536](https://github.com/eqasim-org/eqasim-france/issues/536)) ([b3e02af](https://github.com/eqasim-org/eqasim-france/commit/b3e02af2e1f134da5d0b93e9438a85a5beae9310))
+* force field in secondary location assignment ([#385](https://github.com/eqasim-org/eqasim-france/issues/385)) ([8cf5c6b](https://github.com/eqasim-org/eqasim-france/commit/8cf5c6b04063f9d3b347f84e261d1eceb86f6edb))
+* switching to uv for dependency management ([#498](https://github.com/eqasim-org/eqasim-france/issues/498)) ([da91635](https://github.com/eqasim-org/eqasim-france/commit/da9163545e33f1d4da37a2cdc39cb32e8492cdcd))
+* write detailed location information ([#437](https://github.com/eqasim-org/eqasim-france/issues/437)) ([8f1be24](https://github.com/eqasim-org/eqasim-france/commit/8f1be249c8e007f177c670a9d3e089c4f75a477e))
+* write legs when mode choice is active ([#480](https://github.com/eqasim-org/eqasim-france/issues/480)) ([81ec3fd](https://github.com/eqasim-org/eqasim-france/commit/81ec3fd66e0c8c59711169bf6459e355129d0e7d))
+
+
+### Bug Fixes
+
+* bdtopo in Ardennes ([#542](https://github.com/eqasim-org/eqasim-france/issues/542)) ([9e17f07](https://github.com/eqasim-org/eqasim-france/commit/9e17f07590d902a8306b92926af4df117e842d59))
+* bike availability drop ([#509](https://github.com/eqasim-org/eqasim-france/issues/509)) ([ada136b](https://github.com/eqasim-org/eqasim-france/commit/ada136b6d3bec1ec97a000737c026200170a367e))
+* building pt2matsim didn't skip tests anymore ([#506](https://github.com/eqasim-org/eqasim-france/issues/506)) ([b27c1a9](https://github.com/eqasim-org/eqasim-france/commit/b27c1a9faf33ca3ee5ca86048a4b936ebd1090b4))
+* documentation and verification for sirene and iris ([#527](https://github.com/eqasim-org/eqasim-france/issues/527)) ([d66cada](https://github.com/eqasim-org/eqasim-france/commit/d66cadac56dce0cdc1b5c819ddb534537aa70681))
+* fix od fix_origins ([#503](https://github.com/eqasim-org/eqasim-france/issues/503)) ([db788e5](https://github.com/eqasim-org/eqasim-france/commit/db788e52fc3669bf7a44dddb68b0f154c7a20e7a))
+* GTFS-related problems ([#521](https://github.com/eqasim-org/eqasim-france/issues/521)) ([66969c7](https://github.com/eqasim-org/eqasim-france/commit/66969c754519ddb205ae1c182581060abb8ae491))
+* **matsim:** properly configuring activity params ([#531](https://github.com/eqasim-org/eqasim-france/issues/531)) ([eeeb322](https://github.com/eqasim-org/eqasim-france/commit/eeeb322b935ee2795c97777cc2a8c6f881f889b1))
+* missing hts identifiers in matsim population ([#522](https://github.com/eqasim-org/eqasim-france/issues/522)) ([38573e1](https://github.com/eqasim-org/eqasim-france/commit/38573e1d23e1c4c2d7a049b82228c45e25a946fa))
+* missing municipalities in sirene ([#541](https://github.com/eqasim-org/eqasim-france/issues/541)) ([718b2ed](https://github.com/eqasim-org/eqasim-france/commit/718b2ed127a2e39af03f4e3fe1316c71cca399e8))
+* municipality code of Aurselles ([#537](https://github.com/eqasim-org/eqasim-france/issues/537)) ([e5c365c](https://github.com/eqasim-org/eqasim-france/commit/e5c365c4937be2e47d78933f571b0d877fcd074d))
+* numerical errors in gtfs treatment and multinomial sampling for primary locations ([#447](https://github.com/eqasim-org/eqasim-france/issues/447)) ([61cbb7f](https://github.com/eqasim-org/eqasim-france/commit/61cbb7fbec9b8f38880adb9cca9cc7321512cf5f))
+* optional agency id in GTFS ([#512](https://github.com/eqasim-org/eqasim-france/issues/512)) ([3f669d6](https://github.com/eqasim-org/eqasim-france/commit/3f669d616d993651f5b8148a4a1ebc12aae043fe))
+* population sampling and validation ([#515](https://github.com/eqasim-org/eqasim-france/issues/515)) ([004c62d](https://github.com/eqasim-org/eqasim-france/commit/004c62db78e29202b479af1086560ffed6f04ba1))
+* properly treat PCS2020 in census data ([#466](https://github.com/eqasim-org/eqasim-france/issues/466)) ([16a9f84](https://github.com/eqasim-org/eqasim-france/commit/16a9f843af23320df8fc1694b1f9868b637fd762))
+* read actual urban type with MobiSurvStd ([#485](https://github.com/eqasim-org/eqasim-france/issues/485)) ([dfce495](https://github.com/eqasim-org/eqasim-france/commit/dfce4957b27b93237d792e6405b67629558566e3))
+* support for children below 5 ([#492](https://github.com/eqasim-org/eqasim-france/issues/492)) ([2fade7c](https://github.com/eqasim-org/eqasim-france/commit/2fade7c18303dc56705b55dd22d5723f094c4047))
+* update bpe to 2025 ([#540](https://github.com/eqasim-org/eqasim-france/issues/540)) ([d4b9675](https://github.com/eqasim-org/eqasim-france/commit/d4b9675a89b129a76b6f6c37bffb767672cc9bf0))
+
+
+### Performance Improvements
+
+* reduce memory footprint of od cleaning ([#538](https://github.com/eqasim-org/eqasim-france/issues/538)) ([524bb74](https://github.com/eqasim-org/eqasim-france/commit/524bb7493fd4d0529f091d39e05bb550a2faabf3))
+
 ## [1.4.0](https://github.com/eqasim-org/eqasim-france/compare/v1.3.0...v1.4.0) (2026-02-19)
 
 
