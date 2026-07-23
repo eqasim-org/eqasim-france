@@ -18,6 +18,7 @@ def configure(context):
     context.config("education_location_source","bpe")
 
     context.config("bpe_random_seed", 0)
+    context.config("crs", "EPSG:2154")
 
 ACTIVITY_TYPE_MAP = [
     ("A", "task"),          # Police, post office, etc ...
@@ -140,8 +141,12 @@ def execute(context):
         df.loc[outside_indices, "imputed"] = True
 
     # Package up data set
-    df = df[["enterprise_id", "activity_type","education_type", "commune_id", "imputed", "x", "y","weight"]]
+    df = df[["enterprise_id", "activity_type","education_type", "commune_id", "imputed", "x", "y","weight", "EPSG"]]
 
-    df = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.x, df.y),crs="EPSG:2154")
+    df = df.groupby("EPSG")[df.columns].apply(lambda group_df: gpd.GeoDataFrame(group_df,
+                                                                                geometry=gpd.points_from_xy(group_df.x,
+                                                                                                            group_df.y),
+                                                                                crs="EPSG:"+group_df["EPSG"].iloc[0]).to_crs(context.config("crs")))
+    df = gpd.GeoDataFrame(df.drop(columns="EPSG"), crs=context.config("crs"))
 
     return df

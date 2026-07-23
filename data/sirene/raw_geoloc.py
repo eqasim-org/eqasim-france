@@ -32,7 +32,7 @@ def execute(context):
         lf = lf.filter(pl.col("plg_code_commune").str.slice(0, 2).is_in(deps2))
     if deps3:
         lf = lf.filter(pl.col("plg_code_commune").str.slice(0, 3).is_in(deps3))
-    df_siret_geoloc = lf.select("siret", "x", "y").collect()
+    df_siret_geoloc = lf.select("siret", "x", "y", "epsg").collect()
     return df_siret_geoloc.to_pandas()
 
 

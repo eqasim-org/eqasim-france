@@ -8,7 +8,7 @@ This stage loads the raw data from the French service registry.
 
 def configure(context):
     context.config("data_path")
-    context.config("bpe_path", "bpe_2024/BPE24.parquet")
+    context.config("bpe_path", "bpe_2025/BPE25.parquet")
     context.stage("data.spatial.codes")
 
 def execute(context):
@@ -19,7 +19,7 @@ def execute(context):
 
     with context.progress(label = "Reading BPE ...") as progress:
         parquet = pl.read_parquet("{}/{}".format(context.config("data_path"), context.config("bpe_path")), columns = [ "CAPACITE",
-                        "DCIRIS", "LAMBERT_X", "LAMBERT_Y",
+                        "DCIRIS", "LAMBERT_X", "LAMBERT_Y", "EPSG",
                         "TYPEQU", "DEPCOM", "DEP"
                     ],
                 )

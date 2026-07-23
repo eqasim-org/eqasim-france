@@ -241,6 +241,7 @@ def create(output_path):
     df_bpe["DEP"] = df_bpe["department"]
     df_bpe["LAMBERT_X"] = df_bpe["geometry"].centroid.x
     df_bpe["LAMBERT_Y"] = df_bpe["geometry"].centroid.y
+    df_bpe["EPSG"] = "2154"
     df_bpe["TYPEQU"] = categories[random.integers(0, len(categories), size = len(df_bpe))]
 
     # Deliberately set coordinates for some to NaN
@@ -248,13 +249,13 @@ def create(output_path):
     df_bpe.iloc[-10:, df_bpe.columns.get_loc("LAMBERT_Y")] = np.nan
 
     print("Hash", "df_bpe", pd.util.hash_pandas_object(df_bpe, index = True).sum())
-    assert pd.util.hash_pandas_object(df_bpe, index = True).sum() == 875998870050180323
+    assert pd.util.hash_pandas_object(df_bpe, index = True).sum() == 17856362546933168307
 
-    columns = ["CAPACITE","DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP"]
+    columns = ["CAPACITE","DCIRIS", "LAMBERT_X", "LAMBERT_Y", "TYPEQU", "DEPCOM", "DEP", "EPSG"]
 
-    os.mkdir("%s/bpe_2024" % output_path)
+    os.mkdir("%s/bpe_2025" % output_path)
 
-    df_bpe[columns].to_parquet("%s/bpe_2024/BPE24.parquet" % output_path,
+    df_bpe[columns].to_parquet("%s/bpe_2025/BPE25.parquet" % output_path,
              index = False)
 
     # Dataset: Tax data
@@ -437,16 +438,37 @@ def create(output_path):
                     NDEP = 4, V2_MOBILREF = 1, PONDKI = 3.0
                 ))
 
-                # Add a tail
                 data["K_DEPLOC"].append(dict(
                     IDENT_IND = person_id, V2_MMOTIFDES = 2, V2_MMOTIFORI = 1,
-                    V2_TYPJOUR = 1, V2_MORIHDEP = "21:00:00", V2_MDESHARR = "22:00:00",
+                    V2_TYPJOUR = 1, V2_MORIHDEP = "19:30:00", V2_MDESHARR = "20:00:00",
                     V2_MDISTTOT = 3, # km
                     IDENT_JOUR = 1, V2_MTP = mode,
                     V2_MDESDEP = home_department,
                     V2_MORIDEP = home_department,
                     NDEP = 4, V2_MOBILREF = 1, PONDKI = 3.0
                 ))
+
+                data["K_DEPLOC"].append(dict(
+                    IDENT_IND=person_id, V2_MMOTIFDES=6, V2_MMOTIFORI=2,
+                    V2_TYPJOUR=1, V2_MORIHDEP="20:30:00", V2_MDESHARR="21:00:00",
+                    V2_MDISTTOT=3,  # km
+                    IDENT_JOUR=1, V2_MTP=mode,
+                    V2_MDESDEP=home_department,
+                    V2_MORIDEP=home_department,
+                    NDEP=4, V2_MOBILREF=1, PONDKI=3.0
+                ))
+
+                # Add a tail
+                data["K_DEPLOC"].append(dict(
+                    IDENT_IND=person_id, V2_MMOTIFDES=4, V2_MMOTIFORI=6,
+                    V2_TYPJOUR=1, V2_MORIHDEP="21:30:00", V2_MDESHARR="22:00:00",
+                    V2_MDISTTOT=3,  # km
+                    IDENT_JOUR=1, V2_MTP=mode,
+                    V2_MDESDEP=home_department,
+                    V2_MORIDEP=home_department,
+                    NDEP=4, V2_MOBILREF=1, PONDKI=3.0
+                ))
+
 
     os.mkdir("%s/entd_2008" % output_path)
     pd.DataFrame.from_records(data["Q_MENAGE"]).to_csv("%s/entd_2008/Q_menage.csv" % output_path, index = False, sep = ";")
@@ -460,7 +482,7 @@ def create(output_path):
         "Q_TCM_MENAGE": 6980538473335852422,
         "Q_INDIVIDU": 15145767072075638494,
         "Q_TCM_INDIVIDU": 3034067474133300876,
-        "K_DEPLOC": 7631538890399794851
+        "K_DEPLOC": 10490820681951943392
     }
 
     for slot in ["Q_MENAGE", "Q_TCM_MENAGE", "Q_INDIVIDU", "Q_TCM_INDIVIDU", "K_DEPLOC"]:
@@ -547,14 +569,32 @@ def create(output_path):
                 DESTMOT_H9 = 1, ORMOT_H9 = 5
             ))
 
-            # Tail
             data["trips"].append(dict(
                 NQUEST = household_id, NP = person_id,
                 ND = 4, ORDEP = home_department, DESTDEP = home_department,
-                ORH = 22, ORM = 0, DESTH = 21, DESTM = 0, ORCOMM = home_municipality,
+                ORH = 18, ORM = 30, DESTH = 19, DESTM = 0, ORCOMM = home_municipality,
                 DESTCOMM = home_municipality, DPORTEE = 3, MODP_H7 = 2,
                 DESTMOT_H9 = 5, ORMOT_H9 = 1
             ))
+
+            data["trips"].append(dict(
+                NQUEST=household_id, NP=person_id,
+                ND=4, ORDEP=home_department, DESTDEP=home_department,
+                ORH=19, ORM=30, DESTH=20, DESTM=0, ORCOMM=home_municipality,
+                DESTCOMM=home_municipality, DPORTEE=3, MODP_H7=2,
+                DESTMOT_H9=6, ORMOT_H9=5
+            ))
+
+            # tail
+            data["trips"].append(dict(
+                NQUEST=household_id, NP=person_id,
+                ND=4, ORDEP=home_department, DESTDEP=home_department,
+                ORH=20, ORM=30, DESTH=21, DESTM=0, ORCOMM=home_municipality,
+                DESTCOMM=home_municipality, DPORTEE=3, MODP_H7=2,
+                DESTMOT_H9=7, ORMOT_H9=6
+            ))
+
+
 
     os.mkdir("%s/egt_2010" % output_path)
     pd.DataFrame.from_records(data["households"]).to_csv("%s/egt_2010/Menages_semaine.csv" % output_path, index = False, sep = ",")
@@ -564,7 +604,7 @@ def create(output_path):
     hashes = {
         "households": 11444390802329132734,
         "persons": 11897428716349732217,
-        "trips": 14635367621539133620,
+        "trips": 4217700706391585024,
     }
 
     for slot in ["households", "persons", "trips"]:
@@ -731,8 +771,8 @@ def create(output_path):
 
     df_ban = pd.DataFrame({
         "code_insee": municipality[random.integers(0, len(municipality), observations)],
-        "x": x,
-        "y": y})
+        "lon": x,
+        "lat": y})
 
     df_ban = df_ban[:round(len(x)*.8)]
 
@@ -789,11 +829,12 @@ def create(output_path):
         "siret": identifiers,
         "x": x,
         "y": y,
+        "epsg": "2154",
         "plg_code_commune":codes_com,
     })
 
     print("Hash", "SIRENE GEO", pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum())
-    assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 12038323953301123794
+    assert pd.util.hash_pandas_object(df_sirene_geoloc, index = True).sum() == 16147264283833352948
 
     df_sirene_geoloc.to_parquet("%s/sirene/geoloc-geolocalisationetablissement-sirene-pour-etudes-statistiques-parquet.parquet" % output_path, index = False)
 
