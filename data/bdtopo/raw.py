@@ -32,6 +32,17 @@ def execute(context):
     print("Expecting data for {} departments".format(len(df_departments)))
     
     source_paths = find_bdtopo("{}/{}".format(context.config("data_path"), context.config("bdtopo_path")))
+    requested_departments = set(df_departments["departement_id"].astype(str).unique())
+    filtered_paths = []
+
+    for source_path in source_paths:
+        filename = os.path.basename(source_path)
+        if any(f"D{get_department_string(department_id)}" in filename for department_id in requested_departments):
+            filtered_paths.append(source_path)
+
+    source_paths = filtered_paths
+    if len(source_paths) == 0:
+        raise RuntimeError("No BD-TOPO archives match the requested departments")
 
     df_bdtopo = []
     known_ids = set()
