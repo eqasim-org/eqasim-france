@@ -47,7 +47,7 @@ config:
 
   ## Activity purposes included in the generated activities.
   ## Purposes not present in the list below is put in the "other" category.
-  # activity_purposes: ["leisure", "shop", "escort", "task"]
+  # activity_purposes: ["leisure", "shop"]
 
   ## if selected, chose the source for edgt_lyon
   # edgt_lyon_source: unchosen # unchosen, adisp, cerema
@@ -147,6 +147,7 @@ config:
   ## max iterations for the secondary location selection algorithm
   # secondary_activities:
   #   maximum_iterations: .inf
+  #   chain_solver: default
 
   # Locations for escort activities are drawn from the activity types below, with the given weights.
   # By default, there is a 71% probability that a escort activity is drawn from "education" locations.
