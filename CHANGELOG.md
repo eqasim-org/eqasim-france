@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/eqasim-org/eqasim-france/compare/v1.5.0...v1.5.1) (2026-09-17)
+
+
+### Bug Fixes
+
+* order of generated municipalities ([#553](https://github.com/eqasim-org/eqasim-france/issues/553)) ([db383cd](https://github.com/eqasim-org/eqasim-france/commit/db383cd8ac1246db606732d84b9f7c622ec7467c))
+
 ## [1.5.0](https://github.com/eqasim-org/eqasim-france/compare/v1.4.0...v1.5.0) (2026-09-10)
 
 
