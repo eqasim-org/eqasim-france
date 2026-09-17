@@ -57,8 +57,8 @@ def execute(context):
 
         candidates = np.copy(df_candidates.index.values)
         indices = np.repeat(np.arange(weights.shape[0]), random.multinomial(len(df_target), weights))
-
-        # random.shuffle(candidates)
+    
+        random.shuffle(indices)
         df_households.loc[df_target.index, "commune_id"] = candidates[indices]
 
     # Fix missing IRIS (we select from those with <200 inhabitants)
@@ -89,7 +89,7 @@ def execute(context):
         candidates = np.copy(df_candidates.index.values)
         indices = np.repeat(np.arange(weights.shape[0]), random.multinomial(len(df_target), weights))
 
-        # random.shuffle(indices)
+        random.shuffle(indices)
         df_households.loc[df_target.index, "iris_id"] = candidates[indices]
 
     # Check that everybody has a commune now
