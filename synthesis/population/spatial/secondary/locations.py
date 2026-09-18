@@ -67,13 +67,17 @@ def prepare_destinations(context):
     for activity, group in df_locations.groupby("activity_type"):
         data[activity] = dict(
             identifiers = group["location_id"].values,
-            locations = np.column_stack((group.geometry.x, group.geometry.y))
+            locations = np.column_stack((group.geometry.x, group.geometry.y)),
+            type_act = df_locations["type_act"].values,
+            weight = df_locations["weight"].values  
         )
 
     # Add "other" as a special purpose with all possible locations.
     data["other"] = dict(
         identifiers = df_locations["location_id"].values,
-        locations = np.column_stack((df_locations.geometry.x, df_locations.geometry.y))
+        locations = np.column_stack((df_locations.geometry.x, df_locations.geometry.y)),
+        type_act = df_locations["type_act"].values,
+        weight = df_locations["weight"].values
     )
 
     return data
@@ -168,7 +172,7 @@ def process(context, arguments):
 
   # Set up discretization solver
   destinations = context.data("destinations")
-  candidate_index = CandidateIndex(destinations)
+  candidate_index = CandidateIndex(destinations,random=random)
   discretization_solver = CustomDiscretizationSolver(
       candidate_index,
       random,
@@ -224,9 +228,9 @@ def process(context, arguments):
 
       starting_activity_index = problem["activity_index"]
 
-      for index, (identifier, location) in enumerate(zip(result["discretization"]["identifiers"], result["discretization"]["locations"])):
+      for index, (identifier, location,type_act) in enumerate(zip(result["discretization"]["identifiers"], result["discretization"]["locations"],result["discretization"]["type_acts"])):
           df_locations.append((
-              problem["person_id"], starting_activity_index + index, identifier, geo.Point(location)
+              problem["person_id"], starting_activity_index + index, type_act, identifier, geo.Point(location)
           ))
 
       df_convergence.append((
@@ -237,7 +241,7 @@ def process(context, arguments):
           last_person_id = problem["person_id"]
           context.progress.update()
 
-  df_locations = pd.DataFrame.from_records(df_locations, columns = ["person_id", "activity_index", "location_id", "geometry"])
+  df_locations = pd.DataFrame.from_records(df_locations, columns = ["person_id", "activity_index","type_act", "location_id", "geometry"])
   df_locations = gpd.GeoDataFrame(df_locations, crs = crs)
   assert not df_locations["geometry"].isna().any()
 
