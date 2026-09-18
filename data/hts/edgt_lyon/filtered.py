@@ -14,8 +14,10 @@ def configure(context):
         context.stage("data.hts.edgt_lyon.cleaned_adisp", alias="data.hts.edgt_lyon.cleaned")
     elif edgt_lyon_source == "cerema":
         context.stage("data.hts.edgt_lyon.cleaned_cerema", alias="data.hts.edgt_lyon.cleaned")
+    elif edgt_lyon_source == "laet":
+        context.stage("data.hts.edgt_lyon.cleaned_laet", alias="data.hts.edgt_lyon.cleaned")
     else:
-        raise RuntimeError("Unknown Lyon EDGT source (only 'cerema' and 'adisp' are supported): %s" % edgt_lyon_source)
+        raise RuntimeError("Unknown Lyon EDGT source (only 'cerema', 'adisp', 'laet' are supported): %s" % edgt_lyon_source)
     
     context.stage("data.spatial.codes")
     
@@ -46,7 +48,7 @@ def execute(context):
 
     # Finish up
     df_households = df_households[hts.HOUSEHOLD_COLUMNS]
-    df_persons = df_persons[hts.PERSON_COLUMNS]
+    df_persons = df_persons[hts.PERSON_COLUMNS+["commute_distance"]]
     df_trips = df_trips[hts.TRIP_COLUMNS + ["routed_distance", "euclidean_distance"]]
 
     hts.check(df_households, df_persons, df_trips)

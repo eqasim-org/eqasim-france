@@ -26,7 +26,8 @@ def execute(context):
             "ARM":pl.String, 
             "TRANS":pl.Int32,
             "IPONDI":pl.Float32, 
-            "DCLT":pl.String
+            "DCLT":pl.String,
+            "GS":pl.Int32
         }
 
         parquet = pl.read_parquet("{}/{}".format(context.config("data_path"), context.config("od_pro_path")),columns=  list(COLUMNS_DTYPES.keys()),
