@@ -10,17 +10,17 @@ import os, yaml, requests, sys, shutil
 
 import pandas as pd
 import zipfile
-import rich
 
 TEMPORARY_PATH = Path(".script_data")
 CODES_URL = "https://www.insee.fr/fr/statistiques/fichier/7708995/reference_IRIS_geo2024.zip"
 
-def load_codes():
+
+def load_codes(requests_kwargs: dict):
     if not os.path.exists(TEMPORARY_PATH / "codes.zip"):
         os.makedirs(TEMPORARY_PATH, exist_ok = True)
 
         print("Downloading zoning codes from INSEE ...")
-        response = requests.get(CODES_URL, stream = True)
+        response = requests.get(CODES_URL, stream=True, **requests_kwargs)
         response.raise_for_status()
 
         total = int(response.headers.get('content-length', 0))
@@ -75,7 +75,7 @@ class Registry:
 
         return any
 
-    def download(self):
+    def download(self, requests_kwargs: dict):
         queue = []
 
         for item in self.registry:
@@ -88,7 +88,7 @@ class Registry:
             os.makedirs(TEMPORARY_PATH, exist_ok = True)
             os.makedirs((self.data_path / item["target"]).parent, exist_ok = True)
 
-            response = requests.get(item["url"], stream = True)
+            response = requests.get(item["url"], stream=True, **requests_kwargs)
             response.raise_for_status()
 
             total = int(response.headers.get('content-length', 0))
@@ -107,11 +107,43 @@ class Registry:
 
 HELP_CONFIG_PATH = "Path to your config file"
 
+
+def infer_value(value: str):
+    if value.lower() in ("true", "false"):
+        return value.lower() == "true"
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return float(value)
+    except ValueError:
+        pass
+    return value
+
+
+def parse_kwargs(items: list[str]) -> dict:
+    result = {}
+    for item in items:
+        key, separator, value = item.partition("=")
+        if not separator:
+            raise ValueError(
+                f"Expected KEY=VALUE, got {item!r}"
+            )
+        result[key] = infer_value(value)
+    return result
+
+
 def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)],
-         yes: Annotated[bool, typer.Option("--yes", "-y", help="Automatically answer yes")] = False):
+         yes: Annotated[bool, typer.Option("--yes", "-y", help="Automatically answer yes")] = False,
+         requests_kwargs: list[str] | None = typer.Option(None, "--requests",
+                                                          help="Additional key=value parameters to pass to requests.get")):
+
     if not os.path.exists(config_path):
         print("[red]Config path does not exist[/red]")
         exit()
+
+    requests_kwargs = parse_kwargs(requests_kwargs or [])
 
     print("Loading input config ...")
     with open(config_path) as f:
@@ -126,7 +158,7 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)],
         print("  [green]exists[/green]")
 
     print("Loading zoning data ...")
-    df_codes = load_codes()
+    df_codes = load_codes(requests_kwargs)
 
     print("Identifying requested departments ...")
     regions = [str(item) for item in config["config"].get("regions", ["11"])]
@@ -348,11 +380,14 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)],
     if any:
         print("[yellow]In case a download aborts, try starting the script again.[/yellow]")
         print("[yellow]Note that for most data sources progress cannot be shown.[/yellow]")
+        if "timeout" in requests_kwargs:
+            print("[yellow]Downloads will each have a timeout of %s seconds before starting to receive data" % str(
+                requests_kwargs["timeout"]))
 
         if not yes and not Confirm.ask("Continue downloading data?"):
             exit()
 
-        registry.download()
+        registry.download(requests_kwargs)
 
     print("[green]You are up to date![/green]")
 
