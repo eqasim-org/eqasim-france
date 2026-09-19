@@ -17,7 +17,7 @@ from fastapi.responses import StreamingResponse
 # Configuration
 # ---------------------------------------------------------------------------
 
-CONFIG_FILE = os.getenv("CONFIG_FILE", "config.yaml")
+CONFIG_FILE = os.getenv("CONFIG_FILE", "config.yml")
 
 def parse_size(value) -> int:
     """

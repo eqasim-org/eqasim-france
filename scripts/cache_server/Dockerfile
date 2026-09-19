@@ -5,7 +5,7 @@ WORKDIR /app
 COPY main.py .
 COPY pyproject.toml .
 COPY uv.lock .
-COPY config.yaml .
+COPY config.yml .
 COPY update_config_from_environ.py .
 COPY run_docker.sh .
 
