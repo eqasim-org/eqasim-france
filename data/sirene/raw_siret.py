@@ -26,10 +26,10 @@ def execute(context):
     deps2 = {dep for dep in requested_departements if len(dep) == 2}
     deps3 = {dep for dep in requested_departements if len(dep) == 3}
     assert len(deps2) + len(deps3) == len(requested_departements)
-    if deps2:
-        lf = lf.filter(pl.col("codeCommuneEtablissement").str.slice(0, 2).is_in(deps2))
-    if deps3:
-        lf = lf.filter(pl.col("codeCommuneEtablissement").str.slice(0, 3).is_in(deps3))
+    lf = lf.filter(
+        pl.col("codeCommuneEtablissement").str.slice(0, 2).is_in(deps2) |
+        pl.col("codeCommuneEtablissement").str.slice(0, 3).is_in(deps3)
+    )
 
     df_siret = lf.select(
         "siren",
