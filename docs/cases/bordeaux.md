@@ -23,7 +23,7 @@ You need to download the region-specific buildings database.
 
 Only if you plan to run a simulation (and not just generate a synthetic population),
 you need to obtain additional data from OpenStreetMap.
-Geofabrik provides a cut-out for the old [Aquitaine](https://download.geofabrik.de/europe/france/aquitaine.html) region: [aquitaine-220101.osm.pbf](https://download.geofabrik.de/europe/france/aquitaine-220101.osm.pbf). Download the region file in *.osm.pbf* format and put the file into the
+Geofabrik provides a cut-out for the old [Aquitaine](https://download.geofabrik.de/europe/france/aquitaine.html) region: [aquitaine-220101.osm.pbf](https://download.geofabrik.de/europe/france/aquitaine-latest.osm.pbf). Download the region file in *.osm.pbf* format and put the file into the
 folder `data/osm_bordeaux`.
 
 ### C) GTFS data
@@ -33,7 +33,8 @@ Unfortunately, there is no consolidated GTFS schedule avaiable for the region of
 it is necessary to collect all relevant GTFS schedules one by one. Here, we
 provide a selection of links, which is not necessarily exhaustive:
 
-- TODO
+- A consolidated GTFS of the public transport in the Nouvelle Aquitaine region can be found [here](https://transport.data.gouv.fr/datasets/arrets-horaires-et-parcours-theoriques-des-reseaux-nva-mobilite-agreges-1).
+- For the trains, the GTFS [data](https://transport.data.gouv.fr/datasets/horaires-sncf) from SNCF should be used.
 
 Download all the *zip*'d GTFS schedules and put them into the folder `data/gtfs_bordeaux`.
 
@@ -68,9 +69,8 @@ Afterwards, you should have the following additional files in your directory str
 *Only for simulation:*
 
 - `data/osm_bordeaux/aquitaine-latest.osm.pbf`
-- `data/gtfs_bordeaux/TODO`
-- `data/gtfs_bordeaux/TODO`
-- `data/gtfs_bordeaux/TODO`
+- `data/gtfs_bordeaux/Export_OpenData_SNCF_GTFS_NewTripId.zip`
+- `data/gtfs_bordeaux/naq-aggregated-gtfs.zip`
 
 Note that the file names may change slightly over time as GTFS schedule are
 updated continuously.
