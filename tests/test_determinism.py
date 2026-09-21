@@ -110,22 +110,22 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.csv",
         "{}/ile_de_france_households.csv".format(output_path),
-        "0cf89bfda464271f2b1393c0da476ba2")
+        "5d458e8563fb1857beee18a4e0fdae4e")
 
     manager.check(
         "ile_de_france_persons.csv",
         "{}/ile_de_france_persons.csv".format(output_path),
-        "1e16d07319346c43baa70bb8e2ac13bd")
+        "0ee1f26c83bcb768f8f88f2017b6ac47")
 
     manager.check(
         "ile_de_france_activities.csv",
         "{}/ile_de_france_activities.csv".format(output_path),
-        "f9a2e65875124f5359b350b68570b839")
+        "7bb6fa6cb6b65977270ee01d84bcd3f6")
 
     manager.check(
         "ile_de_france_trips.csv",
         "{}/ile_de_france_trips.csv".format(output_path),
-        "f01a4550f389fae1a7fb37febdf5f351")
+        "7fe9d17edb680117490e9dbda058c457")
 
     manager.check(
         "ile_de_france_vehicle_types.csv",
@@ -140,22 +140,22 @@ def _test_determinism(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_activities.gpkg",
         "{}/ile_de_france_activities.gpkg".format(output_path),
-        "ec15ed97497543bb4ad55294d31d4cd8")
+        "a3b57243f566b3ec076811c6cd6c6caa")
 
     manager.check(
         "ile_de_france_commutes.gpkg",
         "{}/ile_de_france_commutes.gpkg".format(output_path),
-        "896cebac83d1db15a75a5a3d21961718")
+        "8f5d76e2191a31683f91df625b3897ce")
 
     manager.check(
         "ile_de_france_homes.gpkg",
         "{}/ile_de_france_homes.gpkg".format(output_path),
-        "93c2c316325bc6be6a5bc75024d01785")
+        "2731ab009cf64e9b31aff66a80dac0e8")
 
     manager.check(
         "ile_de_france_trips.gpkg",
         "{}/ile_de_france_trips.gpkg".format(output_path),
-        "7bdf43aadbf18f6064fb635cb92fa149")
+        "c81947c1a299af93e241025544f83516")
 
     manager.finish()
 
@@ -196,7 +196,7 @@ def _test_determinism_matsim(index, data_path, tmpdir):
     manager.check(
         "ile_de_france_households.xml.gz",
         "{}/ile_de_france_households.xml.gz".format(output_path),
-        "3150ba07fdd8cf2098003884bbf20f20")
+        "7778c76278eed41ec1f5be7ad0a8e5b8")
 
     manager.check(
         "ile_de_france_vehicles.xml.gz",
