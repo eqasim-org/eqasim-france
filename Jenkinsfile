@@ -63,6 +63,11 @@ pipeline {
         stage('Prepare') {
             steps {
                 sh '''
+                # UV will want to write into the home directory which is not necessarily writable (Docker user VS host user)
+                # So we put the home directory right where we are
+                rm -rf .home && mkdir .home
+                export HOME=$(pwd)/.home
+
                 BASE=$(pwd)
                 # Making sure old directories are cleared
                 rm -rf pipeline_data pipeline_cache pipeline_output
@@ -79,7 +84,6 @@ pipeline {
                 echo "$config_overrides" > overrides.yml
                 uv --no-cache run scripts/override_config.py overrides.yml config.yml
                 rm overrides.yml
-                ls -al /
 
                 # setting up common cache and data path
                 ./yq -i ".working_directory = \\"$BASE/pipeline_cache\\" | .config.data_path = \\"$BASE/pipeline_data\\" | .config.output_path = \\"$BASE/output_0.1pct\\" " config.yml
@@ -101,8 +105,6 @@ pipeline {
             steps {
                 // We use uv with --no-cache to prevent it from writing into the home directory
                 sh '''
-                    rm -rf .home && mkdir .home
-                    export HOME=$(pwd)/.home
                     uv --no-cache sync
                     uv --no-cache run scripts/download.py -y --requests verify=false --requests timeout=300 --cache-server "$cache_server" config.yml
                 '''
@@ -155,6 +157,7 @@ pipeline {
                     if(params.archive_repo) {
                         sh '''
                         rm -rf .prepare_artifacts_temp
+                        rm -f repo.tar.gz
                         mkdir .prepare_artifacts_temp
                         mv pipeline_output .prepare_artifacts_temp/
                         mv pipeline_cache .prepare_artifacts_temp/
