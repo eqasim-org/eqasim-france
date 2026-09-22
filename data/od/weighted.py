@@ -24,6 +24,9 @@ def fix_origins(df, commune_ids, purpose,category):
     missing = np.array(list(set(product(
         commune_ids, df[category].cat.categories.values)) - existing))
 
+    if len(missing) == 0:
+        return df
+
     # for each missing origin x category we create a flow to itself
     df_missing = pd.DataFrame({
         "origin_id": pd.Categorical(missing[:, 0], dtype = df["origin_id"].dtype),

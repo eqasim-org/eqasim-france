@@ -55,10 +55,11 @@ def execute(context):
         weights = df_candidates["population"].values.astype(float)
         weights /= np.sum(weights)
 
+        candidates = np.copy(df_candidates.index.values)
         indices = np.repeat(np.arange(weights.shape[0]), random.multinomial(len(df_target), weights))
-        df_target["commune_id"] = df_candidates.reset_index()["commune_id"].iloc[indices].values
-
-        df_households.loc[df_target.index, "commune_id"] = df_target["commune_id"]
+    
+        random.shuffle(indices)
+        df_households.loc[df_target.index, "commune_id"] = candidates[indices]
 
     # Fix missing IRIS (we select from those with <200 inhabitants)
     df_iris = context.stage("data.spatial.iris").set_index("iris_id")
@@ -85,10 +86,11 @@ def execute(context):
         if (weights == 0.0).all(): weights += 1.0
         weights /= np.sum(weights)
 
+        candidates = np.copy(df_candidates.index.values)
         indices = np.repeat(np.arange(weights.shape[0]), random.multinomial(len(df_target), weights))
-        df_target["iris_id"] = df_candidates.reset_index()["iris_id"].iloc[indices].values
 
-        df_households.loc[df_target.index, "iris_id"] = df_target["iris_id"]
+        random.shuffle(indices)
+        df_households.loc[df_target.index, "iris_id"] = candidates[indices]
 
     # Check that everybody has a commune now
     assert np.count_nonzero(df_households["commune_id"] == "undefined") == 0
