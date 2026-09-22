@@ -79,6 +79,7 @@ pipeline {
                 echo "$config_overrides" > overrides.yml
                 uv --no-cache run scripts/override_config.py overrides.yml config.yml
                 rm overrides.yml
+                ls -al /
 
                 # setting up common cache and data path
                 ./yq -i ".working_directory = \\"$BASE/pipeline_cache\\" | .config.data_path = \\"$BASE/pipeline_data\\" | .config.output_path = \\"$BASE/output_0.1pct\\" " config.yml
