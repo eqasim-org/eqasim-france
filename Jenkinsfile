@@ -82,6 +82,9 @@ pipeline {
 
                 # setting up common cache and data path
                 ./yq -i ".working_directory = \\"$BASE/pipeline_cache\\" | .config.data_path = \\"$BASE/pipeline_data\\" | .config.output_path = \\"$BASE/output_0.1pct\\" " config.yml
+
+                # We are done with yq, we can delete it
+                rm yq
                 '''
             }
         }
