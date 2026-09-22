@@ -156,7 +156,7 @@ pipeline {
                         mv pipeline_cache .prepare_artifacts_temp/
                         mv pipeline_data .prepare_artifacts_temp/
                         tar -czf repo.tar.gz *
-                        mv .prepare_artifacts_temp/* /.
+                        mv .prepare_artifacts_temp/* ./
                         rm -rf .prepare_artifacts_temp
                         '''
                     }
