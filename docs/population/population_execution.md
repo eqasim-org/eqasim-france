@@ -398,3 +398,18 @@ is interpreted as *other*. You can add, for instance the specific *task* and *es
 config:
   activity_purposes: ["leisure", "shop", "task", "escort"]
 ```
+
+### Distance class
+
+The pipeline allows to adds distance to work as matching parameter. This distance is taken from HTS data as *commute_distance* and distributed into 5 distance class predefined : [ <5km,5 to 10km,10 to 20km, 20 to 50km, > 50km ]. To impute the data (currently only implemented for edgt 44 and edgt lyon), activate it via the configuration:
+
+
+```yaml
+config:
+  # [...]
+  matching_attributes: ["distance_class", "*default*"]
+```
+
+The `*default*` trigger will be replaced by the default list of matching attributes.
+
+For other HTS not already implemented, make sure to verify that every employed person has commute_distance, if not *distance_class* can be filled to those with missing distance by probability distribution but you would have to make sure to verify that it doesn't change the overall employed person distribution.

@@ -1,45 +1,53 @@
+from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import data.hts.hts as hts
 
 """
-This stage cleans the Loire Atlantique EDGT.
+This stage cleans the Lyon EDGT.
 """
 
 def configure(context):
-    context.stage("data.hts.edgt_44.raw")
+    context.stage("data.hts.edgt_lyon.raw_laet")
 
 PURPOSE_MAP = {
     "home": [1, 2],
-    "work": [11, 12, 13, 81],
-    "education": [21, 22, 23, 24, 25, 26, 27, 28, 29],
-    "shop": [30, 31, 32, 33, 34, 35, 82],
+    "work": [11, 12, 13, 14, 81],
+    "education": [21, 22, 23, 24, 25, 26, 27, 28, 29, 96, 97],
+    "shop": [30, 31, 32, 33, 34, 35, 82, 98],
     "leisure": [51, 52, 53, 54],
     "escort": [61, 62, 63, 64, 71, 72, 73, 74],
-    "task": [41, 42, 43, 44, 45],
+    "task": [41, 42, 43],
     "other": [91],
 }
 
 MODES_MAP = {
-    "car": [13, 15, 21, 81],
+    "car": [10, 13, 15, 21, 81], # 10 is (driving) an ambulance
     "car_passenger": [14, 16, 22, 82],
-    "pt": [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 51, 52, 53, 61, 71, 72, 73, 91, 92, 94, 95],
-    "bike": [11, 17, 12, 18, 93, 19],
+    "pt": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 51, 52, 53, 61, 71, 91, 92, 94, 95],
+    "bike": [11, 17, 12, 18, 93],
     "walk": [1, 2] # Actually, 2 is not really explained, but we assume it is walk
 }
 
 def execute(context):
-    df_households, df_persons, df_trips = context.stage("data.hts.edgt_44.raw")
+    df_households, df_persons, df_trips, df_spatial = context.stage("data.hts.edgt_lyon.raw_laet")
 
     # Merge departement into households
-    df_households["departement_id"] = "44"
+    df_spatial = df_spatial[["ZF__2015", "DepCom"]].copy()
+    df_spatial["ZFM"] = df_spatial["ZF__2015"].astype(str).str.pad(width=8, side='left', fillchar='0')
+    df_spatial["departement_id"] = df_spatial["DepCom"].str[:2]
+    df_spatial = df_spatial[["ZFM", "departement_id"]]
+
+    # Attention, some households get lost here!
+    df_households = pd.merge(df_households, df_spatial, on = "ZFM", how = "left")
+    df_households["departement_id"] = df_households["departement_id"].fillna("unknown")
 
     # Transform original IDs to integer (they are hierarchichal)
-    df_households["edgt_household_id"] = (df_households["ECH"] + df_households["MTIR"]).astype(int)
+    df_households["edgt_household_id"] = (df_households["ZFM"] + df_households["ECH"]).astype(int)
     df_persons["edgt_person_id"] = df_persons["PER"].astype(int)
-    df_persons["edgt_household_id"] = (df_persons["ECH"] + df_persons["PTIR"]).astype(int)
+    df_persons["edgt_household_id"] = (df_persons["ZFP"] + df_persons["ECH"]).astype(int)
     df_trips["edgt_person_id"] = df_trips["PER"].astype(int)
-    df_trips["edgt_household_id"] = (df_trips["ECH"] + df_trips["DTIR"]).astype(int)
+    df_trips["edgt_household_id"] = (df_trips["ZFD"] + df_trips["ECH"]).astype(int)
     df_trips["edgt_trip_id"] = df_trips["NDEP"].astype(int)
 
     # Construct new IDs for households, persons and trips (which are unique globally)
@@ -77,8 +85,16 @@ def execute(context):
     df_households = pd.merge(df_households, df_size, on = "household_id")
 
     # Clean departement
-    df_trips["origin_departement_id"] = "44"
-    df_trips["destination_departement_id"] = "44"
+    df_trips = pd.merge(df_trips, df_spatial.rename(columns = {
+        "ZFM": "D3", "departement_id": "origin_departement_id"
+    }), on = "D3", how = "left")
+
+    df_trips = pd.merge(df_trips, df_spatial.rename(columns = {
+        "ZFM": "D7", "departement_id": "destination_departement_id"
+    }), on = "D7", how = "left")
+
+    df_trips["origin_departement_id"] = df_trips["origin_departement_id"].fillna("unknown")
+    df_trips["destination_departement_id"] = df_trips["destination_departement_id"].fillna("unknown")
 
     df_households["departement_id"] = df_households["departement_id"].astype("category")
     df_persons["departement_id"] = df_persons["departement_id"].astype("category")
@@ -86,25 +102,26 @@ def execute(context):
     df_trips["destination_departement_id"] = df_trips["destination_departement_id"].astype("category")
 
     # Clean employment
-    df_persons["employed"] = df_persons["P7"].isin(["1", "2"])
+    df_persons["employed"] = df_persons["P9"].isin(["1", "2"])
 
     # Studies
-    df_persons["studies"] = df_persons["P7"].isin(["3", "4", "5"])
+    df_persons["studies"] = df_persons["P9"].isin(["3", "4", "5"])
 
     # Number of vehicles
-    df_households["number_of_vehicles"] = df_households["M6"] + df_households["M5"]
+    df_households["number_of_vehicles"] = df_households["M6"] + df_households["M14"]
     df_households["number_of_vehicles"] = df_households["number_of_vehicles"].astype(int)
-    df_households["number_of_bikes"] = df_households["M7"].astype(int)
+    df_households["number_of_bikes"] = df_households["M21"].astype(int)
 
     # License
-    df_persons["has_license"] = df_persons["P5"] == "1"
+    df_persons["has_license"] = df_persons["P7"] == "1"
 
-    # Has subscription (not availabile in EDGT 44)
-    df_persons["has_pt_subscription"] = False
-    df_persons["commute_distance"] = df_persons["DP13"]
-    # Survey respondents 
+    # Has subscription
+    df_persons["has_pt_subscription"] = df_persons["P12"].isin(["1", "2", "3", "5", "6"])
+    df_persons["commute_distance"] = df_persons["DP15"]
+    # Survey respondents
     # PENQ 1 : fully awnsered the travel questionary section, having a chain or non-movers
     # PENQ 2 : nonrespondent of travel questionary section
+    df_persons["PENQ"] = df_persons["PENQ"].fillna("2").astype("int")
     df_persons.loc[df_persons["PENQ"] == 1, "travel_respondent"] = True
     df_persons.loc[df_persons["PENQ"] == 2, "travel_respondent"] = False
 
@@ -122,14 +139,10 @@ def execute(context):
     assert np.count_nonzero(df_trips["preceding_purpose"] == "invalid") == 0
 
     # Trip mode
-    df_trips["mode"] = "invalid"
-
     for mode, values in MODES_MAP.items():
         df_trips.loc[df_trips["MODP"].isin(values), "mode"] = mode
 
-    print(df_trips[df_trips["mode"] == "invalid"][["mode", "MODP"]])
-
-    assert np.count_nonzero(df_trips["mode"] == "invalid") == 0
+    assert np.count_nonzero(df_trips["following_purpose"] == "invalid") == 0
     df_trips["mode"] = df_trips["mode"].astype("category")
 
     # Further trip attributes
@@ -137,11 +150,11 @@ def execute(context):
     df_trips["routed_distance"] = df_trips["DIST"]
 
     # Trip times
-    df_trips["departure_time"] = 3600.0 * df_trips["D4A"] # hour
-    df_trips["departure_time"] += 60.0 * df_trips["D4B"] # minute
+    df_trips["departure_time"] = 3600.0 * (df_trips["D4"] // 100) # hour
+    df_trips["departure_time"] += 60.0 * (df_trips["D4"] % 100) # minute
 
-    df_trips["arrival_time"] = 3600.0 * df_trips["D8A"] # hour
-    df_trips["arrival_time"] += 60.0 * df_trips["D8B"] # minute
+    df_trips["arrival_time"] = 3600.0 * (df_trips["D8"] // 100) # hour
+    df_trips["arrival_time"] += 60.0 * (df_trips["D8"] % 100) # minute
 
     df_trips = df_trips.sort_values(by = ["household_id", "person_id", "trip_id"])
     df_trips = hts.fix_trip_times(df_trips)
@@ -160,8 +173,8 @@ def execute(context):
     df_count = df_trips[["person_id"]].groupby("person_id").size().reset_index(name = "number_of_trips")
     # People with at least one trip (number_of_trips > 0)
     df_persons = pd.merge(df_persons, df_count, on = "person_id", how = "left")
-    # People that awnsered the travel questionary section but stayed at home (number_of_trips = 0)
-    df_persons.loc[(df_persons["travel_respondent"] == True) & (df_persons["number_of_trips"].isna()), "number_of_trips"]  = 0
+    # People that answered the travel questionary section but stayed at home (number_of_trips = 0)
+    df_persons.loc[(df_persons["travel_respondent"] == True) & (df_persons["number_of_trips"].isna()), "number_of_trips"] = 0
     # Nonrespondent of travel questionary section (number_of_trips = -1)
     df_persons["number_of_trips"] = df_persons["number_of_trips"].fillna(-1).astype(int)
 
@@ -175,10 +188,9 @@ def execute(context):
     df_households = pd.merge(df_households, hts.calculate_consumption_units(df_persons), on = "household_id")
 
     # Socioprofessional class
-    df_persons["socioprofessional_class"] = df_persons["P9"].fillna(8).astype(int)
-    df_persons.loc[df_persons["socioprofessional_class"] > 6, "socioprofessional_class"] = 8
-    df_persons.loc[df_persons["P7"] == "7", "socioprofessional_class"] = 7
+    df_persons["socioprofessional_class"] = df_persons["P11"].str[0].fillna(8).astype(int)
 
+    assert df_persons["socioprofessional_class"].max() <= 9
     # Check departure and arrival times
     assert np.count_nonzero(df_trips["departure_time"].isna()) == 0
     assert np.count_nonzero(df_trips["arrival_time"].isna()) == 0

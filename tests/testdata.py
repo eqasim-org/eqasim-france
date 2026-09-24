@@ -678,17 +678,18 @@ def create(output_path):
     df_work = pd.DataFrame(dict(
         COMMUNE = municipalities[random.integers(0, len(municipalities), observations)],
         DCLT = municipalities[random.integers(0, len(municipalities), observations)],
-        TRANS = random.integers(1, 6, size = (observations,))
+        TRANS = random.integers(1, 6, size = (observations,)),
+        GS=random.integers(1, 6, size = (observations,)),
     ))
 
     df_work["ARM"] = "Z"
     df_work["IPONDI"] = 1.0
 
-    columns = ["COMMUNE", "DCLT", "TRANS", "ARM", "IPONDI"]
+    columns = ["COMMUNE", "DCLT", "TRANS","GS", "ARM", "IPONDI"]
     df_work.columns = columns
 
     print("Hash", "df_work", pd.util.hash_pandas_object(df_work, index = True).sum())
-    assert pd.util.hash_pandas_object(df_work, index = True).sum() == 6975741772103988418
+    assert pd.util.hash_pandas_object(df_work, index = True).sum() == 8884614777834223578
 
     df_work.to_parquet("%s/rp_2022/RP2022_mobpro.parquet" % output_path)
 
@@ -705,7 +706,7 @@ def create(output_path):
     df_education.columns = columns
 
     print("Hash", "df_education", pd.util.hash_pandas_object(df_education, index = True).sum())
-    assert pd.util.hash_pandas_object(df_education, index = True).sum() == 3071821450482011272
+    assert pd.util.hash_pandas_object(df_education, index = True).sum() == 16428949073940507280
 
     df_education.to_parquet("%s/rp_2022/RP2022_mobsco.parquet" % output_path)
 

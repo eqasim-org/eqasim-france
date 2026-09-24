@@ -61,7 +61,8 @@ def execute(context):
     
     if context.config("education_location_source") == 'bpe':
         # Aggregate education (we do not consider different age range with bpe source)
-        df_education = df_education[["origin_id", "destination_id", "weight","total"]].groupby(["origin_id", "destination_id"]).sum().reset_index()    
+        df_education = df_education[["origin_id", "destination_id", "weight","total"]].groupby(["origin_id", "destination_id"]).sum()
+        df_education = df_education[df_education["total"]!=0].reset_index() 
     # Compute weight
     df_work["weight"] /= df_work["total"]
     df_education["weight"] /= df_education["total"]
