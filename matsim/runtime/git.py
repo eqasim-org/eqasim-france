@@ -34,6 +34,9 @@ def validate(context):
         "--version"
     ], stderr = sp.STDOUT))
 
+    if version.endswith("."): # fix for Windows
+        version = version[:-1]
+
     version = re.search(r"git version ([0-9.]+)", version)
 
     if version:
