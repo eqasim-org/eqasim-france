@@ -66,6 +66,7 @@ a few are actually relevant for the pipeline. Those are:
   - Logement, stationnement, véhicules à disposition des ménages (Q_menage.csv)
   - Données trajets domicile-travail, domicile-étude, accidents (Q_individu.csv)
   - Données mobilité contrainte, trajets vers lieu de travail (Q_ind_lieu_teg.csv)
+  - Données mobilité quotidienne, mobilité du Kish (K_mobilite.csv)
   - Données mobilité déplacements locaux (K_deploc.csv)
 - Put the downloaded *csv* files in to the folder `data/entd_2008`.
 
@@ -85,6 +86,8 @@ survey, which is not available publicly. In case you have access (but we cannot
 guarantee that you have exactly the correct format), you should make sure that
 the following files are accessible in the folder `data/egt_2010`:
 `Menages_semaine.csv`, `Personnes_semaine.csv`, `Deplacements_semaine.csv`.
+
+Optionally, you may also place the files for Saturdays and Sundays in the folder, they will be detected automatically. However, their content will only be used if the correct `weekday`s are configured (see later).
 
 ## 7) IRIS zoning system (2024)
 

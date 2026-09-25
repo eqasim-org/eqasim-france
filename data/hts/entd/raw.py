@@ -36,6 +36,10 @@ K_DEPLOC_COLUMNS = [
     "PONDKI"
 ]
 
+K_MOBILITE_COLUMNS = [
+    "IDENT_IND", "V2_JOURSEMMOB"
+]
+
 def configure(context):
     context.config("data_path")
 
@@ -70,10 +74,15 @@ def execute(context):
         dtype = { "DEP": str, "V2_MTP": str }
     )
 
-    return df_individu, df_tcm_individu, df_menage, df_tcm_menage, df_deploc
+    df_mobilite = pd.read_csv(
+        "%s/entd_2008/K_mobilite.csv" % context.config("data_path"),
+        sep = ";", encoding = "latin1", usecols = K_MOBILITE_COLUMNS
+    )
+
+    return df_individu, df_tcm_individu, df_menage, df_tcm_menage, df_deploc, df_mobilite
 
 def validate(context):
-    for name in ("Q_individu.csv", "Q_tcm_individu.csv", "Q_menage.csv", "Q_tcm_menage_0.csv", "K_deploc.csv"):
+    for name in ("Q_individu.csv", "Q_tcm_individu.csv", "Q_menage.csv", "Q_tcm_menage_0.csv", "K_deploc.csv", "K_mobilite.csv"):
         if not os.path.exists("%s/entd_2008/%s" % (context.config("data_path"), name)):
             raise RuntimeError("File missing from ENTD: %s" % name)
 
@@ -82,5 +91,6 @@ def validate(context):
         os.path.getsize("%s/entd_2008/Q_tcm_individu.csv" % context.config("data_path")),
         os.path.getsize("%s/entd_2008/Q_menage.csv" % context.config("data_path")),
         os.path.getsize("%s/entd_2008/Q_tcm_menage_0.csv" % context.config("data_path")),
-        os.path.getsize("%s/entd_2008/K_deploc.csv" % context.config("data_path"))
+        os.path.getsize("%s/entd_2008/K_deploc.csv" % context.config("data_path")),
+        os.path.getsize("%s/entd_2008/K_mobilite.csv" % context.config("data_path"))
     ]

@@ -233,7 +233,8 @@ def main(config_path: Annotated[Path, typer.Argument(help = HELP_CONFIG_PATH)],
         (2556, "Q_menage"),
         (2565, "Q_individu"),
         (2566, "Q_ind_lieu_teg"),
-        (2568, "K_deploc")
+        (2568, "K_deploc"),
+        (2567, "K_mobilite")
     ]
 
     for identifier, name in entd_sources:

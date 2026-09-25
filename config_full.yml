@@ -103,6 +103,15 @@ config:
   # - name: rooms
   #   raw: NBPI
 
+  ## Weekday selection
+  # You can restrict the selected HTS to a specific weekday (if available in the HTS)
+
+  # Either by selecting a specific type of day or specific day:
+  # weekday: workday # any, weekend, monday, tuesday, wednesday, thursday, friday (default is "workday")
+
+  # Or by specifying a list of days:
+  # weekday: ["thursday", "friday"]
+
   ## Statistical matching configuration
 
   ## Minimum number of observation to sample from

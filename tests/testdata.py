@@ -356,6 +356,7 @@ def create(output_path):
         Q_INDIVIDU = [],
         Q_TCM_INDIVIDU = [],
         K_DEPLOC = [],
+        K_MOBILITE = [],
     )
 
     for household_index in range(HTS_HOUSEHOLDS):
@@ -382,6 +383,8 @@ def create(output_path):
             ]), numcom_UU2010 = ["B", "C", "I", "R"][household_index % 4]
         ))
 
+        active = []
+
         for person_index in range(HTS_HOUSEHOLD_MEMBERS):
             person_id = household_id * 1000 + person_index
             studies = random.random() < 0.3
@@ -402,6 +405,8 @@ def create(output_path):
             ))
 
             if person_index == 0: # Only one person per household has activity chain
+                active.append(person_id)
+
                 home_department = department
                 work_department = random.choice(df["department"].unique())
 
@@ -469,6 +474,12 @@ def create(output_path):
                     NDEP=4, V2_MOBILREF=1, PONDKI=3.0
                 ))
 
+                # Daty of the week
+                data["K_MOBILITE"].append(dict(
+                    IDENT_IND=person_id,
+                    V2_JOURSEMMOB=random.choice([1, 2, 3, 4, 5, 6, 7])
+                ))
+
 
     os.mkdir("%s/entd_2008" % output_path)
     pd.DataFrame.from_records(data["Q_MENAGE"]).to_csv("%s/entd_2008/Q_menage.csv" % output_path, index = False, sep = ";")
@@ -476,16 +487,18 @@ def create(output_path):
     pd.DataFrame.from_records(data["Q_INDIVIDU"]).to_csv("%s/entd_2008/Q_individu.csv" % output_path, index = False, sep = ";")
     pd.DataFrame.from_records(data["Q_TCM_INDIVIDU"]).to_csv("%s/entd_2008/Q_tcm_individu.csv" % output_path, index = False, sep = ";")
     pd.DataFrame.from_records(data["K_DEPLOC"]).to_csv("%s/entd_2008/K_deploc.csv" % output_path, index = False, sep = ";")
-
+    pd.DataFrame.from_records(data["K_MOBILITE"]).to_csv("%s/entd_2008/K_mobilite.csv" % output_path, index = False, sep = ";")
+    
     hashes = {
-        "Q_MENAGE": 6916190433170563173,
-        "Q_TCM_MENAGE": 6980538473335852422,
-        "Q_INDIVIDU": 15145767072075638494,
-        "Q_TCM_INDIVIDU": 3034067474133300876,
-        "K_DEPLOC": 10490820681951943392
+        "Q_MENAGE": 11803320052009685890,
+        "Q_TCM_MENAGE": 14226818339715260587,
+        "Q_INDIVIDU": 15584002892691858657,
+        "Q_TCM_INDIVIDU": 4382127963183962551,
+        "K_DEPLOC": 7962779769071488220,
+        "K_MOBILITE": 5033455804618871480
     }
 
-    for slot in ["Q_MENAGE", "Q_TCM_MENAGE", "Q_INDIVIDU", "Q_TCM_INDIVIDU", "K_DEPLOC"]:
+    for slot in ["Q_MENAGE", "Q_TCM_MENAGE", "Q_INDIVIDU", "Q_TCM_INDIVIDU", "K_DEPLOC", "K_MOBILITE"]:
         df_test = pd.DataFrame.from_records(data[slot])
         print("Hash ENTD", slot, pd.util.hash_pandas_object(df_test, index = True).sum())
         assert pd.util.hash_pandas_object(df_test, index = True).sum() == hashes[slot]
@@ -597,9 +610,16 @@ def create(output_path):
 
 
     os.mkdir("%s/egt_2010" % output_path)
-    pd.DataFrame.from_records(data["households"]).to_csv("%s/egt_2010/Menages_semaine.csv" % output_path, index = False, sep = ",")
-    pd.DataFrame.from_records(data["persons"]).to_csv("%s/egt_2010/Personnes_semaine.csv" % output_path, index = False, sep = ",")
-    pd.DataFrame.from_records(data["trips"]).to_csv("%s/egt_2010/Deplacements_semaine.csv" % output_path, index = False, sep = ",")
+
+    df_households = pd.DataFrame.from_records(data["households"])
+    df_households.to_csv("%s/egt_2010/Menages_semaine.csv" % output_path, index = False, sep = ",")
+    
+    df_persons = pd.DataFrame.from_records(data["persons"])
+    df_persons["JDEP"] = random.choice([1, 2, 3, 4, 5, 6, 7], size = len(df_persons))
+    df_persons.to_csv("%s/egt_2010/Personnes_semaine.csv" % output_path, index = False, sep = ",")
+    
+    df_trips = pd.DataFrame.from_records(data["trips"])
+    df_trips.to_csv("%s/egt_2010/Deplacements_semaine.csv" % output_path, index = False, sep = ",")
 
     hashes = {
         "households": 11444390802329132734,
