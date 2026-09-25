@@ -490,21 +490,18 @@ def create(output_path):
     pd.DataFrame.from_records(data["K_MOBILITE"]).to_csv("%s/entd_2008/K_mobilite.csv" % output_path, index = False, sep = ";")
     
     hashes = {
-        "Q_MENAGE": 6916190433170563173,
-        "Q_TCM_MENAGE": 6980538473335852422,
-        "Q_INDIVIDU": 15145767072075638494,
-        "Q_TCM_INDIVIDU": 3034067474133300876,
-        "K_DEPLOC": 10490820681951943392,
-        "K_MOBILITE": 0
+        "Q_MENAGE": 11803320052009685890,
+        "Q_TCM_MENAGE": 14226818339715260587,
+        "Q_INDIVIDU": 15584002892691858657,
+        "Q_TCM_INDIVIDU": 4382127963183962551,
+        "K_DEPLOC": 7962779769071488220,
+        "K_MOBILITE": 5033455804618871480
     }
 
-    for slot in ["Q_MENAGE", "Q_TCM_MENAGE", "Q_INDIVIDU", "Q_TCM_INDIVIDU", "K_DEPLOC"]:
+    for slot in ["Q_MENAGE", "Q_TCM_MENAGE", "Q_INDIVIDU", "Q_TCM_INDIVIDU", "K_DEPLOC", "K_MOBILITE"]:
         df_test = pd.DataFrame.from_records(data[slot])
         print("Hash ENTD", slot, pd.util.hash_pandas_object(df_test, index = True).sum())
         assert pd.util.hash_pandas_object(df_test, index = True).sum() == hashes[slot]
-
-    print("Hash ENTD", "K_MOBILITE", pd.util.hash_pandas_object(df_mobilite, index = True).sum())
-    assert pd.util.hash_pandas_object(df_mobilite, index = True).sum() == 3613648202134012103
 
     # Data set: EGT
     print("Creating EGT ...")
