@@ -90,7 +90,8 @@ def execute(context):
     excess_communes = set(df["commune_id"].unique()) - set(df_municipalities["commune_id"].unique())
 
     if len(excess_communes) > 0:
-        raise RuntimeError("Found additional communes: %s" % excess_communes)
+        print("Found additional communes: %s" % excess_communes)
+        df = fix_municipalities(df)
 
     # We notice that we have some additional IRIS. Make sure they will be placed randomly in there commune later.
     df_iris = context.stage("data.spatial.iris")
@@ -148,5 +149,36 @@ def execute(context):
                                                                                                             group_df.y),
                                                                                 crs="EPSG:"+group_df["EPSG"].iloc[0]).to_crs(context.config("crs")))
     df = gpd.GeoDataFrame(df.drop(columns="EPSG"), crs=context.config("crs"))
+
+    return df
+
+def fix_municipalities(df):
+    """
+    Municipalities are often merged or separated and we must always use the latest BPE since 
+    the data set gets replaced every year. This function aligns the municipality identifiers
+    with the currently used definition of the IRIS system. Need to be updated for every update
+    of the BPE.
+    """
+
+    mapping = {
+        "49126": "49069",
+        "15035": "15141",
+        "15047": "15141",
+        "15171": "15141",
+        "12218": "12076",
+        "14581": "14011", # see data/spatial/iris.py
+        "69114": "69159"
+    }
+
+    mapping = {
+        k: v for k, v in mapping.items()
+        if k in df["commune_id"].unique()
+    }
+
+    print("Replacing to make BPE compatible with IRIS:", mapping)
+
+    added = set(mapping.values()) - set(df["commune_id"].cat.categories)
+    df["commune_id"] = df["commune_id"].cat.add_categories(added)
+    df["commune_id"] = df["commune_id"].replace(mapping)
 
     return df
