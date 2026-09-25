@@ -298,3 +298,103 @@ config:
 
 For a complete list of possible attributes, refer to the
 [MobiSurvStd documentation](https://mobisurvstd.github.io/MobiSurvStd/format/persons.html).
+
+### Additional output attributes
+
+The French census provides a multitude of additional variables that are not directly used in the standard configuration of the pipeline. However, since the population generation is based on direct sampling, these attributes can be directly routed per-person or per-household to the output. The `census_attributes` configuration option can be used to do so:
+
+```yaml
+census_attributes:
+  - name: household_type
+    raw: MODV
+    scope: household # optional: by default attributes are added to persons, but you can choose households
+  - name: rooms
+    raw: NBPI
+```
+
+The field `raw` specifies the census attribute that should be copied, `name` specifies the final name of the field in the synthetic population. Some attributes are household-level. If `scope = household` the attributes will be found in the households file rather than in the persons file.
+
+In the example above, for instance, the `MODV` is routed to the output which contains information on the household structure and `NBPI` which describes the number of rooms. In this example, `household_type` will be a household-level attribute while `rooms` will be written per-person.
+
+### Secondary location assignment
+
+The model for the assignment of secondary activities is described in 
+
+> Hörl, S., & Axhausen, K. W. (2023). Relaxation–discretization algorithm for spatially constrained secondary location assignment. Transportmetrica A: Transport Science, 19(2), 1982068. https://doi.org/10.1080/23249935.2021.1982068
+
+It can be configured using the following parameters:
+
+```yaml
+secondary_activities:
+  maximum_iterations: 1000 # defines how many attempts are made to find the best chain
+  chain_solver: default
+```
+
+The default model finds viable locations by secondary activity type such that the chain structure (expected Euclidean distance between activities) is maintained. It has been extended in the following paper with weighted destinations to distinguish, for instance, small from large shops, which should be visited more frequently:
+
+> Langrognet, P.-A., Côme, É., Hörl, S., & Oukhellou, L. (2026). Improving the spatial distribution of secondary activities in synthetic populations through guidance forces. Computers, Environment and Urban Systems, 127, 102431. https://doi.org/10.1016/j.compenvurbsys.2026.102431
+
+This model (with weights being based on location density) can be activated by setting the `chain_solver` to `force_model`.
+
+### Matching home locations by housing type
+
+By default, the home allocation algorithm gathers all persons that are supposed to live in municipality *M* and then finds all housing units inside this municipality *M*. Each person is then assigned a randomly drawn housing unit. Note that one housing unit represents one appartment or individual home, each building can have multiple units.
+
+One can apply a matching process that takes into account the expected housing type (based on census information) for each person:
+
+```yaml
+config:
+  use_housing_type: true # default is false
+```
+
+The process will make use of the `TYPC` variable of the census which describes the building type in which a household is living (single, double, collective). We then match this variable with the available home locations (usually from BD-TOPO) according to the following process:
+
+- We perform a random assignment of home locations to households as before, to have a robust baseline.
+- We then examine single, double, collective households and overriding the home locations by drawing from the location candidates with 1, 2, or 3+ housing units.
+
+This process covers some edge cases:
+
+- In case one type of housing (1/2/3+) is not available, we just fall back to randomly sampled locations from the first step in this process.
+- In the current version of BD-TOPO, there is no housing information for Ardennes. The result of both processes is equivalent.
+
+**Attention**: This process does not ensure that in a building with one housing unit there is really only one household assigned. The opposite is true: With a high probability we make sure that a household that, according to the census, should live in a single home is assigned to a single home building!
+
+### Writing location identifiers to the output
+
+By default, we don't write out identifiers of locations as it bloats up the output. However, sometimes, for instance if one wants to match persons living or working at exactly the same location, it is convenient to work with thos identifiers rather than with geographic coordinates.
+
+To write location identifiers to the output files (mainly activities), activate `output_location_ids`:
+
+```yaml
+config:
+  output_location_ids: true # default false
+```
+
+The locations with their geographic coordinates can be written using the following stages:
+
+- `synthesis.locations.output.home` writes `home_locations.gpkg`
+- `synthesis.locations.output.work` writes `work_locations.gpkg`
+- `synthesis.locations.output.education` writes `education_locations.gpkg`
+- `synthesis.locations.output.secondary` writes `secondary_locations.gpkg`
+
+In particular, `home_locations.gpkg` contains either `building_id` or `tile_id`, depending on whether BD-TOPO or population grid data is used to generate the home locations.
+
+When using buildings from BD-TOPO, there is additionally
+
+- `synthesis.locations.output.building` writes `buildings.gpkg`
+
+### Activity purposes
+
+By default, the activity purposes are *home*, *work*, *education*, *shop*, *leisure*, *other*. For most travel surveys, more types exist, but anything that does not appear in
+
+```yaml
+config:
+  activity_purposes: ["leisure", "shop"] # default value
+```
+
+is interpreted as *other*. You can add, for instance the specific *task* and *escort* purposes, especially when using *MobiSurvStd* as the survey source:
+
+```yaml
+config:
+  activity_purposes: ["leisure", "shop", "task", "escort"]
+```

@@ -147,6 +147,13 @@ def execute(context):
     # Consumption units
     df = pd.merge(df, hts.calculate_consumption_units(df), on = "household_id")
 
+    # housing 
+    df["housing_code"] = pd.to_numeric(df["TYPC"], errors = "coerce").fillna(0).astype(int)
+    df.loc[df["housing_code"].gt(2), "housing_code"] = 0
+
+    df["housing_type"] = pd.Categorical.from_codes(df["housing_code"], [
+        "collective", "single", "double"])
+
     # additional attributes
     selected_attributes = [
         "person_id", "household_id", "weight",
@@ -155,7 +162,7 @@ def execute(context):
         "professional_activity",
         "commute_mode", "employed", "studies",
         "number_of_cars", "number_of_motorcycles", "number_of_vehicles", "use_motorcycle",
-        "household_size", "consumption_units", "socioprofessional_class"
+        "household_size", "consumption_units", "socioprofessional_class", "housing_type"
     ]
 
     for attribute in context.config("census_attributes"):

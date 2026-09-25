@@ -84,8 +84,8 @@ def execute(context):
     df_persons = data["persons"]
 
     # Separate data set
-    df_work = df_persons[df_persons["has_work_trip"]]
-    df_education = df_persons[df_persons["has_education_trip"]]
+    df_work = df_persons[df_persons["requires_work_location"]]
+    df_education = df_persons[df_persons["requires_education_location"]]
 
     # Attach home locations
     df_home = context.stage("synthesis.population.spatial.home.locations")

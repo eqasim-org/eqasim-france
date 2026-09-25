@@ -14,6 +14,7 @@ def configure(context):
     context.config("output_path")
     context.config("output_prefix", "ile_de_france_")
     context.config("sampling_rate")
+    context.config("crs", "EPSG:2154")
 
     context.stage("synthesis.population.trips")
     context.stage("synthesis.population.enriched")
@@ -54,7 +55,7 @@ def execute(context):
     df_trip_eq = context.stage("synthesis.population.trips")
     df_location_eq = context.stage("synthesis.population.spatial.locations")[["person_id", "activity_index", "geometry"]]
     
-    df_location_eq = df_location_eq.to_crs("EPSG:2154")
+    df_location_eq = df_location_eq.to_crs(context.config("crs"))
     df_trip_eq["preceding_activity_index"] = df_trip_eq["trip_index"]
     df_trip_eq["following_activity_index"] = df_trip_eq["trip_index"] + 1
     

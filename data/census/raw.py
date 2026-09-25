@@ -30,7 +30,8 @@ COLUMNS = {
     "TP",
     "TRANS",
     "VOIT",
-    "DEROU"
+    "DEROU",
+    "TYPC"
 }
 
 

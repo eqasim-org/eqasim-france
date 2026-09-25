@@ -10,7 +10,7 @@ def configure(context):
     context.config("data_path")
     context.config(
         "siret_geo_path",
-        "sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.parquet",
+        "sirene/geoloc-geolocalisationetablissement-sirene-pour-etudes-statistiques-parquet.parquet",
     )
 
     context.stage("data.spatial.codes")
@@ -28,11 +28,11 @@ def execute(context):
     deps2 = {dep for dep in requested_departements if len(dep) == 2}
     deps3 = {dep for dep in requested_departements if len(dep) == 3}
     assert len(deps2) + len(deps3) == len(requested_departements)
-    if deps2:
-        lf = lf.filter(pl.col("plg_code_commune").str.slice(0, 2).is_in(deps2))
-    if deps3:
-        lf = lf.filter(pl.col("plg_code_commune").str.slice(0, 3).is_in(deps3))
-    df_siret_geoloc = lf.select("siret", "x", "y").collect()
+    lf = lf.filter(
+        pl.col("plg_code_commune").str.slice(0, 2).is_in(deps2) |
+        pl.col("plg_code_commune").str.slice(0, 3).is_in(deps3)
+    )
+    df_siret_geoloc = lf.select("siret", "x", "y", "epsg").collect()
     return df_siret_geoloc.to_pandas()
 
 

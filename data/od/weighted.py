@@ -17,21 +17,26 @@ def configure(context):
     context.config("education_location_source","bpe")
 
 def fix_origins(df, commune_ids, purpose,category): 
-    df_existing = df.groupby(['origin_id',category])["weight"].sum()
-    existing_ids = set(df_existing[df_existing>0].index)
-     
-    missing_ids = set(product(commune_ids,np.unique(df[category]))) - existing_ids
+    df_existing = df.groupby(["origin_id", category])["weight"].sum()
 
-    rows = []
-    for origin_id,category_name in missing_ids:
-        for destination_id in commune_ids:
-                rows.append((origin_id, destination_id, category_name, 1.0 if origin_id == destination_id else 0.0))
+    # find missing origin x category combinations
+    existing = set(df_existing[df_existing > 0.0].index)
+    missing = np.array(list(set(product(
+        commune_ids, df[category].cat.categories.values)) - existing))
 
-    print("Fixing %d origins for %s" % (len(missing_ids), purpose))
+    if len(missing) == 0:
+        return df
 
-    return pd.concat([df, pd.DataFrame.from_records(
-        rows, columns = ["origin_id", "destination_id", category, "weight"]
-    )]).sort_values(["origin_id", "destination_id"])
+    # for each missing origin x category we create a flow to itself
+    df_missing = pd.DataFrame({
+        "origin_id": pd.Categorical(missing[:, 0], dtype = df["origin_id"].dtype),
+        "destination_id": pd.Categorical(missing[:, 0], dtype = df["destination_id"].dtype),
+        category: pd.Categorical(missing[:, 1], dtype = df[category].dtype),
+        "weight": 1.0
+    }).sort_values(by = ["origin_id", "destination_id", category])
+
+    print("Fixed {} origins for {}".format(len(df_missing), purpose))
+    return pd.concat([df, df_missing])
 
 def execute(context):
     df_codes = context.stage("data.spatial.codes")
@@ -48,20 +53,27 @@ def execute(context):
     df_work = df_work[["origin_id", "destination_id", "weight"]].groupby(["origin_id", "destination_id"]).sum().reset_index()
    
     # Compute totals
-    df_total = df_work[["origin_id", "weight"]].groupby("origin_id",observed=False).sum().reset_index().rename({ "weight" : "total" }, axis = 1)
+    df_total = df_work[["origin_id", "weight"]].groupby("origin_id").sum().reset_index().rename({ "weight" : "total" }, axis = 1)
     df_work = pd.merge(df_work, df_total, on = "origin_id")
 
-    df_total = df_education[["origin_id","age_range", "weight"]].groupby(["origin_id","age_range"],observed=False).sum().reset_index().rename({ "weight" : "total" }, axis = 1)
+    df_total = df_education[["origin_id","age_range", "weight"]].groupby(["origin_id","age_range"]).sum().reset_index().rename({ "weight" : "total" }, axis = 1)
     df_education = pd.merge(df_education, df_total, on = ["origin_id","age_range"])
     
     if context.config("education_location_source") == 'bpe':
         # Aggregate education (we do not consider different age range with bpe source)
-        df_education = df_education[["origin_id", "destination_id", "weight","total"]].groupby(["origin_id", "destination_id"],observed=False).sum().reset_index()    
+        df_education = df_education[["origin_id", "destination_id", "weight","total"]].groupby(["origin_id", "destination_id"]).sum().reset_index()    
     # Compute weight
     df_work["weight"] /= df_work["total"]
     df_education["weight"] /= df_education["total"]
 
     del df_work["total"]
     del df_education["total"]
+
+    assert not np.any(df_work["weight"].isna())
+    assert not np.any(df_education["weight"].isna())
+
+    # at this point, we have a SPARSE flow matrix with the following properties:
+    # each origin x category combination exists at least once with a flow to itself
+    # each origin x category combination, however, may have multiple destinations
     
     return df_work, df_education

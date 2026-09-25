@@ -1,4 +1,4 @@
-# Eqasim documation
+# Eqasim documentation
 
 ```{toctree}
 :maxdepth: 2

@@ -28,6 +28,7 @@ def configure(context):
     context.config("output_location_ids", False)
     context.config("extra_enriched_attributes", [])
     context.config("census_attributes", [])
+    context.config("use_housing_type", False)
 
     if context.config("mode_choice", False):
         context.stage("matsim.simulation.prepare")
@@ -143,6 +144,9 @@ def execute(context):
         "number_of_vehicles", "number_of_bikes",
         "income", "census_household_id"
     ]
+
+    if context.config("use_housing_type"):
+        columns.append("housing_type")
 
     for attribute in context.config("census_attributes"):
         if attribute.get("scope", "person") == "household":
