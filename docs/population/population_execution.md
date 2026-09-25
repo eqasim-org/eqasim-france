@@ -398,3 +398,19 @@ is interpreted as *other*. You can add, for instance the specific *task* and *es
 config:
   activity_purposes: ["leisure", "shop", "task", "escort"]
 ```
+
+### Weekday selection
+
+If you are using a household travel survey that provides weekday information, you can restrict the used observations to a specific weekday.
+
+You can do so either by selecting a specific type of day:
+
+```
+weekday: workday # any, workday, weekend, monday, tuesday, wednesday, thursday, friday
+```
+
+By default, `workday` is selected. You may also provide a list of specific weekdays:
+
+```
+weekday: ["thursday", "friday"]
+```

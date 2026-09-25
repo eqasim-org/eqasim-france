@@ -105,10 +105,12 @@ config:
 
   ## Weekday selection
   # You can restrict the selected HTS to a specific weekday (if available in the HTS)
-  # weekday: any # monday, tuesday, wednesday, thursday, friday (default is "any")
 
-  # You can also provide a list:
-  # weekday: ["saturday", "sunday"]
+  # Either by selecting a specific type of day or specific day:
+  # weekday: workday # any, weekend, monday, tuesday, wednesday, thursday, friday (default is "workday")
+
+  # Or by specifying a list of days:
+  # weekday: ["thursday", "friday"]
 
   ## Statistical matching configuration
 

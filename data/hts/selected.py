@@ -19,22 +19,34 @@ def configure(context):
     else:
         raise RuntimeError("Unknown HTS: %s" % hts)
     
-    context.config("weekday", "any")
+    context.config("weekday", "workday")
 
 def execute(context):
     df_households, df_persons, df_trips = context.stage("hts")
 
     # weekday filtering
-    weekday = context.config("weekday")
-    if weekday != "any":
-        if "weekday" not in df_persons:
-            raise RuntimeError("The weekday attribute has not been implemented yet for your selected survey. Cannot perform chain matching by weekday.")
+    weekday_filter = context.config("weekday")
+    has_weekday = "weekday" in df_persons
+
+    if not has_weekday and weekday_filter != "workday":
+        raise RuntimeError("The weekday attribute has not been implemented yet for your selected survey. Cannot perform chain matching by weekday. Set weekday to the default 'workday'.")
+
+    else:
+        if weekday_filter == "any":
+            weekday_filter = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+        elif weekday_filter == "workday":
+            weekday_filter = ("monday", "tuesday", "wednesday", "thursday", "friday")
+        elif weekday_filter == "weekend":
+            weekday_filter = ("saturday", "sunday")
+        elif isinstance(weekday_filter, str):
+            weekday_filter = [weekday_filter]
+
+        for item in weekday_filter:
+            if item not in ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"):
+                raise RuntimeError(f"Invalid element {item} in weekday filter")
         
         # select persons by weekday
-        if isinstance(weekday, str):
-            df_persons = df_persons[df_persons["weekday"] == weekday].copy()
-        else:
-            df_persons = df_persons[df_persons["weekday"].isin(weekday)].copy()
+        df_persons = df_persons[df_persons["weekday"].isin(weekday_filter)].copy()
 
         # adjust households and trips accordingly
         df_households = df_households[df_households["household_id"].isin(df_persons["household_id"])]
