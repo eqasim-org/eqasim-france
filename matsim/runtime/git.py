@@ -36,11 +36,13 @@ def validate(context):
 
     version = re.search(r"git version ([0-9.]+)", version)
 
-    if version.endswith("."): # fix for Windows
-        version = version[:-1]
-
     if version:
-        version = Version(version.group(1))
+        version = version.group(1)
+
+        if version.endswith("."): # fix for Windows
+            version = version[:-1]
+        
+        version = Version(version)
 
     if version < Version("2.0.0"):
         print(f"WARNING! Git of at least version 2.0.0 is recommended. Found: {version}")
