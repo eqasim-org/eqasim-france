@@ -32,12 +32,12 @@ def validate(context):
     version = str(sp.check_output([
         shutil.which(context.config("git_binary")),
         "--version"
-    ], stderr = sp.STDOUT)).strip()
+    ], stderr = sp.STDOUT))
+
+    version = re.search(r"git version ([0-9.]+)", version)
 
     if version.endswith("."): # fix for Windows
         version = version[:-1]
-
-    version = re.search(r"git version ([0-9.]+)", version)
 
     if version:
         version = Version(version.group(1))
