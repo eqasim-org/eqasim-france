@@ -1,5 +1,6 @@
 import subprocess as sp
-import os, shutil
+import os, shutil, re
+from packaging.version import Version
 
 def configure(context):
     context.config("java_binary", "java")
@@ -61,12 +62,15 @@ def validate(context):
     if shutil.which(context.config("java_binary")) in ["", None]:
         raise RuntimeError("Cannot find Java binary at: %s" % context.config("java_binary"))
 
-    java_version = sp.check_output([
-            shutil.which(context.config("java_binary")),
-            "-version"
-        ], stderr = sp.STDOUT)
-    version_number = str(java_version.splitlines()[0]).split('"')[1]
-    major, minor, _ = version_number.split('.')
-    
-    if int(major) < 17:
-        raise RuntimeError("A Java JDK of at least version 17 is needed. A Java SDK with version %s was found" % version_number)  
+    version = str(sp.check_output([
+        shutil.which(context.config("java_binary")),
+        "-version"
+    ], stderr = sp.STDOUT))
+
+    version = re.search(r"version \"([0-9.]+)\"", version)
+
+    if version:
+        version = Version(version.group(1))
+
+    if version < Version("25.0.0"):
+        raise RuntimeError(f"A Java JDK of at least version 25 is needed. Found: {version}")  
