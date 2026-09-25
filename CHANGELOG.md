@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.6.0](https://github.com/eqasim-org/eqasim-france/compare/v1.5.0...v1.6.0) (2026-09-25)
+
+
+### Features
+
+* add emc2 Gironde ([#325](https://github.com/eqasim-org/eqasim-france/issues/325)) ([1106ed5](https://github.com/eqasim-org/eqasim-france/commit/1106ed53f74cccd3b608553e164044a2601f53ed))
+* filter activity chains by weekday ([#474](https://github.com/eqasim-org/eqasim-france/issues/474)) ([c7d9fba](https://github.com/eqasim-org/eqasim-france/commit/c7d9fba163c57458031ffd70a90677fe9d35852f))
+* Jenkinsfile ([#556](https://github.com/eqasim-org/eqasim-france/issues/556)) ([a9db00c](https://github.com/eqasim-org/eqasim-france/commit/a9db00cf776244874fd2c80c7ce2281b69180c69))
+* output home and work locations separately ([#559](https://github.com/eqasim-org/eqasim-france/issues/559)) ([235b69b](https://github.com/eqasim-org/eqasim-france/commit/235b69bf62be98dcaec9849073478ad8d992c290))
+* utility scripts for automatic data download ([#500](https://github.com/eqasim-org/eqasim-france/issues/500)) ([5a3265e](https://github.com/eqasim-org/eqasim-france/commit/5a3265e005eb208888ce5e162332a9c17af214fa))
+
+
+### Bug Fixes
+
+* modernize version checking for Java etc ([#557](https://github.com/eqasim-org/eqasim-france/issues/557)) ([28512ab](https://github.com/eqasim-org/eqasim-france/commit/28512abc6ae035278b8a2bac05235d5178a1bbe3))
+* municipalities in bpe ([#558](https://github.com/eqasim-org/eqasim-france/issues/558)) ([b2661e3](https://github.com/eqasim-org/eqasim-france/commit/b2661e3283592e9d8c5e120530dd8ec956c96589))
+* od data without missing observations ([#552](https://github.com/eqasim-org/eqasim-france/issues/552)) ([cf26b29](https://github.com/eqasim-org/eqasim-france/commit/cf26b2936414cb25add972a8abb9c6eb04673fd8))
+* order of generated municipalities ([#553](https://github.com/eqasim-org/eqasim-france/issues/553)) ([db383cd](https://github.com/eqasim-org/eqasim-france/commit/db383cd8ac1246db606732d84b9f7c622ec7467c))
+
 ## [1.5.0](https://github.com/eqasim-org/eqasim-france/compare/v1.4.0...v1.5.0) (2026-09-10)
 
 
