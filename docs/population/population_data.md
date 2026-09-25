@@ -87,6 +87,8 @@ guarantee that you have exactly the correct format), you should make sure that
 the following files are accessible in the folder `data/egt_2010`:
 `Menages_semaine.csv`, `Personnes_semaine.csv`, `Deplacements_semaine.csv`.
 
+Optionally, you may also place the files for Saturdays and Sundays in the folder, they will be detected automatically. However, their content will only be used if the correct `weekday`s are configured (see later).
+
 ## 7) IRIS zoning system (2024)
 
 The IRIS zoning system is available from IGN:
