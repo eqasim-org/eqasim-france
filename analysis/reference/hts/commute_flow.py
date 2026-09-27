@@ -6,7 +6,7 @@ import analysis.statistics as stats
 import analysis.marginals as marginals
 
 def configure(context):
-    context.stage("data.hts.selected", alias = "hts")
+    context.stage("data.hts.processed", alias = "hts")
 
 def execute(context):
     df_weight = context.stage("hts")[1][["person_id", "person_weight"]].rename(columns = { "person_weight": "weight" })

@@ -3,7 +3,7 @@ import analysis.marginals as marginals
 import pandas as pd
 
 def configure(context):
-    context.stage("data.hts.selected", alias = "hts")
+    context.stage("data.hts.processed", alias = "hts")
 
 def execute(context):
     df_households, df_persons, _ = context.stage("hts")

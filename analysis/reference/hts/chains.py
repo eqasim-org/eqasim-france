@@ -9,7 +9,7 @@ from analysis.chains import aggregate_chains, CHAIN_MARGINALS, CHAIN_LENGTH_LIMI
 
 def configure(context):
     context.stage("analysis.reference.hts.activities")
-    context.stage("data.hts.selected", alias = "hts")
+    context.stage("data.hts.processed", alias = "hts")
 
 def execute(context):
     df_chains = context.stage("analysis.reference.hts.activities")[[

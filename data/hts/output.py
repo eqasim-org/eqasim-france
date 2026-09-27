@@ -10,13 +10,13 @@ pipeline.
 """
 
 def configure(context):
-    context.stage("data.hts.selected")
+    context.stage("data.hts.processed")
 
     context.config("output_path")
     context.config("output_prefix", "ile_de_france_")
 
 def execute(context):
-    df_households, df_persons, df_trips = context.stage("data.hts.selected")
+    df_households, df_persons, df_trips = context.stage("data.hts.processed")
 
     df_households.to_csv("%s/%shts_households.csv" % (
         context.config("output_path"), context.config("output_prefix")

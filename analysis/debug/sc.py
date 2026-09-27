@@ -3,7 +3,7 @@ import pandas as pd
 
 def configure(context):
     context.stage("data.census.filtered", alias = "census")
-    context.stage("data.hts.selected", alias = "hts")
+    context.stage("data.hts.processed", alias = "hts")
     context.config("output_path")
 
 def execute(context):

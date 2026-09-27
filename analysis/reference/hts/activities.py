@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 def configure(context):
-    context.stage("data.hts.selected", alias = "hts")
+    context.stage("data.hts.processed", alias = "hts")
 
 PURPOSE_MAPPING = {
     "home": "h", "work": "w", "education": "e",

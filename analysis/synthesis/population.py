@@ -21,7 +21,7 @@ def configure(context):
     context.stage("synthesis.population.spatial.locations")
 
     context.stage("data.census.filtered", alias = "census")
-    context.stage("data.hts.selected", alias = "hts")
+    context.stage("data.hts.processed", alias = "hts")
     
 def get_undirected_purpose(x):
     origin_purpose = x["preceding_purpose"]

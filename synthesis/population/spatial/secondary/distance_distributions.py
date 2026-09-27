@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 def configure(context):
-    context.stage("data.hts.selected", alias = "hts")
+    context.stage("data.hts.processed", alias = "hts")
 
 def calculate_bounds(values, bin_size):
     values = np.sort(values)

@@ -12,7 +12,7 @@ def configure(context):
     context.stage("synthesis.population.income.selected")
     context.config("extra_enriched_attributes", [])
 
-    context.stage("data.hts.selected", alias = "hts")
+    context.stage("data.hts.processed", alias = "hts")
 
 ATTRIBUTE_FALLBACK = {
     "hts_household_id": { "type": int, "fill": -1 },
