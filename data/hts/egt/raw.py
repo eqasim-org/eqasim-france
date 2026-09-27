@@ -81,11 +81,18 @@ def execute(context):
 
 def validate(context):
     for name in ("Menages_semaine.csv", "Personnes_semaine.csv", "Deplacements_semaine.csv"):
-        if not os.path.exists("%s/egt_2010/%s" % (context.config("data_path"), name)):
-            raise RuntimeError("File missing from EGT: %s" % name)
+        if not os.path.exists("{}/egt_2010/{}".format(context.config("data_path"), name)):
+            raise RuntimeError(f"File missing from EGT: {name}")
 
     return [
-        os.path.getsize("%s/egt_2010/Menages_semaine.csv" % context.config("data_path")),
-        os.path.getsize("%s/egt_2010/Personnes_semaine.csv" % context.config("data_path")),
-        os.path.getsize("%s/egt_2010/Deplacements_semaine.csv" % context.config("data_path"))
+        os.path.getsize("{}/egt_2010/{}_semaine.csv".format(context.config("data_path"), item))
+        for item in ("Menages", "Personnes", "Deplacements")
+    ] + [
+        os.path.getsize("{}/egt_2010/{}_samedi.csv".format(context.config("data_path"), item))
+        for item in ("Menages", "Personnes", "Deplacements")
+        if os.path.exists("{}/egt_2010/{}_samedi.csv".format(context.config("data_path"), item))
+    ] + [
+        os.path.getsize("{}/egt_2010/{}_dimanche.csv".format(context.config("data_path"), item))
+        for item in ("Menages", "Personnes", "Deplacements")
+        if os.path.exists("{}/egt_2010/{}_dimanche.csv".format(context.config("data_path"), item))
     ]
