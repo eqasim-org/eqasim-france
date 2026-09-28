@@ -34,6 +34,7 @@ def configure(context):
     context.stage("synthesis.population.sampled")
     context.stage("synthesis.population.income.selected")
 
+    context.config("hts")
     context.stage("data.hts.processed", alias = "hts")
 
 @numba.jit(nopython = True) # Already parallelized parallel = True)
