@@ -3,6 +3,9 @@ import numpy as np
 
 def configure(context):
     context.config("random_seed")
+    
+    # using the "selected" stage, not "processed" to avoid filtering out
+    # the majority of commuting distances when generating weekend cases
     context.stage("data.hts.selected")
 
 def get_commuting_distance(df_persons, df_trips, activity_type, random):

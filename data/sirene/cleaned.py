@@ -77,11 +77,12 @@ def execute(context):
     excess_communes = set(df_sirene["commune_id"].unique()) - requested_communes
 
     if len(excess_communes) > 0:
-        print("Found excess municipalities in SIRENE data: ", excess_communes)
-    
-    if len(excess_communes) > 10:
-        raise RuntimeError("Found more than 10 excess municipalities in SIRENE data")
+        print("Attention: Found excess municipalities in SIRENE data: ", excess_communes)
+        print("The respective enterprises will be ignored.")
+        print("In the future this could be fixed by dating back the entries using municipality history data.")
 
+        df_sirene = df_sirene[~df_sirene["commune_id"].isin(excess_communes)]
+    
     df_sirene = df_sirene[["siren", "commune_id", "minimum_employees", "maximum_employees", "ape", "siret"]]
 
     # Add law status

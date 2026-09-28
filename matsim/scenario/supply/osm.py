@@ -7,13 +7,12 @@ def configure(context):
     context.stage("matsim.runtime.pt2matsim")
     
     context.stage("data.osm.cleaned")
-    context.stage("data.spatial.iris")
 
     context.config("export_detailed_network", False)
+    context.config("crs", "EPSG:2154")
 
 def execute(context):
     osm_path = "{}/output.osm.gz".format(context.path("data.osm.cleaned"))
-    crs = context.stage("data.spatial.iris").crs
 
     pt2matsim.run(context, "org.matsim.pt2matsim.run.CreateDefaultOsmConfig", 
         arguments=["config_template.xml"]
@@ -34,7 +33,7 @@ def execute(context):
 
         content = content.replace(
             '<param name="outputCoordinateSystem" value="null" />',
-            '<param name="outputCoordinateSystem" value="{}" />'.format(crs)
+            '<param name="outputCoordinateSystem" value="{}" />'.format(context.config("crs"))
         )
 
         content = content.replace(

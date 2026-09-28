@@ -1,5 +1,6 @@
 import subprocess as sp
-import shutil
+import shutil, re
+from packaging.version import Version
 
 def configure(context):
     context.config("git_binary", "git")
@@ -28,8 +29,20 @@ def validate(context):
     if shutil.which(context.config("git_binary")) in ["", None]:
         raise RuntimeError("Cannot find git binary at: %s" % context.config("git_binary"))
 
-    if not b"2." in sp.check_output([
+    version = str(sp.check_output([
         shutil.which(context.config("git_binary")),
         "--version"
-    ], stderr = sp.STDOUT):
-        print("WARNING! Git of at least version 2.x.x is recommended!")
+    ], stderr = sp.STDOUT))
+
+    version = re.search(r"git version ([0-9.]+)", version)
+
+    if version:
+        version = version.group(1)
+
+        if version.endswith("."): # fix for Windows
+            version = version[:-1]
+        
+        version = Version(version)
+
+    if version < Version("2.0.0"):
+        print(f"WARNING! Git of at least version 2.0.0 is recommended. Found: {version}")

@@ -8,6 +8,7 @@ def configure(context: ConfigurationContext):
     context.config("data_path")
     context.config("cutter.path", "cutter")
     context.config("cutter.file", "cutter.geojson")
+    context.config("crs", "EPSG:2154")
 
 
 def execute(context: ExecuteContext):
@@ -24,7 +25,7 @@ def execute(context: ExecuteContext):
     if "geometry" not in gdf.columns or gdf["geometry"].is_empty.any():
         raise ValueError("The file does not contain a valid geometry column.")
 
-    return gdf
+    return gdf.to_crs(context.config("crs"))
 
 
 def validate(context: ValidateContext):

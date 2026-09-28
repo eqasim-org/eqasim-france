@@ -15,8 +15,7 @@ def configure(context):
     if with_motorcycles:
         context.stage("synthesis.population.enriched")
 
-    hts = context.config("hts")
-    context.stage("data.hts.selected", alias = "hts")
+    context.stage("data.hts.processed", alias = "hts")
 
 def execute(context):
     # Load data

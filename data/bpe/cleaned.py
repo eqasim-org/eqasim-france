@@ -18,6 +18,7 @@ def configure(context):
     context.config("education_location_source","bpe")
 
     context.config("bpe_random_seed", 0)
+    context.config("crs", "EPSG:2154")
 
 ACTIVITY_TYPE_MAP = [
     ("A", "task"),          # Police, post office, etc ...
@@ -89,7 +90,8 @@ def execute(context):
     excess_communes = set(df["commune_id"].unique()) - set(df_municipalities["commune_id"].unique())
 
     if len(excess_communes) > 0:
-        raise RuntimeError("Found additional communes: %s" % excess_communes)
+        print("Found additional communes: %s" % excess_communes)
+        df = fix_municipalities(df)
 
     # We notice that we have some additional IRIS. Make sure they will be placed randomly in there commune later.
     df_iris = context.stage("data.spatial.iris")
@@ -140,8 +142,43 @@ def execute(context):
         df.loc[outside_indices, "imputed"] = True
 
     # Package up data set
-    df = df[["enterprise_id", "activity_type","education_type", "commune_id", "imputed", "x", "y","weight"]]
+    df = df[["enterprise_id", "activity_type","education_type", "commune_id", "imputed", "x", "y","weight", "EPSG"]]
 
-    df = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.x, df.y),crs="EPSG:2154")
+    df = df.groupby("EPSG")[df.columns].apply(lambda group_df: gpd.GeoDataFrame(group_df,
+                                                                                geometry=gpd.points_from_xy(group_df.x,
+                                                                                                            group_df.y),
+                                                                                crs="EPSG:"+group_df["EPSG"].iloc[0]).to_crs(context.config("crs")))
+    df = gpd.GeoDataFrame(df.drop(columns="EPSG"), crs=context.config("crs"))
+
+    return df
+
+def fix_municipalities(df):
+    """
+    Municipalities are often merged or separated and we must always use the latest BPE since 
+    the data set gets replaced every year. This function aligns the municipality identifiers
+    with the currently used definition of the IRIS system. Need to be updated for every update
+    of the BPE.
+    """
+
+    mapping = {
+        "49126": "49069",
+        "15035": "15141",
+        "15047": "15141",
+        "15171": "15141",
+        "12218": "12076",
+        "14581": "14011", # see data/spatial/iris.py
+        "69114": "69159"
+    }
+
+    mapping = {
+        k: v for k, v in mapping.items()
+        if k in df["commune_id"].unique()
+    }
+
+    print("Replacing to make BPE compatible with IRIS:", mapping)
+
+    added = set(mapping.values()) - set(df["commune_id"].cat.categories)
+    df["commune_id"] = df["commune_id"].cat.add_categories(added)
+    df["commune_id"] = df["commune_id"].replace(mapping)
 
     return df

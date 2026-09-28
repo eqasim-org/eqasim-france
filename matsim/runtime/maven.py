@@ -1,7 +1,8 @@
 import subprocess as sp
-import os, shutil
+import os, shutil, re
 
 import matsim.runtime.java as java
+from packaging.version import Version
 
 def configure(context):
     java.configure(context)
@@ -53,8 +54,15 @@ def validate(context):
     if shutil.which(context.config("maven_binary")) in ["", None]:
         raise RuntimeError("Cannot find Maven binary at: %s" % context.config("maven_binary"))
 
-    if not b"3." in sp.check_output([
+    version = str(sp.check_output([
         shutil.which(context.config("maven_binary")),
         "-version"
-    ], stderr = sp.STDOUT):
-        print("WARNING! Maven of at least version 3.x.x is recommended!")
+    ], stderr = sp.STDOUT))
+
+    version = re.search(r"Apache Maven ([0-9.]+)", version)
+
+    if version:
+        version = Version(version.group(1))
+
+    if version < Version("3.0.0"):
+        print("WARNING! Maven of at least version 3.0.0 is recommended. Found: {version}")

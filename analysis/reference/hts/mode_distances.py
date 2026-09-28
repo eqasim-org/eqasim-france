@@ -2,10 +2,10 @@ import pandas as pd
 import numpy as np
 
 def configure(context):
-    context.stage("data.hts.selected")
+    context.stage("data.hts.processed")
 
 def execute(context):
-    df_households, df_persons, df_trips = context.stage("data.hts.selected")
+    df_households, df_persons, df_trips = context.stage("data.hts.processed")
     df = pd.merge(df_trips, df_persons[["person_id", "person_weight"]])
 
     df["distance"] = df["euclidean_distance"]

@@ -7,18 +7,17 @@ def configure(context):
     context.stage("matsim.runtime.pt2matsim")
     
     context.stage("data.gtfs.cleaned")
-    context.stage("data.spatial.iris")
+    context.config("crs", "EPSG:2154")
 
     context.config("gtfs_date", "dayWithMostServices")
 
 def execute(context):
     gtfs_path = "{}/gtfs.zip".format(context.path("data.gtfs.cleaned"))
-    crs = context.stage("data.spatial.iris").crs
 
     pt2matsim.run(context, "org.matsim.pt2matsim.run.Gtfs2TransitScheduleWithParameters", [
         "--input-path", gtfs_path,
         "--day", context.config("gtfs_date"), 
-        "--crs", crs,
+        "--crs", context.config("crs"),
         "--output-schedule-path", "{}/transit_schedule.xml.gz".format(context.path()),
         "--output-vehicles-path", "{}/transit_vehicles.xml.gz".format(context.path()),
         "--write-crs", "true"

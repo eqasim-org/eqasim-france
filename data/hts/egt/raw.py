@@ -13,7 +13,7 @@ MENAGES_COLUMNS = [
 
 PERSONNES_COLUMNS = [
     "RESDEP", "NP", "POIDSP", "NQUEST", "SEXE", "AGE", "PERMVP",
-    "ABONTC", "OCCP", "PERM2RM", "NBDEPL", "NONDEPL", "CS8"
+    "ABONTC", "OCCP", "PERM2RM", "NBDEPL", "NONDEPL", "CS8", "JDEP"
 ]
 
 DEPLACEMENTS_COLUMNS = [
@@ -31,25 +31,68 @@ def execute(context):
         sep = ",", encoding = "latin1", usecols = MENAGES_COLUMNS
     )
 
+    if os.path.exists("%s/egt_2010/Menages_samedi.csv" % context.config("data_path")):
+        df_menages = pd.concat([df_menages, pd.read_csv(
+            "%s/egt_2010/Menages_samedi.csv" % context.config("data_path"),
+            sep = ",", encoding = "latin1", usecols = MENAGES_COLUMNS
+        )])
+
+    if os.path.exists("%s/egt_2010/Menages_dimanche.csv" % context.config("data_path")):
+        df_menages = pd.concat([df_menages, pd.read_csv(
+            "%s/egt_2010/Menages_dimanche.csv" % context.config("data_path"),
+            sep = ",", encoding = "latin1", usecols = MENAGES_COLUMNS
+        )])
+
     df_personnes = pd.read_csv(
         "%s/egt_2010/Personnes_semaine.csv" % context.config("data_path"),
         sep = ",", encoding = "latin1", usecols = PERSONNES_COLUMNS
     )
+
+    if os.path.exists("%s/egt_2010/Personnes_samedi.csv" % context.config("data_path")):
+        df_personnes = pd.concat([df_personnes, pd.read_csv(
+            "%s/egt_2010/Personnes_samedi.csv" % context.config("data_path"),
+            sep = ",", encoding = "latin1", usecols = PERSONNES_COLUMNS
+        )])
+
+    if os.path.exists("%s/egt_2010/Personnes_dimanche.csv" % context.config("data_path")):
+        df_personnes = pd.concat([df_personnes, pd.read_csv(
+            "%s/egt_2010/Personnes_dimanche.csv" % context.config("data_path"),
+            sep = ",", encoding = "latin1", usecols = PERSONNES_COLUMNS
+        )])
 
     df_deplacements = pd.read_csv(
         "%s/egt_2010/Deplacements_semaine.csv" % context.config("data_path"),
         sep = ",", encoding = "latin1", usecols = DEPLACEMENTS_COLUMNS
     )
 
+    if os.path.exists("%s/egt_2010/Deplacements_samedi.csv" % context.config("data_path")):
+        df_deplacements = pd.concat([df_deplacements, pd.read_csv(
+            "%s/egt_2010/Deplacements_samedi.csv" % context.config("data_path"),
+            sep = ",", encoding = "latin1", usecols = DEPLACEMENTS_COLUMNS
+        )])
+
+    if os.path.exists("%s/egt_2010/Deplacements_dimanche.csv" % context.config("data_path")):
+        df_deplacements = pd.concat([df_deplacements, pd.read_csv(
+            "%s/egt_2010/Deplacements_dimanche.csv" % context.config("data_path"),
+            sep = ",", encoding = "latin1", usecols = DEPLACEMENTS_COLUMNS
+        )])
+
     return df_menages, df_personnes, df_deplacements
 
 def validate(context):
     for name in ("Menages_semaine.csv", "Personnes_semaine.csv", "Deplacements_semaine.csv"):
-        if not os.path.exists("%s/egt_2010/%s" % (context.config("data_path"), name)):
-            raise RuntimeError("File missing from EGT: %s" % name)
+        if not os.path.exists("{}/egt_2010/{}".format(context.config("data_path"), name)):
+            raise RuntimeError(f"File missing from EGT: {name}")
 
     return [
-        os.path.getsize("%s/egt_2010/Menages_semaine.csv" % context.config("data_path")),
-        os.path.getsize("%s/egt_2010/Personnes_semaine.csv" % context.config("data_path")),
-        os.path.getsize("%s/egt_2010/Deplacements_semaine.csv" % context.config("data_path"))
+        os.path.getsize("{}/egt_2010/{}_semaine.csv".format(context.config("data_path"), item))
+        for item in ("Menages", "Personnes", "Deplacements")
+    ] + [
+        os.path.getsize("{}/egt_2010/{}_samedi.csv".format(context.config("data_path"), item))
+        for item in ("Menages", "Personnes", "Deplacements")
+        if os.path.exists("{}/egt_2010/{}_samedi.csv".format(context.config("data_path"), item))
+    ] + [
+        os.path.getsize("{}/egt_2010/{}_dimanche.csv".format(context.config("data_path"), item))
+        for item in ("Menages", "Personnes", "Deplacements")
+        if os.path.exists("{}/egt_2010/{}_dimanche.csv".format(context.config("data_path"), item))
     ]

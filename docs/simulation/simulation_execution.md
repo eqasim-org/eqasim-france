@@ -26,7 +26,7 @@ In recent versions of **Ubuntu** you may need to install the `font-config` packa
 :::
 
 Then, open your `config.yml` and uncomment the `matsim.output` stage in the
-`run` section. If you call `python3 -m synpp` again, the pipeline will know
+`run` section. If you call `uv -m synpp` again, the pipeline will know
 already which stages have been running before, so it will only run additional
 stages that are needed to set up and test the simulation.
 

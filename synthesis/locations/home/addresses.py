@@ -67,7 +67,7 @@ def execute(context):
     else:
         df_addresses["weight"] = 1.0
     
-    return df_addresses[["building_id", "weight", "geometry"]]
+    return df_addresses[["building_id", "housing", "weight", "geometry"]]
 
 def validate(context):
     assert context.config("home_location_source") in ("addresses", "buildings","tiles")

@@ -47,7 +47,7 @@ config:
 
   ## Activity purposes included in the generated activities.
   ## Purposes not present in the list below is put in the "other" category.
-  # activity_purposes: ["leisure", "shop", "escort", "task"]
+  # activity_purposes: ["leisure", "shop"]
 
   ## if selected, chose the source for edgt_lyon
   # edgt_lyon_source: unchosen # unchosen, adisp, cerema
@@ -103,6 +103,15 @@ config:
   # - name: rooms
   #   raw: NBPI
 
+  ## Weekday selection
+  # You can restrict the selected HTS to a specific weekday (if available in the HTS)
+
+  # Either by selecting a specific type of day or specific day:
+  # weekday: workday # any, weekend, monday, tuesday, wednesday, thursday, friday (default is "workday")
+
+  # Or by specifying a list of days:
+  # weekday: ["thursday", "friday"]
+
   ## Statistical matching configuration
 
   ## Minimum number of observation to sample from
@@ -147,6 +156,7 @@ config:
   ## max iterations for the secondary location selection algorithm
   # secondary_activities:
   #   maximum_iterations: .inf
+  #   chain_solver: default
 
   # Locations for escort activities are drawn from the activity types below, with the given weights.
   # By default, there is a 71% probability that a escort activity is drawn from "education" locations.

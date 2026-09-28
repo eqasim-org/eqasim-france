@@ -20,8 +20,9 @@ def configure(context):
     context.config("output_formats", ["csv", "gpkg"])
     context.config("output_path")
     context.config("data_path")
+    context.config("crs", "EPSG:2154")
 
-def stat_grid(df_trips,df_locations,df_persons,df_grid):
+def stat_grid(df_trips,df_locations, df_persons, df_grid, crs):
     
     # Write spatial trips
     df_spatial = pd.merge(df_trips, df_locations[[
@@ -30,10 +31,11 @@ def stat_grid(df_trips,df_locations,df_persons,df_grid):
         "activity_index": "following_activity_index",
     }), how = "left", on = ["person_id", "following_activity_index"])
     df_spatial = pd.merge(df_spatial,df_persons,how = "left", on = ["person_id",])
-    df_spatial = gpd.GeoDataFrame(df_spatial, crs = "EPSG:2154").to_crs("4326")
+    df_spatial = gpd.GeoDataFrame(df_spatial, crs = crs).to_crs("4326")
 
     df_stats = gpd.sjoin(df_grid,df_spatial,how="left")
     return df_stats[['id_carr_1km', 'geometry','person_id', 'following_purpose', 'household_id', 'age']]
+
 def execute(context):
     
     figures = {
@@ -81,8 +83,9 @@ def execute(context):
     df_grids = df_grids.to_crs("4326")
     df_grid = df_grids[["id_carr_1km","geometry"]].dissolve(by="id_carr_1km").reset_index()
 
-    df_stats = stat_grid(df_trips,df_locations,df_persons,df_grid)
-    df_grids = stat_grid(df_trips_comp,df_locations_comp,df_persons_comp,df_grid)
+    crs = context.config("crs")
+    df_stats = stat_grid(df_trips, df_locations, df_persons, df_grid, crs)
+    df_grids = stat_grid(df_trips_comp, df_locations_comp, df_persons_comp, df_grid, crs)
     point = df_grid.unary_union.centroid # a changé avec ploy_dep
     print("Printing grids...")
 
