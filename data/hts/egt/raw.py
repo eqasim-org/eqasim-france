@@ -39,7 +39,7 @@ def execute(context):
 
     if os.path.exists("%s/egt_2010/Menages_dimanche.csv" % context.config("data_path")):
         df_menages = pd.concat([df_menages, pd.read_csv(
-            "%s/egt_2010/Menages_samedi.csv" % context.config("data_path"),
+            "%s/egt_2010/Menages_dimanche.csv" % context.config("data_path"),
             sep = ",", encoding = "latin1", usecols = MENAGES_COLUMNS
         )])
 
