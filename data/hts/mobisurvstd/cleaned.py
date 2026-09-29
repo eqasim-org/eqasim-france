@@ -148,7 +148,7 @@ def execute(context):
         "trip_id",
         "person_id",
         "household_id",
-        "trip_weekday",
+        weekday=pl.col("trip_weekday"),
         # Convert departure / arrival time from minutes to seconds.
         departure_time=pl.col("departure_time").cast(pl.UInt32) * 60,
         arrival_time=pl.col("arrival_time").cast(pl.UInt32) * 60,
@@ -251,17 +251,17 @@ def process_week_survey(context, df_households, df_persons, df_trips):
 
     # at least in EMG23, some people have a repeating day, for instance monday -> ... -> sunday -> monday
     # here we make sure that we always just keep the first weekday
-    f = df_trips["trip_weekday"].ne(df_trips["trip_weekday"].shift(1))
+    f = df_trips["weekday"].ne(df_trips["weekday"].shift(1))
     df_trips.loc[f, "day_index"] = np.arange(np.count_nonzero(f))
     df_trips["day_index"] = df_trips["day_index"].ffill().astype(int)
 
     # drop trips on a duplicate weekday
-    df_selector = df_trips.drop_duplicates(["person_id", "trip_weekday"])[["person_id", "day_index"]]
+    df_selector = df_trips.drop_duplicates(["person_id", "weekday"])[["person_id", "day_index"]]
     df_trips = pd.merge(df_trips, df_selector, on = ["person_id", "day_index"])
 
     if method == "keep":
         # we keep the week structure but extend departure and arrival times
-        weekday_index = df_trips["trip_weekday"].apply(weekdays.index).astype(int)
+        weekday_index = df_trips["weekday"].apply(weekdays.index).astype(int)
         df_trips["departure_time"] += weekday_index * 24 * 3600
         df_trips["arrival_time"] += weekday_index * 24 * 3600
 
@@ -270,7 +270,7 @@ def process_week_survey(context, df_households, df_persons, df_trips):
         df_trips["trip_id"] = np.arange(len(df_trips)) # reassign for ordering downstream
 
         # we need to fill the activity duration between the last trip of one day to the next
-        f = df_trips["activity_duration"].isna() & df_trips["trip_weekday"].ne(df_trips["trip_weekday"].shift(-1))
+        f = df_trips["activity_duration"].isna() & df_trips["weekday"].ne(df_trips["weekday"].shift(-1))
         f &= df_trips["person_id"].eq(df_trips["person_id"].shift(-1))
         df_trips.loc[f, "activity_duration"] = df_trips["departure_time"].shift(-1)[f] - df_trips["arrival_time"][f]
 
@@ -282,11 +282,14 @@ def process_week_survey(context, df_households, df_persons, df_trips):
         # select a random weekday for every person
         df_selection = pd.DataFrame({
             "person_id": persons,
-            "trip_weekday": random.choice(weekdays, size = len(persons))
+            "weekday": random.choice(weekdays, size = len(persons))
         })
 
+        # attach to persons
+        df_persons = pd.merge(df_persons, df_selection, on = "person_id")
+
         # reduce the trips to the selected days
-        df_trips = pd.merge(df_trips, df_selection, on = ["person_id", "trip_weekday"])
+        df_trips = pd.merge(df_trips, df_selection, on = ["person_id", "weekday"])
 
     elif method == "split":
         # we split each person in individual per-day persons and households
@@ -319,7 +322,7 @@ def process_week_survey(context, df_households, df_persons, df_trips):
         df_persons = pd.merge(df_persons, df_household_mapping, on = ["household_id", "weekday"])
 
         # mapping of ids onto trips
-        df_trip_mapping = df_trips[["trip_id", "person_id", "trip_weekday"]].rename(columns = { "trip_weekday": "weekday" })
+        df_trip_mapping = df_trips[["trip_id", "person_id", "weekday"]]
         df_trip_mapping = pd.merge(df_trip_mapping, 
             df_persons[["person_id", "weekday", "updated_person_id", "updated_household_id"]], 
             on = ["person_id", "weekday"]) # match by person and weekday!
@@ -337,9 +340,6 @@ def process_week_survey(context, df_households, df_persons, df_trips):
         df_trips["household_id"] = df_trips["updated_household_id"]
         df_trips["person_id"] = df_trips["updated_person_id"]
         df_trips = df_trips.drop(columns = ["updated_household_id", "updated_person_id"])
-
-        # reset weekday column
-        df_households["trips_weekday"] = df_households["weekday"]
 
     else:
         raise RuntimeError("Unknown method for processing week survey: {}".format(method))
