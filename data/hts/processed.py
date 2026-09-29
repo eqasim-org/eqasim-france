@@ -35,6 +35,9 @@ def execute(context):
         df_households = df_households[df_households["household_id"].isin(df_persons["household_id"])]
         df_trips = df_trips[df_trips["person_id"].isin(df_persons["person_id"])]
 
+        if len(df_persons) == 0:
+            raise RuntimeError("No persons left after filtering for weekdays")
+
     # Set purpose to `other` for HTS purposes which are not primary purposes or declared secondary
     # purposes.
     all_purposes = {"home", "work", "education"} | set(context.config("activity_purposes"))
