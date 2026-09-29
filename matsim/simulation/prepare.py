@@ -80,6 +80,12 @@ def execute(context):
     )
     shutil.copy(transit_vehicles_path, "%s/%stransit_vehicles.xml.gz" % (context.cache_path, context.config("output_prefix")))
 
+    vehicles_path = "%s/%s" % (
+        context.path("matsim.scenario.vehicles"),
+        context.stage("matsim.scenario.vehicles")
+    )
+    shutil.copy(vehicles_path, "%s/%svehicles.xml.gz" % (context.cache_path, context.config("output_prefix")))
+
     # Generate base configuration
     eqasim.run(context, "org.eqasim.core.scenario.config.RunGenerateConfig", [
         "--sample-size", context.config("sampling_rate"),
