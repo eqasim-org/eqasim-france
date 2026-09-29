@@ -344,7 +344,6 @@ def process_week_survey(context, df_households, df_persons, df_trips):
     else:
         raise RuntimeError("Unknown method for processing week survey: {}".format(method))
 
-
     # reset first and last
     df_trips["is_first_trip"] = df_trips["person_id"].ne(df_trips["person_id"].shift(1))
     df_trips["is_last_trip"] = df_trips["person_id"].ne(df_trips["person_id"].shift(-1))
