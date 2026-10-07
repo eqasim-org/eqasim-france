@@ -12,9 +12,9 @@ def execute(context):
     has_weekday = "weekday" in df_persons
 
     if not has_weekday and weekday_filter == "workday":
-        pass # default case: not compatible, but user doesn't request a weekday
+        pass # default case: not compatible, but user is on default setting
 
-    if not has_weekday and weekday_filter != "workday":
+    elif not has_weekday and weekday_filter != "workday":
         raise RuntimeError("The weekday attribute has not been implemented yet for your selected survey. Cannot perform chain matching by weekday. Set weekday to the default 'workday'.")
 
     else:
