@@ -67,7 +67,7 @@ def execute(context):
             df_households = df_households.filter(
                 pl.col("trips_weekday").is_null()
                 | pl.col("trips_weekday").is_in(("saturday", "sunday")).not_()
-            ).rename({ "trips_weekday": "weekday" })
+            ).drop("trips_weekday")
 
         else:
             # By default, only skip "null" observations
