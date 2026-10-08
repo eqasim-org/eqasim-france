@@ -59,7 +59,7 @@ def execute(context):
     if df_households["trips_weekday"].is_not_null().mean() > 0.95:
         # The weekday at which the trips took place is known (for almost all households).
 
-        if std_survey.meta["type"] in SKIP_WEEKDAYS:
+        if std_survey.metadata["type"] in SKIP_WEEKDAYS:
             # We select only the households for which the trips were surveyed for a weekday.
             # We also keep the NULL values for `trips_weekday` (for EMP 2019, `trips_weekday`
             # is NULL for persons who did not traveled at all).
@@ -71,7 +71,7 @@ def execute(context):
 
         else:
             # By default, only skip "null" observations
-            
+
             df_households = df_households.filter(
                 pl.col("trips_weekday").is_not_null()
             ).rename({ "trips_weekday": "weekday" })
