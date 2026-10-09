@@ -31,6 +31,7 @@ PURPOSE_MAP = {
     None: "other",
 }
 
+SKIP_WEEKDAYS = {"EMP2019"}
 
 def configure(context):
     context.stage("data.hts.mobisurvstd.raw")
@@ -55,17 +56,25 @@ def execute(context):
         .fill_null("none"),
     )
 
-    use_weekday = False
     if df_households["trips_weekday"].is_not_null().mean() > 0.95:
         # The weekday at which the trips took place is known (for almost all households).
-        # We select only the households for which the trips were surveyed for a weekday.
-        # We also keep the NULL values for `trips_weekday` (for EMP 2019, `trips_weekday`
-        # is NULL for persons who did not traveled at all).
-        use_weekday = True
 
-        df_households = df_households.filter(
-            pl.col("trips_weekday").is_null()
-        ).rename({ "trips_weekday": "weekday" })
+        if std_survey.metadata["type"] in SKIP_WEEKDAYS:
+            # We select only the households for which the trips were surveyed for a weekday.
+            # We also keep the NULL values for `trips_weekday` (for EMP 2019, `trips_weekday`
+            # is NULL for persons who did not traveled at all).
+
+            df_households = df_households.filter(
+                pl.col("trips_weekday").is_null()
+                | pl.col("trips_weekday").is_in(("saturday", "sunday")).not_()
+            ).drop("trips_weekday")
+
+        else:
+            # By default, only skip "null" observations
+
+            df_households = df_households.filter(
+                pl.col("trips_weekday").is_not_null()
+            ).rename({ "trips_weekday": "weekday" })
 
     extra_cols = context.config("extra_enriched_attributes")
     assert isinstance(extra_cols, list), "`extra_enriched_attributes` parameter must be a list"
@@ -184,7 +193,7 @@ def execute(context):
 
     # Add home département to persons.
     columns = ["household_id", "departement_id"]
-    if use_weekday: columns += ["weekday"]
+    if "weekday" in df_households: columns.append("weekday")
 
     df_persons = df_persons.join(
         df_households.select(columns), on="household_id", how="left"
