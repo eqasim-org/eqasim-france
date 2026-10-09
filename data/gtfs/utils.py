@@ -123,6 +123,9 @@ def read_feed(path):
             c for c in feed[item].columns if c.startswith("ext_")
         ])
 
+    # Some inconsitent feeds were encountered where some trips had no stop times
+    feed["trips"] = feed["trips"][feed["trips"]["trip_id"].isin(feed["stop_times"]["trip_id"])]
+
     return feed
 
 def write_feed(feed, path):
