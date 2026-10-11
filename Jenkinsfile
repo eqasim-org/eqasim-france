@@ -41,10 +41,16 @@ pipeline {
             defaultValue: params.download_retries ?: "3",
             description: 'Number of times to retry downloading of necessary files in case of failure'
         )
+        string(
+            name: 'agentLabel',
+            defaultValue: params.agent ?: "",
+            description: 'Jenkins agent to use for running the pipeline'
+        )
     }
 
     agent {
         docker {
+            label "${params.agentLabel}"
             image 'ghcr.io/eqasim-org/eqasim-france:main'
             args '  -i --entrypoint='
         }
