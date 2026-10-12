@@ -55,7 +55,25 @@ def execute(context):
     )
 
     df_persons = std_survey.persons
-    if std_survey.metadata["type"] == "EMP2019":
+    # Add households consumption units (1 for 1st person, +0.5 for any other person 14+, +0.3 for
+    # any other person below 14.
+    # When age is NULL but age_class is known, then all minors are considered to be below 14.
+    # When both age and age_class are NULL, then all persons are considered to be over 14.
+    cons_units = (
+        df_persons.with_columns(
+            over_14=pl.col("age").ge(14).fill_null(pl.col("age_class") != "17-").fill_null(False)
+        )
+        .group_by("household_id")
+        .agg(
+            consumption_units=1.0
+            + pl.max_horizontal(0, pl.col("over_14").sum().cast(pl.Int16) - 1) * 0.5
+            + pl.col("over_14").not_().sum() * 0.3
+        )
+    )
+    df_households = df_households.join(cons_units, on="household_id", how="left")
+
+    is_emp = std_survey.metadata["type"] == "EMP2019"
+    if is_emp:
         # For EMP 2019, persons are asked whether they traveled for the 7 days prior to the
         # interview (variables `traveled_on_{weekday}`), then they are surveyed specifically for one
         # of the day during which they traveled.
@@ -123,7 +141,6 @@ def execute(context):
         "household_id",
         "is_surveyed",
         "age",
-        "age_class",
         *extra_cols,
         sex=pl.when("woman").then(pl.lit("female")).otherwise(pl.lit("male")).cast(pl.Categorical),
         # Assume that all persons below 5 have studies = True and employed = False (some surveys
@@ -183,7 +200,7 @@ def execute(context):
         .otherwise("professional_activity")
     )
 
-    if df_households["trips_weekday"].is_not_null().mean() > 0.95:
+    if is_emp or df_households["trips_weekday"].is_not_null().mean() > 0.95:
         # The weekday at which the trips took place is known (for almost all households): we drop
         # NULL observations.
         df_households = df_households.filter(
@@ -218,24 +235,6 @@ def execute(context):
         # Distance is converted from km to meters.
         euclidean_distance=pl.col("trip_euclidean_distance_km") * 1000.0,
     )
-
-    # Add households consumption units (1 for 1st person, +0.5 for any other person 14+, +0.3 for
-    # any other person below 14.
-    # When age is NULL but age_class is known, then all minors are considered to be below 14.
-    # When both age and age_class are NULL, then all persons are considered to be over 14.
-    cons_units = (
-        df_persons.with_columns(
-            over_14=pl.col("age").ge(14).fill_null(pl.col("age_class") != "17-").fill_null(False)
-        )
-        .group_by("household_id")
-        .agg(
-            consumption_units=1.0
-            + pl.max_horizontal(0, pl.col("over_14").sum().cast(pl.Int16) - 1) * 0.5
-            + pl.col("over_14").not_().sum() * 0.3
-        )
-    )
-    df_households = df_households.join(cons_units, on="household_id", how="left")
-    df_persons = df_persons.drop("age_class")
 
     # Add home département to persons.
     columns = ["household_id", "departement_id"]
