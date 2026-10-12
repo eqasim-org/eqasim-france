@@ -135,23 +135,24 @@ The geolocated enterprise census is available on data.gouv.fr:
 The French Buildings database is available from IGN:
 
 - [Buildings database](https://geoservices.ign.fr/bdtopo)
-- In the sidebar on the right, under *Téléchargement anciennes éditions*, click on *BD TOPO® 2024 GeoPackage Départements* to go to the saved data publications from 2024.
-- The data is split by department and they are identified with a number. For the Île-de-France region, download:
-  - Paris (75)
-  - Seine-et-Marne (77)
-  - Yvelines (78)
-  - Essonne (91)
-  - Hauts-de-Seine (92)
-  - Seine-Saint-Denis (93)
-  - Val-de-Marne (94)
-  - Val-d'Oise (95)
+- Scroll down to *API* and click on the *Download* icon for **BD TOPO v3**.
+- In the menu that pops up, choose *Format: GPKG*, *CRS: RGF93*.
+- The iterate through the zones and download the *2025-12-15* edition:
+  - Paris (D075)
+  - Seine-et-Marne (D077)
+  - Yvelines (D078)
+  - Essonne (D091)
+  - Hauts-de-Seine (D092)
+  - Seine-Saint-Denis (D093)
+  - Val-de-Marne (D094)
+  - Val-d'Oise (D095)
 - Copy the eight *7z* files into `data/bdtopo_idf`.
 
 ## 11) Adresses database (BAN)
 
 The French adresses database is available on data.gouv.fr :
 
-- [Adresses database](https://adresse.data.gouv.fr/data/ban/adresses/latest/csv/)
+- [Adresses database](https://adresse.data.gouv.fr/data/ban/adresses/2026-07-01/csv/)
 - Click on the link *adresses-xx.csv.gz* where xx = departments codes (75, 77, 78, 91, 92, 93, 94, 95) 
 - Copy the *gz* files into `data/ban_idf`.
 
@@ -178,14 +179,14 @@ Your folder structure should now have at least the following files:
 - `data/sirene/StockEtablissement_utf8.csv`
 - `data/sirene/StockUniteLegale_utf8.zip`
 - `data/sirene/GeolocalisationEtablissement_Sirene_pour_etudes_statistiques_utf8.zip`
-- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D075_2024-03-15.7z`
-- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D077_2024-03-15.7z`
-- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D078_2024-03-15.7z`
-- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D091_2024-03-15.7z`
-- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D092_2024-03-15.7z`
-- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D093_2024-03-15.7z`
-- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D094_2024-03-15.7z`
-- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D095_2024-03-15.7z`
+- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D075_2025-12-15.7z`
+- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D077_2025-12-15.7z`
+- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D078_2025-12-15.7z`
+- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D091_2025-12-15.7z`
+- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D092_2025-12-15.7z`
+- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D093_2025-12-15.7z`
+- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D094_2025-12-15.7z`
+- `data/bdtopo_idf/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D095_2025-12-15.7z`
 - `data/ban_idf/adresses-75.csv.gz`
 - `data/ban_idf/adresses-77.csv.gz`
 - `data/ban_idf/adresses-78.csv.gz`

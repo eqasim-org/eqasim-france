@@ -10,14 +10,14 @@ Loads the IRIS zoning system.
 
 def configure(context):
     context.config("data_path")
-    context.config("iris_path", "iris_2024")
+    context.config("iris_path", "iris_2024/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01.7z")
     context.stage("data.spatial.codes")
     context.config("crs", "EPSG:2154")
 
 def execute(context):
     df_codes = context.stage("data.spatial.codes")
 
-    source_path = find_iris("{}/{}".format(context.config("data_path"), context.config("iris_path")))
+    source_path = "{}/{}".format(context.config("data_path"), context.config("iris_path"))
 
     with py7zr.SevenZipFile(source_path) as archive:
         contour_paths = [
@@ -58,20 +58,9 @@ def execute(context):
 
     return df_iris
 
-def find_iris(path):
-    candidates = sorted(list(glob.glob("{}/*.7z".format(path))))
-
-    if len(candidates) == 0:
-        raise RuntimeError("IRIS data is not available in {}".format(path))
-    
-    if len(candidates) > 1:
-        raise RuntimeError("Multiple candidates for IRIS are available in {}".format(path))
-    
-    return candidates[0]
-
 
 def validate(context):
-    path = find_iris("{}/{}".format(context.config("data_path"), context.config("iris_path")))
+    path = "{}/{}".format(context.config("data_path"), context.config("iris_path"))
     return os.path.getsize(path)
 
 

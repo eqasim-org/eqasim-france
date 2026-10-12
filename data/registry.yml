@@ -1,0 +1,162 @@
+# This file contains a data registry for eqasim-france. It contains all the direct URLs
+# to the data sets as well as the expected file names and destinations.
+
+registry:
+  rp_2022:
+    description: Census data (RP 2022)
+    files:
+      - url: https://www.insee.fr/fr/statistiques/fichier/8647104/RP2022_indcvi.parquet
+        target: "{{ config.census_path }}"
+        description: Detailed data
+        md5: aff701cf2bf75c33a722cce98da49953
+      - url: https://www.insee.fr/fr/statistiques/fichier/8647014/base-ic-evol-struct-pop-2022_csv.zip
+        target: "{{ config.population_path }}"
+        description: Aggregated data
+        md5: 7931540b0759b57d62f58d81449d1d09
+
+  od_2022:
+    description: Origin-destination data (2022)
+    files:
+      - url: https://www.insee.fr/fr/statistiques/fichier/8589904/RP2022_mobpro.parquet
+        target: "{{ config.od_pro_path }}"
+        description: Work (MOBPRO 2022)
+        md5: 9f49660bd5df0691646741527e442186
+      - url: https://www.insee.fr/fr/statistiques/fichier/8589945/RP2022_mobsco.parquet
+        target: "{{ config.od_sco_path }}"
+        description: Education (MOBSCO 2022)
+        md5: 9c98528b58b6eaa72c916f56e6d0c86d
+
+  filosofi_2021:
+    description: Income tax data (Filosofi 2021)
+    files:
+      - url: https://www.insee.fr/fr/statistiques/fichier/7756855/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip
+        target: "{{ config.income_com_path }}"
+        description: Municipalities
+        md5: c81c55579def0c5853528cc4d3ebf179
+      - url: https://www.insee.fr/fr/statistiques/fichier/7756855/indic-struct-distrib-revenu-2021-SUPRA_XLSX.zip
+        target: "{{ config.income_reg_path }}"
+        description: Regional
+        md5: 79eabdd71e1cc27ae90f7b67e14da286
+
+  bpe_2025:
+    description: Service and facility census (BPE 2025)
+    files:
+      - url: https://www.insee.fr/fr/statistiques/fichier/8217525/BPE25.parquet
+        target: "{{ config.bpe_path }}"
+        md5: e4f6a9661a0e1edb9719e1d514599b09
+
+  entd2008:
+    description: National household travel survey (ENTD 2008)
+    files:
+      - url: https://www.statistiques.developpement-durable.gouv.fr/media/2339/download?inline
+        target: "{{ config.entd2008_path }}/Q_tcm_menage_0.csv"
+        md5: 043fd6a6e3d20e145ce859c7ed396d51
+      - url: https://www.statistiques.developpement-durable.gouv.fr/media/2555/download?inline
+        target: "{{ config.entd2008_path }}/Q_tcm_individu.csv"
+        md5: cadf80ded36a6c06639f60ef876a10c6
+      - url: https://www.statistiques.developpement-durable.gouv.fr/media/2556/download?inline
+        target: "{{ config.entd2008_path }}/Q_menage.csv"
+        md5: fda4e357dcca0fab55bf639108d56643
+      - url: https://www.statistiques.developpement-durable.gouv.fr/media/2565/download?inline
+        target: "{{ config.entd2008_path }}/Q_individu.csv"
+        md5: 745916018a31e0d4e28b90aa1eff76e6
+      - url: https://www.statistiques.developpement-durable.gouv.fr/media/2566/download?inline
+        target: "{{ config.entd2008_path }}/Q_ind_lieu_teg.csv"
+        md5: b23df051219325307ecb599fc3807cb4
+      - url: https://www.statistiques.developpement-durable.gouv.fr/media/2567/download?inline
+        target: "{{ config.entd2008_path }}/K_mobilite.csv"
+      - url: https://www.statistiques.developpement-durable.gouv.fr/media/2568/download?inline
+        target: "{{ config.entd2008_path }}/K_deploc.csv"
+        md5: f4cc527ea796401abcb8e6648ab70cfc
+
+  iris2024:
+    description: IRIS zoning system (2024)
+    files:
+      - url: https://data.geopf.fr/telechargement/download/CONTOURS-IRIS/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01.7z
+        target: "{{ config.iris_path }}"
+        md5: b08570373cf3c7ebf977aa3c61648893
+
+  codes2024:
+    description: Zoning code registry (2024)
+    files:
+      - url: https://www.insee.fr/fr/statistiques/fichier/7708995/reference_IRIS_geo2024.zip
+        target: "{{ config.codes_path }}"
+        md5: 46f4d41801d3ec9f701c7dcce25ec65d
+
+  sirene:
+    description: Enterprise census (SIRENE)
+    files:
+      - url: https://static.data.gouv.fr/resources/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/20260701-093629/stock-stocketablissement-parquet.parquet
+        target: "{{ config.siret_path }}"
+        description: Establishments
+        md5: 194838fada97e839f336fc5211779153
+      - url: https://static.data.gouv.fr/resources/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/20260701-093003/stock-stockunitelegale-parquet.parquet
+        target: "{{ config.siren_path }}"
+        description: Legal units
+        md5: 0c939d276957ac6d4488d4c56e697af6
+      - url: https://static.data.gouv.fr/resources/geolocalisation-des-etablissements-du-repertoire-sirene-pour-les-etudes-statistiques/20260621-112946/geoloc-geolocalisationetablissement-sirene-pour-etudes-statistiques-parquet.parquet
+        target: "{{ config.siret_geo_path }}"
+        description: Geocoding information
+        md5: ec4091c0a283d8e5fb89f45fa420377c
+    
+  bdtopo:
+    description: Buildings database (BD-TOPO), December 2025
+    files:
+      - url: https://data.geopf.fr/telechargement/download/BDTOPO/BDTOPO_3-5_TOUSTHEMES_GPKG_LAMB93_D{department:>03s}_2025-12-15/BDTOPO_3-5_TOUSTHEMES_GPKG_LAMB93_D{department:>03s}_2025-12-15.7z
+        target: "{{ config.bdtopo_path }}/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D{department:>03s}_2025-12-15.7z"
+        per_department: true
+
+  ban:
+    description: National adresses database (BAN), July 2026
+    files:
+      - url: https://adresse.data.gouv.fr/data/ban/adresses/2026-07-01/csv/adresses-{department}.csv.gz
+        target: "{{ config.ban_path }}/adresses-{{ department }}.csv.gz"
+        per_department: true
+
+  projections:
+    description: Population projections
+    files:
+      - url: https://www.insee.fr/fr/statistiques/fichier/5894093/00_central.xlsx
+        target: "{{ config.projection_path }}"
+        md5: da241514594cf0e1ab179cdf672f7e33
+
+  urban_type:
+    description: Urban type classification
+    files:
+      - url: https://www.insee.fr/fr/statistiques/fichier/4802589/UU2020_au_01-01-2024.zip
+        target: "{{ config.urban_type_path }}"
+        md5: e66acea87752592d5e6cc373d8f14938
+
+  emp2019:
+    description: National Person Mobility Survey (EMP 2019)
+    files:
+      - url: https://www.statistiques.developpement-durable.gouv.fr/media/5052/download?inline
+        target: "{{ config.emp2019_path }}"
+        md5: c424dd48dd7d1195c1d369cb2e015343
+
+  tiles2019:
+    description: INSEE 200m tile data (2019)
+    files:
+      - url: https://www.insee.fr/fr/statistiques/fichier/7655475/Filosofi2019_carreaux_200m_gpkg.zip
+        target: "{{ config.tiles_path }}"
+        md5: d83e1c0a625f8baa1180c4152c821e69
+
+  critair2021:
+    description: Vehicle stock data (Crit'air 2021)
+    files:
+      - url: https://www.statistiques.developpement-durable.gouv.fr/media/4684/download?inline
+        target: "{{ config.critair_path }}/parc_vp_communes.zip"
+        description: Municipalities
+        md5: 12f2c632b1363a37c4ddf66cae834725
+      - url: https://www.statistiques.developpement-durable.gouv.fr/media/4684/download?inline
+        target: "{{ config.critair_path }}/parc_vp_regions.zip"
+        description: Regions
+        md5: 58d331d14d650f42417a8573408285bd
+  
+  # https://www.statistiques.developpement-durable.gouv.fr/enquete-sur-lutilisation-des-deux-roues-motorises-en-2012
+  2rm_survey:
+    description: 2RM Survey 2012
+    files:
+      - url: https://www.statistiques.developpement-durable.gouv.fr/sites/default/files/2018-11/2rm-detail-diffusion.csv
+        target: "{{ config.2rm_path }}/2rm-detail-diffusion.csv"
+        md5: 00107b22884a5ee2bf64e91dde19705c

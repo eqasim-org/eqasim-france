@@ -38,34 +38,37 @@ K_DEPLOC_COLUMNS = [
 
 def configure(context):
     context.config("data_path")
+    context.config("entd2008_path", "entd_2008")
 
 def execute(context):
+    source_path = "{}/{}".format(context.config("data_path"), context.config("entd_path"))
+    
     df_individu = pd.read_csv(
-        "%s/entd_2008/Q_individu.csv" % context.config("data_path"),
+        "%s/Q_individu.csv" % source_path,
         sep = ";", encoding = "latin1", usecols = Q_INDIVIDU_COLUMNS,
         dtype = { "DEP": str }
     )
 
     df_tcm_individu = pd.read_csv(
-        "%s/entd_2008/Q_tcm_individu.csv" % context.config("data_path"),
+        "%s/Q_tcm_individu.csv" % source_path,
         sep = ";", encoding = "latin1", usecols = Q_TCM_INDIVIDU_COLUMNS,
         dtype = { "DEP": str }
     )
 
     df_menage = pd.read_csv(
-        "%s/entd_2008/Q_menage.csv" % context.config("data_path"),
+        "%s/Q_menage.csv" % source_path,
         sep = ";", encoding = "latin1", usecols = Q_MENAGE_COLUMNS,
         dtype = { "DEP": str }
     )
 
     df_tcm_menage = pd.read_csv(
-        "%s/entd_2008/Q_tcm_menage_0.csv" % context.config("data_path"),
+        "%s/Q_tcm_menage_0.csv" % source_path,
         sep = ";", encoding = "latin1", usecols = Q_TCM_MENAGE_COLUMNS,
         dtype = { "DEP": str }
     )
 
     df_deploc = pd.read_csv(
-        "%s/entd_2008/K_deploc.csv" % context.config("data_path"),
+        "%s/K_deploc.csv" % source_path,
         sep = ";", encoding = "latin1", usecols = K_DEPLOC_COLUMNS,
         dtype = { "DEP": str, "V2_MTP": str }
     )
@@ -73,14 +76,16 @@ def execute(context):
     return df_individu, df_tcm_individu, df_menage, df_tcm_menage, df_deploc
 
 def validate(context):
+    source_path = "{}/{}".format(context.config("data_path"), context.config("entd_path"))
+    
     for name in ("Q_individu.csv", "Q_tcm_individu.csv", "Q_menage.csv", "Q_tcm_menage_0.csv", "K_deploc.csv"):
-        if not os.path.exists("%s/entd_2008/%s" % (context.config("data_path"), name)):
+        if not os.path.exists("%s/%s" % (source_path, name)):
             raise RuntimeError("File missing from ENTD: %s" % name)
 
     return [
-        os.path.getsize("%s/entd_2008/Q_individu.csv" % context.config("data_path")),
-        os.path.getsize("%s/entd_2008/Q_tcm_individu.csv" % context.config("data_path")),
-        os.path.getsize("%s/entd_2008/Q_menage.csv" % context.config("data_path")),
-        os.path.getsize("%s/entd_2008/Q_tcm_menage_0.csv" % context.config("data_path")),
-        os.path.getsize("%s/entd_2008/K_deploc.csv" % context.config("data_path"))
+        os.path.getsize("%s/Q_individu.csv" % source_path),
+        os.path.getsize("%s/Q_tcm_individu.csv" % source_path),
+        os.path.getsize("%s/Q_menage.csv" % source_path),
+        os.path.getsize("%s/Q_tcm_menage_0.csv" % source_path),
+        os.path.getsize("%s/K_deploc.csv" % source_path)
     ]

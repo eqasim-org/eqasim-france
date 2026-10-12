@@ -32,15 +32,15 @@ K_DEPLOC_COLUMNS = [
 
 def configure(context):
     context.config("data_path")
+    context.config("emp2019_path", "emp_2019/emp_2019_donnees_individuelles_anonymisees_novembre2024.zip")
 
     context.config("regions", [11])
     context.config("departments", [])
-    #context.config("codes_path", "emp_2019/emp_2019_donnees_individuelles_anonymisees.zip")
 
 def execute(context):
      # Load IRIS registry
     with zipfile.ZipFile(
-        f'{context.config("data_path")}/emp_2019/emp_2019_donnees_individuelles_anonymisees_novembre2024.zip') as archive: 
+        f'{context.config("data_path")}/{context.config("emp2019_path")}') as archive: 
         with archive.open("k_individu_public_V3.csv") as f:    
             df_individu = pd.read_csv(f,
                 sep = ";", encoding = "latin1", usecols = K_INDIVIDU_COLUMNS,
@@ -71,7 +71,7 @@ def execute(context):
     return df_individu, df_tcm_individu,df_tcm_individu_kish, df_menage, df_tcm_menage, df_deploc
 
 def validate(context):
-    if not os.path.exists(f'{context.config("data_path")}/emp_2019/emp_2019_donnees_individuelles_anonymisees_novembre2024.zip'):
+    if not os.path.exists(f'{context.config("data_path")}/{context.config("emp2019_path")}'):
         raise RuntimeError("Files for EMP are not available")
 
-    return os.path.getsize(f'{context.config("data_path")}/emp_2019/emp_2019_donnees_individuelles_anonymisees_novembre2024.zip')
+    return os.path.getsize(f'{context.config("data_path")}/{context.config("emp2019_path")}')

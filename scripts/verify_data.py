@@ -1,5 +1,6 @@
 import requests
 import time
+import yaml
 
 # The goal of this script is to verify the availability of the data 
 # that is needed to set up the pipeline
@@ -7,6 +8,9 @@ import time
 sleep_time = 5 # seconds
 timeout = 30 # seconds
 retries = 3
+
+# We only test for a selection (IDF)
+departments = ("75", "77", "78", "91", "92", "93", "94", "95")
 
 class Report:
     def __init__(self):
@@ -53,101 +57,43 @@ class Report:
 
 report = Report()
 
-report.register(
-    "Census data (RP 2022)",
-    "https://www.insee.fr/fr/statistiques/fichier/8647104/RP2022_indcvi.parquet"
-)
+with open("data/registry.yml") as f:
+    registry = yaml.load(f, yaml.SafeLoader)
 
-report.register(
-    "Population totals (RP 2022)",
-    "https://www.insee.fr/fr/statistiques/fichier/8647014/base-ic-evol-struct-pop-2022_csv.zip"
-)
+    for name, source in registry["registry"].items():
+        for file_index, file in enumerate(source["files"]):
+            title = source["description"]
 
-report.register(
-    "Origin-destination data (RP-MOBPRO 2022)",
-    "https://www.insee.fr/fr/statistiques/fichier/8589904/RP2022_mobpro.parquet"
-)
+            if "description" in file:
+                title += " / " + file["description"]
 
-report.register(
-    "Origin-destination data (RP-MOBSCO 2022)",
-    "https://www.insee.fr/fr/statistiques/fichier/8589945/RP2022_mobsco.parquet"
-)
+            elif len(source["files"]) > 1:
+                title += " / " + "{}/{}".format(file_index + 1, len(source["files"]))
 
-report.register(
-    "Income tax data (Filosofi 2021), municipalities",
-    "https://www.insee.fr/fr/statistiques/fichier/7756855/indic-struct-distrib-revenu-2021-COMMUNES_XLSX.zip"
-)
+            if not file.get("per_department", False):
+                report.register(title, file["url"])
+            else:
+                for department in departments:
+                    department_title = title + " / " + department
+                    url = file["url"].format(department = department)
+                    report.register(department_title, url)
 
-report.register(
-    "Income tax data (Filosofi 2021), administrative",
-    "https://www.insee.fr/fr/statistiques/fichier/7756855/indic-struct-distrib-revenu-2021-SUPRA_XLSX.zip"
-)
+with open("data/geofabrik.yml") as f:
+    registry = yaml.load(f, yaml.SafeLoader)
 
-report.register(
-    "Service and facility census (BPE 2024)",
-    "https://www.insee.fr/fr/statistiques/fichier/8217525/BPE24.parquet"
-)
+    template = registry["geofabrik"]["url"]
+    version = registry["geofabrik"]["version"]
 
-entd_sources = [
-    (2339, "Q_tcm_menage_0"),
-    (2555, "Q_tcm_individu"),
-    (2556, "Q_menage"),
-    (2565, "Q_individu"),
-    (2566, "Q_ind_lieu_teg"),
-    (2568, "K_deploc")
-]
+    selection = set()
+    for name, coverage in registry["geofabrik"]["coverage"].items():
+        coverage = set(coverage) & set(departments)
 
-for identifier, name in entd_sources:
-    report.register(
-        "National household travel survey (ENTD 2008), {}".format(name),
-        "https://www.statistiques.developpement-durable.gouv.fr/media/{}/download?inline".format(identifier)
-    )
-
-report.register(
-    "IRIS zoning system (2024)",
-    "https://data.geopf.fr/telechargement/download/CONTOURS-IRIS/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01/CONTOURS-IRIS_3-0__GPKG_LAMB93_FXX_2024-01-01.7z"
-)
-
-report.register(
-    "Zoning registry (2024)",
-    "https://www.insee.fr/fr/statistiques/fichier/7708995/reference_IRIS_geo2024.zip"
-)
-
-report.register(
-    "Enterprise census (SIRENE), Etablissement",
-    "https://www.data.gouv.fr/api/1/datasets/r/a29c1297-1f92-4e2a-8f6b-8c902ce96c5f"
-)
-
-report.register(
-    "Enterprise census (SIRENE), Unité Legale",
-    "https://www.data.gouv.fr/api/1/datasets/r/350182c9-148a-46e0-8389-76c2ec1374a3"
-)
-
-report.register(
-    "Enterprise census (SIRENE), Géolocalisé",
-    "https://www.data.gouv.fr/api/1/datasets/r/672007af-0146-491f-835c-8314d63fa44e"
-)
-
-for department in (75, 77, 78, 91, 92, 93, 94, 95):
-    report.register(
-        "Buildings database (BD TOPO), {}".format(department),
-        "https://data.geopf.fr/telechargement/download/BDTOPO/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D0{}_2022-03-15/BDTOPO_3-0_TOUSTHEMES_GPKG_LAMB93_D0{}_2022-03-15.7z".format(department, department)
-    )
-
-for department in (75, 77, 78, 91, 92, 93, 94, 95):
-    report.register(
-        "Adresses database (BAN), {}".format(department),
-        "https://adresse.data.gouv.fr/data/ban/adresses/latest/csv/adresses-{}.csv.gz".format(department)
-    )
-
-report.register(
-    "Population projections",
-    "https://www.insee.fr/fr/statistiques/fichier/5894093/00_central.xlsx"
-)
-
-report.register(
-    "Urban type",
-    "https://www.insee.fr/fr/statistiques/fichier/4802589/UU2020_au_01-01-2023.zip"
-)
+        if len(coverage) > 0:
+            selection.add(name)
+    
+    for name in selection:
+        title = "Geofabrik: {} @ {}".format(name, version)
+        url = template.format(id = name, version = version)
+        report.register(title, url)
 
 exit(0 if report.validate() else 1)
