@@ -16,7 +16,7 @@ def configure(context):
 
     context.stage("matsim.scenario.facilities")
     context.stage("matsim.scenario.supply.processed")
-    context.stage("matsim.scenario.supply.gtfs")
+    context.stage("matsim.scenario.supply.extended")
 
     eqasim.configure(context)
     context.stage("matsim.runtime.eqasim")
@@ -69,14 +69,14 @@ def execute(context):
     shutil.copy(households_path, "%s/%shouseholds.xml.gz" % (context.cache_path, context.config("output_prefix")))
 
     transit_schedule_path = "%s/%s" % (
-        context.path("matsim.scenario.supply.processed"),
-        context.stage("matsim.scenario.supply.processed")["schedule_path"]
+        context.path("matsim.scenario.supply.extended"),
+        context.stage("matsim.scenario.supply.extended")["schedule"]
     )
     shutil.copy(transit_schedule_path, "%s/%stransit_schedule.xml.gz" % (context.cache_path, context.config("output_prefix")))
 
     transit_vehicles_path = "%s/%s" % (
-        context.path("matsim.scenario.supply.gtfs"),
-        context.stage("matsim.scenario.supply.gtfs")["vehicles_path"]
+        context.path("matsim.scenario.supply.extended"),
+        context.stage("matsim.scenario.supply.extended")["vehicles"]
     )
     shutil.copy(transit_vehicles_path, "%s/%stransit_vehicles.xml.gz" % (context.cache_path, context.config("output_prefix")))
 
@@ -182,6 +182,7 @@ def execute(context):
             os.path.exists("%s/mode_choice/output_pt_legs.csv.zst" % context.path())
         )
 
+        assert legs_exists
         assert trips_exists
         assert legs_exists
         assert pt_legs_exists
