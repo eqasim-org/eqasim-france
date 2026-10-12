@@ -67,7 +67,7 @@ def validate(context):
         "-version"
     ], stderr = sp.STDOUT))
 
-    version = re.search(r"version \"([0-9.]+)\"", version)
+    version = re.search(r"version \"([0-9.]+).*\"", version)
 
     if version:
         version = Version(version.group(1))
