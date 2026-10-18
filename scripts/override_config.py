@@ -4,6 +4,8 @@ from typing import Annotated
 from pathlib import Path
 
 def update(source: dict, destination: dict):
+    if source is None:
+        return
     for key, value in source.items():
         if key not in destination:
             destination[key] = value
