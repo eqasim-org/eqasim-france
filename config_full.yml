@@ -35,6 +35,20 @@ config:
 
   sampling_rate: 0.001
 
+  ## Sampling method
+  ## Random: each household of the full population is kept with probability `sampling_rate`
+  ## Stratified: systematic sampling of census households within each spatial stratum,
+  ## which reduces deviations from the census at the local level
+  # sampling_method: random # random, stratified (default is "random")
+
+  ## Spatial stratum for stratified sampling (only used with sampling_method: stratified)
+  # sampling_stratum: iris # iris, commune, departement (default is "iris")
+
+  ## Household criteria used to sort households within each stratum, by order of priority
+  ## (only used with sampling_method: stratified)
+  ## Available: socioprofessional_class, household_size, number_of_cars, age, employed, housing_type
+  # sampling_criteria: ["socioprofessional_class", "household_size"]
+
   #################################
   # household travel survey (HTS) #
   #################################
