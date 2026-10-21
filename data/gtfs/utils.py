@@ -123,6 +123,11 @@ def read_feed(path):
             c for c in feed[item].columns if c.startswith("ext_")
         ])
 
+    # Removing stop_times corresponding to mobility-on-demand
+    for c in ["start_pickup_drop_off_window", "end_pickup_drop_off_window"]:
+        if c in feed["stop_times"].columns:
+            feed["stop_times"] = feed["stop_times"][feed["stop_times"][c].isna()]
+
     return feed
 
 def write_feed(feed, path):

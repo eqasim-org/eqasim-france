@@ -31,7 +31,6 @@ PURPOSE_MAP = {
     None: "other",
 }
 
-
 def configure(context):
     context.stage("data.hts.mobisurvstd.raw")
     context.config("use_urban_type", False)
@@ -55,17 +54,80 @@ def execute(context):
         .fill_null("none"),
     )
 
-    use_weekday = False
-    if df_households["trips_weekday"].is_not_null().mean() > 0.95:
-        # The weekday at which the trips took place is known (for almost all households).
-        # We select only the households for which the trips were surveyed for a weekday.
-        # We also keep the NULL values for `trips_weekday` (for EMP 2019, `trips_weekday`
-        # is NULL for persons who did not traveled at all).
-        use_weekday = True
+    df_persons = std_survey.persons
+    # Add households consumption units (1 for 1st person, +0.5 for any other person 14+, +0.3 for
+    # any other person below 14.
+    # When age is NULL but age_class is known, then all minors are considered to be below 14.
+    # When both age and age_class are NULL, then all persons are considered to be over 14.
+    cons_units = (
+        df_persons.with_columns(
+            over_14=pl.col("age").ge(14).fill_null(pl.col("age_class") != "17-").fill_null(False)
+        )
+        .group_by("household_id")
+        .agg(
+            consumption_units=1.0
+            + pl.max_horizontal(0, pl.col("over_14").sum().cast(pl.Int16) - 1) * 0.5
+            + pl.col("over_14").not_().sum() * 0.3
+        )
+    )
+    df_households = df_households.join(cons_units, on="household_id", how="left")
 
-        df_households = df_households.filter(
-            pl.col("trips_weekday").is_null()
-        ).rename({ "trips_weekday": "weekday" })
+    is_emp = std_survey.metadata["type"] == "EMP2019"
+    if is_emp:
+        # For EMP 2019, persons are asked whether they traveled for the 7 days prior to the
+        # interview (variables `traveled_on_{weekday}`), then they are surveyed specifically for one
+        # of the day during which they traveled.
+        # This means that the original survey has only about 3% of persons with no trip (the persons
+        # that did not travel for a full week).
+        # To properly represent non-traveling persons, we add, for each weekday, dummy persons with
+        # no trip by duplicating the persons with `traveled_on_{weekday} = false`.
+        # Then, when filtering a specific weekday, the data will only keep:
+        # - The persons surveyed for that weekday (all with trips), with `sample_weight_day` as
+        #   weight.
+        # - The dummy persons (`traveled_on_{weekday} = false`) with `sample_weight_surveyed` as
+        #   weight. This group includes the persons who did not travel for the full week.
+        # For these selected persons, the total weight sum up to about 60M, which is roughly the
+        # population of France aged 6 or more. The share of persons no traveling is approximately
+        # equal to the weighted share of persons with `traveled_on_{weekday} = false`.
+        # When filtering multiple weekdays (e.g., all working days), the weights sum to about 60M
+        # per selected weekday: shares and per-person averages represent an "average" day of the
+        # selected weekdays.
+        weekdays = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+        # Dummy persons with no trip, for each weekday on which the person did not travel.
+        dummies = pl.concat(
+            df_persons.filter(pl.col(f"traveled_on_{weekday}").eq(False)).with_columns(
+                weekday=pl.lit(weekday, dtype=df_households.schema["trips_weekday"])
+            )
+            for weekday in weekdays
+        )
+        # Each dummy person gets a new `person_id` and belongs to a new dummy household (copy of the
+        # original household with the dummy's weekday as `trips_weekday`).
+        next_person_id = df_persons["person_id"].max() + 1
+        next_household_id = df_households["household_id"].max() + 1
+        dummies = dummies.with_columns(
+            source_household_id=pl.col("household_id"),
+            person_id=pl.int_range(
+                next_person_id, next_person_id + pl.len(), dtype=df_persons.schema["person_id"]
+            ),
+            household_id=pl.int_range(
+                next_household_id, next_household_id + pl.len(), dtype=df_persons.schema["household_id"]
+            ),
+            nb_trips=pl.lit(0, dtype=df_persons.schema["nb_trips"]),
+        )
+        dummy_households = (
+            dummies.select("household_id", "source_household_id", trips_weekday="weekday")
+            .join(
+                df_households.drop("trips_weekday").rename({"household_id": "source_household_id"}),
+                on="source_household_id",
+                how="left",
+                maintain_order="left",
+            )
+            .select(df_households.columns)
+        )
+        df_households = pl.concat((df_households, dummy_households))
+        # For persons with trip, we need to use `sample_weight_day` as weight.
+        df_persons = df_persons.with_columns(sample_weight_surveyed="sample_weight_day")
+        df_persons = pl.concat((df_persons, dummies.drop("weekday", "source_household_id")))
 
     extra_cols = context.config("extra_enriched_attributes")
     assert isinstance(extra_cols, list), "`extra_enriched_attributes` parameter must be a list"
@@ -74,12 +136,11 @@ def execute(context):
             f"Column {col} is not a valid column name for MobiSurvStd persons"
         )
 
-    df_persons = std_survey.persons.select(
+    df_persons = df_persons.select(
         "person_id",
         "household_id",
         "is_surveyed",
         "age",
-        "age_class",
         *extra_cols,
         sex=pl.when("woman").then(pl.lit("female")).otherwise(pl.lit("male")).cast(pl.Categorical),
         # Assume that all persons below 5 have studies = True and employed = False (some surveys
@@ -116,7 +177,9 @@ def execute(context):
         ),
         has_pt_subscription=pl.col("has_public_transit_subscription").fill_null(False),
         number_of_trips="nb_trips",
-        person_weight="sample_weight_all",
+        # In `filtered.py`, only surveyed persons are kept so we use the surveyed weight (this is
+        # consistent with the other survey implementations).
+        person_weight="sample_weight_surveyed",
         trip_weight="sample_weight_surveyed",
         # In MobiSurvStd, variable `pcs_group_code` represents the code of the socioprofessional
         # class (from 1 to 8) but with some differences compared to eqasim:
@@ -136,9 +199,18 @@ def execute(context):
         .then(pl.lit("under14"))
         .otherwise("professional_activity")
     )
-    if df_persons["person_weight"].is_null().all():
-        # For EMP 2019, person weight is unknown, we use trip weight instead.
-        df_persons = df_persons.with_columns(person_weight="trip_weight")
+
+    if is_emp or df_households["trips_weekday"].is_not_null().mean() > 0.95:
+        # The weekday at which the trips took place is known (for almost all households): we drop
+        # NULL observations.
+        df_households = df_households.filter(
+            pl.col("trips_weekday").is_not_null()
+        ).rename({ "trips_weekday": "weekday" })
+    else:
+        # There are many NULL values for `trips_weekday` so we keep all observations but the
+        # `weekday` variable is not created, which means that the HTS's weekday filter will not be
+        # feasible.
+        pass
 
     df_trips = std_survey.trips.select(
         "trip_id",
@@ -164,27 +236,10 @@ def execute(context):
         euclidean_distance=pl.col("trip_euclidean_distance_km") * 1000.0,
     )
 
-    # Add households consumption units (1 for 1st person, +0.5 for any other person 14+, +0.3 for
-    # any other person below 14.
-    # When age is NULL but age_class is known, then all minors are considered to be below 14.
-    # When both age and age_class are NULL, then all persons are considered to be over 14.
-    cons_units = (
-        df_persons.with_columns(
-            over_14=pl.col("age").ge(14).fill_null(pl.col("age_class") != "17-").fill_null(False)
-        )
-        .group_by("household_id")
-        .agg(
-            consumption_units=1.0
-            + pl.max_horizontal(0, pl.col("over_14").sum().cast(pl.Int16) - 1) * 0.5
-            + pl.col("over_14").not_().sum() * 0.3
-        )
-    )
-    df_households = df_households.join(cons_units, on="household_id", how="left")
-    df_persons = df_persons.drop("age_class")
-
     # Add home département to persons.
     columns = ["household_id", "departement_id"]
-    if use_weekday: columns += ["weekday"]
+    if "weekday" in df_households:
+        columns.append("weekday")
 
     df_persons = df_persons.join(
         df_households.select(columns), on="household_id", how="left"
