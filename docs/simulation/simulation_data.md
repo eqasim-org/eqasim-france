@@ -3,6 +3,15 @@
 In this section we refere to the same data directory structure as described when
 gathering the data for the [synthetic population](../population/population_summary.md).
 
+:::{tip}
+
+If you used the [automatic data download](../population/population_data.md#downloading-the-data-automatically) tool
+on a config file where `matsim.output` appears under the `run` section or where `mode_choice` is set to true, 
+OpenStreetMap data should have already been downloaded regardless of which area in France you are building the synthetic population on. 
+As for the GTFS, some datasets are downloaded automatically only for Île-de-France and Nouvelle Aquitaine.
+
+:::
+
 ## I) Road network (OpenStreetMap)
 
 The road network in the pipeline is based on OpenStreetMap data.
