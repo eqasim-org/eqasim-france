@@ -205,3 +205,57 @@ or
 - `data/egt_2010/Menages_semaine.csv`
 - `data/egt_2010/Personnes_semaine.csv`
 - `data/egt_2010/Deplacements_semaine.csv`
+
+
+## Downloading the data automatically
+
+Instead of manually collecting each data set from the sources above, you can use the
+automated download script `scripts/download.py`. This script reads your configuration file
+to determine which regions and departments you are working with, identifies all the data
+files that are missing from your `data_path`, and offers to download them automatically.
+
+:::{note}
+The script downloads all data sets from their official public URLs and places them into the
+correct sub-directories within your `data_path`. It only downloads files that are not already
+present, so you can re-run the script safely without overwriting existing data.
+:::
+
+### Running the script
+
+```bash
+# Interactive mode — the script will prompt you for confirmation before each download
+python scripts/download.py config.yml
+
+# Non-interactive mode — automatically confirms everything (useful for CI/CD)
+python scripts/download.py config.yml --yes
+```
+
+When run, the script will:
+
+1. Load your configuration file and determine which regions/departments you are targeting.
+2. Check which data files are already present in your `data_path`.
+3. Display a list of missing files along with their download URLs.
+4. Prompt you for confirmation before downloading.
+5. Download all missing files into the appropriate sub-directories.
+
+### Using the cache server {#cache-server}
+
+:::{note}
+Repeatedly downloading the data can cause some source websites to temporarily rate-limit the downloading address.
+A [cache server](https://github.com/eqasim-org/eqasim-france/tree/main/scripts/cache_server) is provided 
+to download the files only once from the source websites and then serve them continuously.
+once and pointing the download script at it, large data files are only fetched
+:::
+
+To start the cache server locally:
+
+```bash
+cd scripts/cache_server
+uv run main.py
+```
+
+Then, the location of the server can be provided to the download script
+
+```bash
+python scripts/download.py config.yml --cache-server http://localhost:8080
+```
