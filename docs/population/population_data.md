@@ -8,6 +8,12 @@ To create the scenario, synthetic population, a couple of data sources must be c
 
 :::
 
+:::{tip}
+
+Have a look at the [download script](#downloading-the-data-automatically) below to automatically download the required data. 
+
+:::
+
 ## 1) Census data (RP 2022)
 
 Census data containing the socio-demographic information of people living in
@@ -238,7 +244,7 @@ When run, the script will:
 4. Prompt you for confirmation before downloading.
 5. Download all missing files into the appropriate sub-directories.
 
-### Using the cache server {#cache-server}
+### Using the cache server
 
 :::{note}
 Repeatedly downloading the data can cause some source websites to temporarily rate-limit the downloading address.
