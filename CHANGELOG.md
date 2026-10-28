@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/eqasim-org/eqasim-france/compare/v1.6.0...v1.6.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* **scripts:** handling when source is empty ([#573](https://github.com/eqasim-org/eqasim-france/issues/573)) ([82a8c87](https://github.com/eqasim-org/eqasim-france/commit/82a8c8774e6cb38e77b6dc226d64584a57167b4d))
+
 ## [1.6.0](https://github.com/eqasim-org/eqasim-france/compare/v1.5.0...v1.6.0) (2026-10-14)
 
 
