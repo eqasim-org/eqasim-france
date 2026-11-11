@@ -1,5 +1,149 @@
+import numba
 import numpy as np
 import numpy.linalg as la
+
+# The functions below are compiled kernels for the two hot loops of the
+# relaxation-discretization algorithm (gravity relaxation and feasible distance
+# sampling). They reproduce the floating point operations of the original
+# NumPy implementation in the same order, and they draw from the same NumPy
+# random generator, so that results are identical for a given random seed.
+
+@numba.njit(cache = True)
+def _gravity_relaxation(locations, distances, alpha, eps, maximum_iterations):
+    """
+        Moves the intermediate points of a chain (locations[1:-1], in place)
+        until all leg lengths match the requested distances.
+        Returns (valid, last iteration index).
+    """
+    n = distances.shape[0]
+
+    offset = np.empty(n)
+    directions = np.empty((n, 2))
+
+    for k in range(maximum_iterations):
+        converged = True
+
+        for i in range(n):
+            dx = locations[i, 0] - locations[i + 1, 0]
+            dy = locations[i, 1] - locations[i + 1, 1]
+            length = np.sqrt(dx * dx + dy * dy)
+
+            offset[i] = distances[i] - length
+
+            if length < 1.0:
+                length = 1.0
+
+            directions[i, 0] = dx / length
+            directions[i, 1] = dy / length
+
+            if not (np.abs(offset[i]) < eps):
+                converged = False
+
+        if converged: # Check if we have converged
+            return True, k
+
+        # Apply adjustment to locations
+        for j in range(n - 1):
+            origin_weight = 2.0 if j == 0 else 1.0
+            destination_weight = 2.0 if j == n - 2 else 1.0
+
+            for c in range(2):
+                pull = 0.5 * alpha * offset[j] * directions[j, c] * origin_weight
+                push = 0.5 * alpha * offset[j + 1] * directions[j + 1, c] * destination_weight
+                locations[j + 1, c] += (0.0 - pull) + push
+
+                if not np.isfinite(locations[j + 1, c]):
+                    raise RuntimeError("NaN/Inf value encountered during gravity simulation")
+
+    return False, maximum_iterations - 1
+
+@numba.njit(cache = True)
+def _sum(values):
+    # Reproduces the summation order of np.sum (pairwise summation with eight
+    # accumulators) for arrays of up to 128 elements, such that sums are
+    # bit-identical with the non-compiled implementation.
+    n = values.shape[0]
+
+    if n < 8:
+        total = 0.0
+        for i in range(n):
+            total += values[i]
+        return total
+
+    assert n <= 128
+
+    r = np.empty(8)
+    for j in range(8):
+        r[j] = values[j]
+
+    i = 8
+    while i < n - (n % 8):
+        for j in range(8):
+            r[j] += values[i + j]
+        i += 8
+
+    total = ((r[0] + r[1]) + (r[2] + r[3])) + ((r[4] + r[5]) + (r[6] + r[7]))
+
+    while i < n:
+        total += values[i]
+        i += 1
+
+    return total
+
+@numba.njit(cache = True)
+def _calculate_feasibility(distances, direct_distance, consider_total_distance):
+    total_distance = _sum(distances)
+
+    delta = -np.inf
+    for i in range(distances.shape[0]):
+        remaining_distance = total_distance - distances[i]
+        delta = max(delta, distances[i] - direct_distance - remaining_distance)
+
+    if consider_total_distance:
+        delta = max(delta, direct_distance - total_distance)
+
+    return max(delta, 0.0)
+
+@numba.njit(cache = True)
+def _sample_distances(random, cdf, values, starts, ends, distances):
+    # For each trip, draw a distance from the distribution stored in
+    # cdf[start:end] / values[start:end].
+    for i in range(starts.shape[0]):
+        r = random.random()
+
+        index = starts[i]
+        for j in range(starts[i], ends[i]):
+            if r > cdf[j]:
+                index += 1
+
+        distances[i] = values[index]
+
+@numba.njit(cache = True)
+def _sample_feasible_distances(random, cdf, values, starts, ends, direct_distance, maximum_iterations):
+    """
+        Repeatedly draws distance chains until one is found that is feasible
+        given the direct distance between the fixed ends of the chain.
+        Returns (best distances, best delta, last iteration index).
+    """
+    n = starts.shape[0]
+
+    distances = np.empty(n)
+    best_distances = np.empty(n)
+    best_delta = -1.0
+    k = -1
+
+    for k in range(maximum_iterations):
+        _sample_distances(random, cdf, values, starts, ends, distances)
+        delta = _calculate_feasibility(distances, direct_distance, True)
+
+        if best_delta < 0.0 or delta < best_delta:
+            best_delta = delta
+            best_distances[:] = distances
+
+            if delta == 0.0:
+                break
+
+    return best_distances, best_delta, k
 
 def check_feasibility(distances, direct_distance, consider_total_distance = True):
     return calculate_feasibility(distances, direct_distance, consider_total_distance) == 0.0
@@ -215,37 +359,12 @@ class GravityChainSolver:
         lateral_deviation = self.lateral_deviation if not self.lateral_deviation is None else max(direct_distance, 1.0)
         locations[1:-1] += normal * 2.0 * (self.random.normal(size = len(distances) - 1)[:, np.newaxis] - 0.5) * lateral_deviation
 
-        # Prepare gravity simulation
-        valid = False
+        # Run gravity simulation (compiled, see _gravity_relaxation)
+        locations = np.ascontiguousarray(locations, dtype = np.float64)
 
-        origin_weights = np.ones((len(distances) - 1, 2))
-        origin_weights[0,:] = 2.0
-
-        destination_weights = np.ones((len(distances) - 1, 2))
-        destination_weights[-1,:] = 2.0
-
-        # Run gravity simulation
-        for k in range(self.maximum_iterations):
-            directions = locations[:-1] - locations[1:]
-            lengths = la.norm(directions, axis = 1)
-
-            offset = distances - lengths
-            lengths[lengths < 1.0] = 1.0
-            directions /= lengths[:, np.newaxis]
-
-            if np.all(np.abs(offset) < self.eps): # Check if we have converged
-                valid = True
-                break
-
-            # Apply adjustment to locations
-            adjustment = np.zeros((len(distances) - 1, 2))
-            adjustment -= 0.5 * self.alpha * offset[:-1, np.newaxis] * directions[:-1] * origin_weights
-            adjustment += 0.5 * self.alpha * offset[1:, np.newaxis] * directions[1:] * destination_weights
-
-            locations[1:-1] += adjustment
-
-            if np.isnan(locations).any() or np.isinf(locations).any():
-                raise RuntimeError("NaN/Inf value encountered during gravity simulation")
+        valid, k = _gravity_relaxation(
+            locations, np.ascontiguousarray(distances, dtype = np.float64),
+            self.alpha, self.eps, int(self.maximum_iterations))
 
         return dict(
             valid = valid, locations = locations[1:-1], iterations = k
