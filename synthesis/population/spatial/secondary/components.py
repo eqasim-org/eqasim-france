@@ -1,6 +1,7 @@
 import synthesis.population.spatial.secondary.rda as rda
 import sklearn.neighbors
 import numpy as np
+import numpy.linalg as la
 
 class CustomDistanceSampler(rda.FeasibleDistanceSampler):
     def __init__(self, random, distributions, maximum_iterations = 1000):
@@ -9,20 +10,69 @@ class CustomDistanceSampler(rda.FeasibleDistanceSampler):
         self.random = random
         self.distributions = distributions
 
+        # Flatten all distributions into two arrays (cdf and values) such that
+        # the compiled sampling kernel can access them. For each mode, we keep
+        # track where the distribution of each travel time bin starts and ends.
+        cdf, values, offset = [], [], 0
+        self.slices = {}
+
+        for mode, mode_distribution in distributions.items():
+            self.slices[mode] = []
+
+            for distribution in mode_distribution["distributions"]:
+                assert len(distribution["cdf"]) == len(distribution["values"])
+
+                cdf.append(distribution["cdf"])
+                values.append(distribution["values"])
+
+                self.slices[mode].append((offset, offset + len(distribution["cdf"])))
+                offset += len(distribution["cdf"])
+
+        self.cdf = np.ascontiguousarray(np.concatenate(cdf), dtype = np.float64)
+        self.values = np.ascontiguousarray(np.concatenate(values), dtype = np.float64)
+
+    def _get_slices(self, problem):
+        # Find the relevant distribution for each trip of the problem. This is
+        # only done once per problem, as the solver samples many times.
+        if not "_distance_slices" in problem:
+            starts = np.empty(len(problem["modes"]), dtype = np.int64)
+            ends = np.empty(len(problem["modes"]), dtype = np.int64)
+
+            for index, (mode, travel_time) in enumerate(zip(problem["modes"], problem["travel_times"])):
+                bound_index = np.count_nonzero(travel_time > self.distributions[mode]["bounds"])
+                starts[index], ends[index] = self.slices[mode][bound_index]
+
+            problem["_distance_slices"] = (starts, ends)
+
+        return problem["_distance_slices"]
+
     def sample_distances(self, problem):
-        distances = np.zeros((len(problem["modes"])))
-
-        for index, (mode, travel_time) in enumerate(zip(problem["modes"], problem["travel_times"])):
-            mode_distribution = self.distributions[mode]
-
-            bound_index = np.count_nonzero(travel_time > mode_distribution["bounds"])
-            mode_distribution = mode_distribution["distributions"][bound_index]
-
-            distances[index] = mode_distribution["values"][
-                np.count_nonzero(self.random.random() > mode_distribution["cdf"])
-            ]
-
+        starts, ends = self._get_slices(problem)
+        distances = np.empty(len(starts))
+        rda._sample_distances(self.random, self.cdf, self.values, starts, ends, distances)
         return distances
+
+    def sample(self, problem):
+        origin, destination = problem["origin"], problem["destination"]
+
+        # Free chains, tails, and round trips with one activity are handled by
+        # the generic implementation (one draw only)
+        if origin is None or destination is None:
+            return rda.FeasibleDistanceSampler.sample(self, problem)
+
+        direct_distance = la.norm(destination - origin, axis = 1)[0]
+
+        if direct_distance < 1e-3 and problem["size"] == 1:
+            return rda.FeasibleDistanceSampler.sample(self, problem)
+
+        # This is the general case
+        starts, ends = self._get_slices(problem)
+
+        distances, delta, iterations = rda._sample_feasible_distances(
+            self.random, self.cdf, self.values, starts, ends,
+            direct_distance, int(self.maximum_iterations))
+
+        return dict(valid = delta == 0.0, distances = distances, iterations = iterations)
 
 class CandidateIndex:
     def __init__(self, data):
