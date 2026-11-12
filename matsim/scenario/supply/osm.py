@@ -1,10 +1,14 @@
 import os.path
 
 import matsim.runtime.pt2matsim as pt2matsim
+import matsim.runtime.eqasim as eqasim
 
 def configure(context):
     pt2matsim.configure(context)
+    eqasim.configure(context)
+
     context.stage("matsim.runtime.pt2matsim")
+    context.stage("matsim.runtime.eqasim")
     
     context.stage("data.osm.cleaned")
 
@@ -64,6 +68,10 @@ def execute(context):
     pt2matsim.run(context, "org.matsim.pt2matsim.run.Osm2MultimodalNetwork", 
         arguments=["config.xml"]
     )
+
+    eqasim.run(context, "org.eqasim.core.tools.CleanNetwork",
+               arguments=["--network-path", "network.xml.gz", "--output-path", "network.xml.gz"])
+
 
     assert(os.path.exists("%s/network.xml.gz" % context.path()))
     return "network.xml.gz"
