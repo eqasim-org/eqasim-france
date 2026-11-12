@@ -103,9 +103,19 @@ def format_python_float(values):
 
     return result
 
+def _choose(mask, if_true, if_false):
+    """ String series with if_true where mask is set, if_false elsewhere """
+    return pl.select(pl.when(pl.lit(np.asarray(mask, dtype = bool)))
+        .then(pl.lit(if_true)).otherwise(pl.lit(if_false))).to_series()
+
 def format_python_bool(values):
-    """ Vectorized str(bool) """
-    return pl.Series(np.where(np.asarray(values, dtype = bool), "True", "False"))
+    """ Vectorized str(value) for a boolean column """
+    values = pd.Series(values)
+
+    if values.dtype == bool:
+        return _choose(values.to_numpy(), "True", "False")
+
+    return pl.Series([str(value) for value in values]) # e.g. object columns with NaN
 
 def _attribute(name, java_class, value):
     return [
@@ -113,72 +123,74 @@ def _attribute(name, java_class, value):
         value, pl.lit("</attribute>\n")
     ]
 
+def _from_pandas(df, columns):
+    """ Converts columns of a pandas frame to polars (Arrow strings and categories stay as they are) """
+    return pl.from_pandas(pd.DataFrame(df[columns]), include_index = False)
+
+def _as_string(column):
+    """ Equivalent of str(value) for string / categorical columns, as written before """
+    return pl.col(column).cast(pl.String).fill_null("nan")
+
 # Preparation and writing
 
 def prepare(df_persons, df_activities, df_locations, df_trips, df_vehicles):
     """ Brings the inputs into output order as polars frames """
-    df_persons = df_persons.sort_values(by = ["household_id", "person_id"])
 
-    df_activities = df_activities.sort_values(by = ["person_id", "activity_index"])
-    df_locations = df_locations[[
-        "person_id", "activity_index", "geometry", "location_id"]].sort_values(by = ["person_id", "activity_index"])
-
-    df_activities = pd.merge(df_activities, df_locations, how = "left", on = ["person_id", "activity_index"])
-
-    # Vehicles keep the order of this (unstable) sort in the vehicles attribute
-    df_vehicles = df_vehicles.sort_values(by = ["owner_id"])
-
-    persons = pl.DataFrame({
-        "person_id": df_persons["person_id"].to_numpy(),
-        "household_id": df_persons["household_id"].to_numpy(),
-        "household_income": format_python_float(df_persons["household_income"].to_numpy()),
-        "car_availability": df_persons["car_availability"].astype(str).to_numpy(),
-        "bike_availability": df_persons["bike_availability"].astype(str).to_numpy(),
-        "census_household_id": df_persons["census_household_id"].to_numpy(),
-        "census_person_id": df_persons["census_person_id"].to_numpy(),
-        "hts_household_id": df_persons["hts_household_id"].to_numpy(),
-        "hts_person_id": df_persons["hts_person_id"].to_numpy(),
-        "has_pt_subscription": format_python_bool(df_persons["has_pt_subscription"]),
+    # Persons in output order
+    persons = _from_pandas(df_persons, [
+        "person_id", "household_id", "car_availability", "bike_availability",
+        "census_household_id", "census_person_id", "hts_household_id", "hts_person_id", "age", "sex"
+    ]).with_columns(
+        household_income = format_python_float(df_persons["household_income"].to_numpy()),
+        has_pt_subscription = format_python_bool(df_persons["has_pt_subscription"]),
         # truthiness of the (object) column, NaN counts as "yes"
-        "has_license": np.where(df_persons["has_license"].to_numpy().astype(bool), "yes", "no"),
-        "is_passenger": format_python_bool(df_persons["is_passenger"]),
-        "age": df_persons["age"].to_numpy(),
-        "employed": format_python_bool(df_persons["employed"]),
-        "sex": df_persons["sex"].astype(str).str[0].to_numpy(),
-    }).with_row_index("p")
+        has_license = _choose(df_persons["has_license"].to_numpy().astype(bool), "yes", "no"),
+        is_passenger = format_python_bool(df_persons["is_passenger"]),
+        employed = format_python_bool(df_persons["employed"]),
+    )
 
     if "use_motorcycle" in df_persons:
         persons = persons.with_columns(use_motorcycle = format_python_bool(df_persons["use_motorcycle"]))
 
-    # Vehicles attribute per person
-    vehicles = pl.DataFrame({
-        "person_id": df_vehicles["owner_id"].to_numpy(),
-        "mode": df_vehicles["mode"].astype(str).to_numpy(),
-        "vehicle_id": df_vehicles["vehicle_id"].astype(str).to_numpy(),
-    }).select("person_id", vehicles = pl.concat_str([
-        pl.lit('"'), pl.col("mode"), pl.lit('":"'), pl.col("vehicle_id"), pl.lit('"')
-    ])).group_by("person_id", maintain_order = True).agg(pl.col("vehicles").str.join(","))
+    persons = persons.with_columns(
+        _as_string("car_availability"), _as_string("bike_availability"),
+        _as_string("sex").str.slice(0, 1),
+    ).sort(["household_id", "person_id"]).with_row_index("p")
+
+    # Vehicles attribute per person. The vehicle order is the one of the former
+    # pandas sort_values(by = "owner_id"), an unstable quicksort on the owner.
+    vehicle_order = np.argsort(df_vehicles["owner_id"].to_numpy(), kind = "quicksort")
+
+    vehicles = _from_pandas(df_vehicles, ["owner_id", "mode", "vehicle_id"])[vehicle_order].select(
+        person_id = pl.col("owner_id"), vehicles = pl.concat_str([
+            pl.lit('"'), _as_string("mode"), pl.lit('":"'), _as_string("vehicle_id"), pl.lit('"')
+        ])
+    ).group_by("person_id", maintain_order = True).agg(pl.col("vehicles").str.join(","))
 
     persons = persons.join(vehicles, on = "person_id", how = "left", maintain_order = "left")
 
-    geometry = df_activities["geometry"].values
+    # Activities with their locations
+    geometry = df_locations["geometry"].values
 
-    activities = pl.DataFrame({
-        "person_id": df_activities["person_id"].to_numpy(),
-        "purpose": df_activities["purpose"].astype(str).to_numpy(),
-        "start_time": df_activities["start_time"].to_numpy(dtype = np.float64),
-        "end_time": df_activities["end_time"].to_numpy(dtype = np.float64),
-        "x": shapely.get_x(geometry),
-        "y": shapely.get_y(geometry),
-        "location_id": df_activities["location_id"].astype(str).to_numpy(),
-    }).join(persons.select("person_id", "p", "household_id"), on = "person_id", how = "left", maintain_order = "left")
+    locations = _from_pandas(df_locations, ["person_id", "activity_index", "location_id"]).with_columns(
+        x = pl.Series(shapely.get_x(geometry)), y = pl.Series(shapely.get_y(geometry)),
+    )
 
-    trips = pl.DataFrame({
-        "person_id": df_trips["person_id"].to_numpy(),
-        "mode": df_trips["mode"].astype(str).to_numpy(),
-        "departure_time": df_trips["departure_time"].to_numpy(dtype = np.float64),
-        "travel_time": (df_trips["arrival_time"] - df_trips["departure_time"]).to_numpy(dtype = np.float64),
-    }).join(persons.select("person_id", "p"), on = "person_id", how = "left", maintain_order = "left")
+    activities = _from_pandas(df_activities, [
+        "person_id", "activity_index", "purpose", "start_time", "end_time"
+    ]).sort(["person_id", "activity_index"]).join(
+        locations, on = ["person_id", "activity_index"], how = "left", maintain_order = "left"
+    ).select(
+        "person_id", _as_string("purpose"),
+        pl.col("start_time", "end_time").cast(pl.Float64),
+        "x", "y", _as_string("location_id"),
+    ).join(persons.select("person_id", "p", "household_id"), on = "person_id", how = "left", maintain_order = "left")
+
+    trips = _from_pandas(df_trips, ["person_id", "mode", "departure_time", "arrival_time"]).select(
+        "person_id", _as_string("mode"),
+        pl.col("departure_time").cast(pl.Float64),
+        travel_time = (pl.col("arrival_time") - pl.col("departure_time")).cast(pl.Float64),
+    ).join(persons.select("person_id", "p"), on = "person_id", how = "left", maintain_order = "left")
 
     assert activities["p"].null_count() == 0, "Found activities of unknown persons"
     assert trips["p"].null_count() == 0, "Found trips of unknown persons"

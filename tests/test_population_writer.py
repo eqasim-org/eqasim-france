@@ -235,3 +235,11 @@ def test_format_time():
     values = np.concatenate([np.arange(0, 200000, 7.3), [0.0, 59.999, 3600.0, 86399.0, 360000.0, np.nan]])
 
     assert population.format_time(values).to_list() == [writer.time(value) for value in values]
+
+def test_vehicle_order_matches_pandas_sort():
+    # The vehicles attribute keeps the order of pandas' (unstable) sort_values on the owner
+    random = np.random.default_rng(0)
+    owners = random.integers(0, 1000, 100_000)
+
+    expected = pd.DataFrame({ "owner_id": owners }).sort_values(by = ["owner_id"]).index.to_numpy()
+    assert np.array_equal(np.argsort(owners, kind = "quicksort"), expected)
