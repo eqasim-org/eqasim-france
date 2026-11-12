@@ -1,100 +1,84 @@
-import io, gzip
-
-import numpy as np
-import pandas as pd
+import polars as pl
+import shapely
 
 import matsim.writers as writers
+
+"""
+Writes the MATSim facilities (facilities.xml.gz): homes, then primary (work
+and education), then secondary locations.
+
+The XML text is built column-wise with polars, see
+matsim.writers.write_gzip_chunks.
+"""
+
+CHUNK_SIZE = 100_000 # facilities per chunk / gzip member
 
 def configure(context):
     context.stage("synthesis.locations.secondary")
     context.stage("synthesis.population.spatial.home.locations")
     context.stage("synthesis.population.spatial.primary.locations")
+    context.config("processes")
 
-HOME_FIELDS = [
-    "household_id", "geometry"
-]
+def _activity(purpose):
+    return '    <activity type="%s" />\n' % purpose
 
-PRIMARY_FIELDS = [
-    "location_id", "geometry", "is_work"
-]
+def _facilities(df, columns, identifier, activities):
+    geometry = df["geometry"].values
 
-SECONDARY_FIELDS = [
-    "location_id", "geometry", "offers_leisure", "offers_shop", "offers_other"
-]
+    return writers.from_pandas(df, columns).select(
+        id = identifier,
+        x = writers.format_float_f(shapely.get_x(geometry)),
+        y = writers.format_float_f(shapely.get_y(geometry)),
+        activities = activities,
+    )
+
+def prepare(df_homes, df_work, df_education, df_secondary):
+    """ One row per facility, in output order """
+    homes = _facilities(df_homes, ["household_id"],
+        pl.concat_str([pl.lit("home_"), pl.col("household_id").cast(pl.String)]),
+        pl.lit(_activity("home")))
+
+    work = _facilities(df_work.drop_duplicates("location_id"), ["location_id"],
+        writers.as_string("location_id"), pl.lit(_activity("work")))
+
+    education = _facilities(df_education.drop_duplicates("location_id"), ["location_id"],
+        writers.as_string("location_id"), pl.lit(_activity("education")))
+
+    secondary = _facilities(df_secondary, ["location_id", "offers_shop", "offers_leisure", "offers_other"],
+        writers.as_string("location_id"), pl.concat_str([
+            pl.when(pl.col("offers_%s" % purpose)).then(pl.lit(_activity(purpose))).otherwise(pl.lit(""))
+            for purpose in ("shop", "leisure", "other")
+        ]))
+
+    return pl.concat([homes, work, education, secondary])
+
+def format_chunk(facilities):
+    return facilities.select(pl.concat_str([
+        pl.lit('  <facility id="'), pl.col("id"), pl.lit('" x="'), pl.col("x"), pl.lit('" y="'), pl.col("y"),
+        pl.lit('">\n'), pl.col("activities"), pl.lit("  </facility>\n"),
+    ]).alias("text"))["text"].str.join("").item()
+
+def write(output, facilities, crs, workers = 1, chunk_size = CHUNK_SIZE, progress = None):
+    """ Writes the gzipped facilities to a binary stream """
+    header = writers.render(writers.FacilitiesWriter,
+        lambda writer: writer.start_facilities({ "coordinateReferenceSystem": crs }))
+
+    footer = writers.render(writers.FacilitiesWriter, lambda writer: writer.end_facilities(),
+        scope = writers.FacilitiesWriter.FACILITIES_SCOPE, indent = 1)
+
+    writers.write_gzip_chunks(output, header, footer, len(facilities),
+        lambda start, end: format_chunk(facilities.slice(start, end - start)),
+        workers = workers, chunk_size = chunk_size, progress = progress)
 
 def execute(context):
-    output_path = "%s/facilities.xml.gz" % context.path()
-
     df_homes = context.stage("synthesis.population.spatial.home.locations")
-    df_homes = df_homes[HOME_FIELDS]
-    
-    with gzip.open(output_path, 'wb+') as writer:
-        with io.BufferedWriter(writer, buffer_size = 2 * 1024**3) as writer:
-            writer = writers.FacilitiesWriter(writer)
-            writer.start_facilities({
-                "coordinateReferenceSystem": df_homes.crs
-            })
+    df_work, df_education = context.stage("synthesis.population.spatial.primary.locations")
+    df_secondary = context.stage("synthesis.locations.secondary")
 
-            # Write home
+    facilities = prepare(df_homes, df_work, df_education, df_secondary)
 
-            with context.progress(total = len(df_homes), label = "Writing home facilities ...") as progress:
-                for item in df_homes.itertuples(index = False):
-                    geometry = item[HOME_FIELDS.index("geometry")]
-
-                    writer.start_facility(
-                        "home_%s" % item[HOME_FIELDS.index("household_id")],
-                        geometry.x, geometry.y
-                    )
-
-                    writer.add_activity("home")
-                    writer.end_facility()
-
-            # Write primary
-
-            df_work, df_education = context.stage("synthesis.population.spatial.primary.locations")
-
-            df_work = df_work.drop_duplicates("location_id").copy()
-            df_education = df_education.drop_duplicates("location_id").copy()
-
-            df_work["is_work"] = True
-            df_education["is_work"] = False
-
-            df_locations = pd.concat([df_work, df_education])
-            df_locations = df_locations[PRIMARY_FIELDS]
-
-            with context.progress(total = len(df_locations), label = "Writing primary facilities ...") as progress:
-                for item in df_locations.itertuples(index = False):
-                    geometry = item[PRIMARY_FIELDS.index("geometry")]
-
-                    writer.start_facility(
-                        str(item[PRIMARY_FIELDS.index("location_id")]),
-                        geometry.x, geometry.y
-                    )
-
-                    writer.add_activity("work" if item[PRIMARY_FIELDS.index("is_work")] else "education")
-                    writer.end_facility()
-
-            # Write secondary
-
-            df_locations = context.stage("synthesis.locations.secondary")
-            df_locations = df_locations[SECONDARY_FIELDS]
-
-            with context.progress(total = len(df_locations), label = "Writing secondary facilities ...") as progress:
-                for item in df_locations.itertuples(index = False):
-                    geometry = item[SECONDARY_FIELDS.index("geometry")]
-
-                    writer.start_facility(
-                        item[SECONDARY_FIELDS.index("location_id")],
-                        geometry.x, geometry.y
-                    )
-
-                    for purpose in ("shop", "leisure", "other"):
-                        if item[SECONDARY_FIELDS.index("offers_%s" % purpose)]:
-                            writer.add_activity(purpose)
-
-                    writer.end_facility()
-                    progress.update()
-
-            writer.end_facilities()
+    with open("%s/facilities.xml.gz" % context.path(), "wb") as output:
+        with context.progress(total = len(facilities), label = "Writing facilities ...") as progress:
+            write(output, facilities, df_homes.crs, workers = context.config("processes"), progress = progress)
 
     return "facilities.xml.gz"

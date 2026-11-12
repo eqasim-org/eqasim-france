@@ -7,12 +7,15 @@ import pandas as pd
 import pytest
 import synpp
 
+import matsim.scenario.facilities as facilities
+import matsim.scenario.households as households
 import matsim.scenario.population as population
+import matsim.scenario.vehicles as vehicles
 import matsim.writers as writers
 
 """
-Checks that the vectorized population writer produces exactly the same XML as
-the former row-by-row writer, which is kept here as a reference.
+Checks that the vectorized MATSim writers produce exactly the same XML as the
+former row-by-row writers, which are kept here as references.
 """
 
 INPUT_STAGES = [
@@ -21,6 +24,9 @@ INPUT_STAGES = [
     "synthesis.population.spatial.locations",
     "synthesis.population.trips",
     "synthesis.vehicles.vehicles",
+    "synthesis.population.spatial.home.locations",
+    "synthesis.population.spatial.primary.locations",
+    "synthesis.locations.secondary",
 ]
 
 @pytest.fixture(scope = "module")
@@ -38,7 +44,7 @@ def inputs(data_path, tmp_path_factory):
 
     return dict(zip(INPUT_STAGES, results))
 
-# Reference: the former row-by-row writer
+# Reference: the former row-by-row population writer
 
 PERSON_FIELDS = [
     "person_id", "household_income", "car_availability", "bike_availability",
@@ -170,6 +176,111 @@ def reference_write(df_persons, df_activities, df_locations, df_trips, df_vehicl
     writer.end_population()
     return buffer.getvalue()
 
+# Reference: the former row-by-row households, facilities and vehicles writers
+
+HOUSEHOLD_FIELDS = ["household_id", "person_id", "household_income", "car_availability", "bike_availability", "census_household_id"]
+
+def reference_write_households(df_persons):
+    df_persons = df_persons.sort_values(by = ["household_id", "person_id"])[HOUSEHOLD_FIELDS]
+
+    buffer = io.BytesIO()
+    writer = writers.HouseholdsWriter(buffer)
+    writer.start_households()
+
+    def add_household(household, member_ids):
+        writer.start_household(household[HOUSEHOLD_FIELDS.index("household_id")])
+        writer.add_members(member_ids)
+
+        writer.start_attributes()
+        writer.add_attribute("carAvailability", "java.lang.String", household[HOUSEHOLD_FIELDS.index("car_availability")])
+        writer.add_attribute("bikeAvailability", "java.lang.String", household[HOUSEHOLD_FIELDS.index("bike_availability")])
+        writer.add_attribute("household_income", "java.lang.Double", household[HOUSEHOLD_FIELDS.index("household_income")])
+        writer.add_attribute("censusId", "java.lang.Long", household[HOUSEHOLD_FIELDS.index("census_household_id")])
+        writer.end_attributes()
+
+        writer.end_household()
+
+    current_members, current_household_id, current_household = [], None, None
+
+    for item in df_persons.itertuples(index = False):
+        if current_household_id != item[HOUSEHOLD_FIELDS.index("household_id")]:
+            if not current_household_id is None:
+                add_household(current_household, current_members)
+
+            current_household = item
+            current_household_id = item[HOUSEHOLD_FIELDS.index("household_id")]
+            current_members = [item[HOUSEHOLD_FIELDS.index("person_id")]]
+        else:
+            current_members.append(item[HOUSEHOLD_FIELDS.index("person_id")])
+
+    if not current_household_id is None:
+        add_household(current_household, current_members)
+
+    writer.end_households()
+    return buffer.getvalue()
+
+def reference_write_facilities(df_homes, df_work, df_education, df_secondary):
+    buffer = io.BytesIO()
+    writer = writers.FacilitiesWriter(buffer)
+    writer.start_facilities({ "coordinateReferenceSystem": df_homes.crs })
+
+    for item in df_homes[["household_id", "geometry"]].itertuples(index = False):
+        writer.start_facility("home_%s" % item[0], item[1].x, item[1].y)
+        writer.add_activity("home")
+        writer.end_facility()
+
+    df_work = df_work.drop_duplicates("location_id").copy()
+    df_education = df_education.drop_duplicates("location_id").copy()
+    df_work["is_work"] = True
+    df_education["is_work"] = False
+
+    df_locations = pd.concat([df_work, df_education])[["location_id", "geometry", "is_work"]]
+
+    for item in df_locations.itertuples(index = False):
+        writer.start_facility(str(item[0]), item[1].x, item[1].y)
+        writer.add_activity("work" if item[2] else "education")
+        writer.end_facility()
+
+    fields = ["location_id", "geometry", "offers_leisure", "offers_shop", "offers_other"]
+
+    for item in df_secondary[fields].itertuples(index = False):
+        writer.start_facility(item[0], item[1].x, item[1].y)
+
+        for purpose in ("shop", "leisure", "other"):
+            if item[fields.index("offers_%s" % purpose)]:
+                writer.add_activity(purpose)
+
+        writer.end_facility()
+
+    writer.end_facilities()
+    return buffer.getvalue()
+
+def reference_write_vehicles(df_vehicle_types, df_vehicles):
+    buffer = io.BytesIO()
+    writer = writers.VehiclesWriter(buffer)
+    writer.start_vehicles()
+
+    for type in df_vehicle_types.to_dict(orient = "records"):
+        writer.add_type(
+            type["type_id"], length = type["length"], width = type["width"], mode = type["mode"],
+            attributes = { "CnossosCategory": type["cnossos_cat"] },
+            engine_attributes = {
+                "HbefaVehicleCategory": type["hbefa_cat"],
+                "HbefaTechnology": type["hbefa_tech"],
+                "HbefaSizeClass": type["hbefa_size"],
+                "HbefaEmissionsConcept": type["hbefa_emission"]
+            }
+        )
+
+    for vehicle in df_vehicles.to_dict(orient = "records"):
+        writer.add_vehicle(vehicle["vehicle_id"], vehicle["type_id"], attributes = {
+            "critair": vehicle["critair"], "technology": vehicle["technology"],
+            "age": vehicle["age"], "euro": vehicle["euro"]
+        })
+
+    writer.end_vehicles()
+    return buffer.getvalue()
+
 # Tests
 
 def _frames(inputs, drop_motorcycle = False):
@@ -203,6 +314,53 @@ def test_population_writer_matches_reference(inputs, workers, chunk_size, drop_m
     assert ("useMotorcycle" in actual.decode()) != drop_motorcycle
     assert actual == expected
 
+CHUNKING = [(1, None), (3, 7), (2, 1)] # workers, chunk size (None: default)
+
+def _write(module, *arguments, workers, chunk_size):
+    output = io.BytesIO()
+    options = dict(workers = workers)
+    if chunk_size is not None: options["chunk_size"] = chunk_size
+    module.write(output, *arguments, **options)
+    return gzip.decompress(output.getvalue())
+
+@pytest.mark.parametrize("workers,chunk_size", CHUNKING)
+def test_households_writer_matches_reference(inputs, workers, chunk_size):
+    df_persons = inputs["synthesis.population.enriched"]
+
+    expected = reference_write_households(df_persons)
+    actual = _write(households, households.prepare(df_persons), workers = workers, chunk_size = chunk_size)
+
+    assert actual == expected
+
+@pytest.mark.parametrize("workers,chunk_size", CHUNKING)
+@pytest.mark.parametrize("random_offers", [False, True])
+def test_facilities_writer_matches_reference(inputs, workers, chunk_size, random_offers):
+    df_homes = inputs["synthesis.population.spatial.home.locations"]
+    df_work, df_education = inputs["synthesis.population.spatial.primary.locations"]
+    df_secondary = inputs["synthesis.locations.secondary"]
+
+    if random_offers: # the fixture lacks some combinations (e.g. shop and leisure)
+        df_secondary = df_secondary.copy()
+        random = np.random.default_rng(0)
+
+        for purpose in ("shop", "leisure", "other"):
+            df_secondary["offers_%s" % purpose] = random.random(len(df_secondary)) < 0.5
+
+    expected = reference_write_facilities(df_homes, df_work, df_education, df_secondary)
+    actual = _write(facilities, facilities.prepare(df_homes, df_work, df_education, df_secondary), df_homes.crs,
+        workers = workers, chunk_size = chunk_size)
+
+    assert actual == expected
+
+@pytest.mark.parametrize("workers,chunk_size", CHUNKING)
+def test_vehicles_writer_matches_reference(inputs, workers, chunk_size):
+    df_vehicle_types, df_vehicles = inputs["synthesis.vehicles.vehicles"]
+
+    expected = reference_write_vehicles(df_vehicle_types, df_vehicles)
+    actual = _write(vehicles, df_vehicle_types, vehicles.prepare(df_vehicles), workers = workers, chunk_size = chunk_size)
+
+    assert actual == expected
+
 def test_format_float_f():
     random = np.random.default_rng(0)
 
@@ -217,7 +375,7 @@ def test_format_float_f():
          np.nan, np.inf, -np.inf],
     ])
 
-    assert population.format_float_f(values).to_list() == ["%f" % value for value in values]
+    assert writers.format_float_f(values).to_list() == ["%f" % value for value in values]
 
 def test_format_python_float():
     random = np.random.default_rng(0)
@@ -228,13 +386,13 @@ def test_format_python_float():
         [0.0, -0.0, 1.0, 1e-4, 9.99e-5, 1e15, 1e16, 1.5e17, 123456789.0, np.nan, np.inf, -np.inf],
     ])
 
-    assert population.format_python_float(values).to_list() == [str(value) for value in values]
+    assert writers.format_python_float(values).to_list() == [str(value) for value in values]
 
 def test_format_time():
     writer = writers.XmlWriter(None)
     values = np.concatenate([np.arange(0, 200000, 7.3), [0.0, 59.999, 3600.0, 86399.0, 360000.0, np.nan]])
 
-    assert population.format_time(values).to_list() == [writer.time(value) for value in values]
+    assert writers.format_time(values).to_list() == [writer.time(value) for value in values]
 
 def test_vehicle_order_matches_pandas_sort():
     # The vehicles attribute keeps the order of pandas' (unstable) sort_values on the owner

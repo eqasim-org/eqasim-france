@@ -1,5 +1,12 @@
-import numpy as np
+import collections
+import gzip
+import io
+from concurrent.futures import ThreadPoolExecutor
 from xml.sax.saxutils import escape
+
+import numpy as np
+import pandas as pd
+import polars as pl
 
 class XmlWriter:
     def __init__(self, writer):
@@ -382,3 +389,149 @@ class backlog_iterator:
             return True
         except StopIteration:
             return False
+
+# Vectorized formatting helpers, equivalent to the Python formatting of the writers above
+
+def format_float_f(values):
+    """ Vectorized, exact equivalent of "%f" % value
+
+    Values are scaled to micro-units and rounded in float64. Where the scaled
+    value is too close to a rounding tie for that to be exact (or is out of the
+    exactly representable range or not finite), Python's formatting is used.
+    """
+    values = np.asarray(values, dtype = np.float64)
+    negative = np.signbit(values)
+
+    scaled = np.abs(values) * 1e6
+
+    with np.errstate(invalid = "ignore"):
+        fraction = scaled - np.floor(scaled)
+        safe = np.isfinite(scaled) & (scaled < 2.0**52) & (
+            np.abs(fraction - 0.5) > 4.0 * np.spacing(scaled))
+
+    micro = np.where(safe, np.rint(scaled), 0.0).astype(np.int64)
+
+    result = pl.select(pl.concat_str([
+        pl.when(pl.lit(negative)).then(pl.lit("-")).otherwise(pl.lit("")),
+        pl.lit(micro // 1_000_000).cast(pl.String), pl.lit("."),
+        pl.lit(micro % 1_000_000).cast(pl.String).str.zfill(6),
+    ])).to_series()
+
+    unsafe = np.flatnonzero(~safe)
+
+    if len(unsafe) > 0:
+        result = result.scatter(unsafe, ["%f" % value for value in values[unsafe]])
+
+    return result
+
+def format_time(values):
+    """ Vectorized writers.XmlWriter.time, NaN gives null """
+    values = np.asarray(values, dtype = np.float64)
+    missing = np.isnan(values)
+    seconds = np.where(missing, 0, values).astype(np.int64) # truncation like int()
+
+    result = pl.select(pl.concat_str([
+        pl.lit(seconds // 3600).cast(pl.String).str.zfill(2), pl.lit(":"),
+        pl.lit((seconds % 3600) // 60).cast(pl.String).str.zfill(2), pl.lit(":"),
+        pl.lit(seconds % 60).cast(pl.String).str.zfill(2),
+    ])).to_series()
+
+    if missing.any():
+        result = result.scatter(np.flatnonzero(missing), None)
+
+    return result
+
+def format_python_float(values):
+    """ Vectorized str(float) """
+    values = np.asarray(values, dtype = np.float64)
+    result = pl.Series(values).cast(pl.String)
+
+    # polars and Python agree on the shortest round-trip digits, but not on
+    # exponent notation and special values: use Python there
+    with np.errstate(invalid = "ignore"):
+        special = ~np.isfinite(values) | (np.abs(values) >= 1e16) | ((values != 0) & (np.abs(values) < 1e-4))
+
+    index = np.flatnonzero(special)
+
+    if len(index) > 0:
+        result = result.scatter(index, [str(value) for value in values[index]])
+
+    return result
+
+def choose(mask, if_true, if_false):
+    """ String series with if_true where mask is set, if_false elsewhere """
+    return pl.select(pl.when(pl.lit(np.asarray(mask, dtype = bool)))
+        .then(pl.lit(if_true)).otherwise(pl.lit(if_false))).to_series()
+
+def format_python_bool(values):
+    """ Vectorized str(value) for a boolean column """
+    values = pd.Series(values)
+
+    if values.dtype == bool:
+        return choose(values.to_numpy(), "True", "False")
+
+    return pl.Series([str(value) for value in values]) # e.g. object columns with NaN
+
+def from_pandas(df, columns):
+    """ Converts columns of a pandas frame to polars (Arrow strings and categories stay as they are) """
+    return pl.from_pandas(pd.DataFrame(df[columns]), include_index = False)
+
+def as_string(column):
+    """ Equivalent of str(value) for string / categorical columns, as written before """
+    return pl.col(column).cast(pl.String).fill_null("nan")
+
+def attribute(name, java_class, value, indent = 3):
+    """ Parts of a concat_str for an attribute line, value being an expression """
+    return [
+        pl.lit('%s<attribute name="%s" class="%s">' % ("  " * indent, name, java_class)),
+        value, pl.lit("</attribute>\n")
+    ]
+
+# Chunked writing
+
+COMPRESS_LEVEL = 9
+
+def render(writer_class, build, scope = None, indent = 0):
+    """ Returns the text that build(writer) writes with one of the writers above """
+    buffer = io.BytesIO()
+    writer = writer_class(buffer)
+    writer.scope, writer.indent = scope, indent
+    build(writer)
+    return buffer.getvalue().decode("utf-8")
+
+def write_gzip_chunks(output, header, footer, size, format_rows,
+        workers = 1, chunk_size = 100_000, compress_level = COMPRESS_LEVEL, progress = None):
+    """ Writes a gzipped document whose body is formatted in chunks of rows
+
+    format_rows(start, end) returns the text for rows [start, end). Chunks are
+    formatted and compressed in a thread pool (polars and zlib release the GIL)
+    and each chunk becomes its own gzip member. Concatenated members are a valid
+    gzip stream for Python, zcat and Java's GZIPInputStream (thus MATSim).
+    """
+    def compress(text):
+        return gzip.compress(text.encode("utf-8"), compresslevel = compress_level, mtime = 0)
+
+    def process(start, end):
+        return end - start, compress(format_rows(start, end))
+
+    def collect(future):
+        count, data = future.result()
+        output.write(data)
+        if progress is not None: progress.update(count)
+
+    output.write(compress(header))
+
+    with ThreadPoolExecutor(max_workers = workers) as pool:
+        pending = collections.deque()
+
+        for start in range(0, size, chunk_size):
+            pending.append(pool.submit(process, start, min(start + chunk_size, size)))
+
+            # Bound the number of chunks held in memory
+            while len(pending) > workers + 1:
+                collect(pending.popleft())
+
+        while len(pending) > 0:
+            collect(pending.popleft())
+
+    output.write(compress(footer))
