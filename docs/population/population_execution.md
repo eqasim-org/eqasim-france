@@ -149,6 +149,23 @@ config:
 
 You may choose any year (past or future) that is contained in the Excel files (sheet *Population*) in the downloaded archive. The same is true for the projection scenarios, which are based on the file names and documented in the Excel files' *Documentation* sheet.
 
+### Stratified sampling
+
+By default (`sampling_method: random`), the population is sampled by keeping each household of the full population with probability `sampling_rate`. With low sampling rates, this leads to substantial deviations at the local level: for a 10% sample, the number of households per IRIS deviates by about 7% on average from the census, and the number of persons per socioprofessional class and IRIS by about 14%.
+
+The stratified method reduces these deviations by sampling households directly from the census using systematic sampling within each IRIS. Households are always sampled as a whole, and each census household is selected `weight * sampling_rate` times in expectation, as in the random method. Within the IRIS, households are sorted by a list of criteria, by order of priority, so that the number of sampled households per IRIS, and per class of the first criterion within the IRIS, matches the census up to one household:
+
+```yaml
+config:
+  sampling_method: stratified # random (default) or stratified
+  sampling_stratum: iris # iris (default), commune or departement
+  sampling_criteria: # by order of priority, default shown here
+    - socioprofessional_class # of the reference person (oldest person of the household)
+    - household_size # 1, 2, 3, 4, 5+
+```
+
+Additional available criteria are `number_of_cars` (0, 1, 2+), `age` (age class of the reference person), `employed` (number of employed persons in the household: 0, 1, 2+) and `housing_type`. Households with an undefined IRIS are sampled per municipality, or per department if the municipality is undefined as well.
+
 ### Urban type
 
 The pipeline allows to work with INSEE's urban type classification (unité urbaine) that distinguishes municipalities in *center cities*, *suburbs*, *isolated cities*, and unclassified ones. To impute the data (currently only for some HTS), activate it via the configuration:
