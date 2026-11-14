@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.7.0](https://github.com/eqasim-org/eqasim-france/compare/v1.6.0...v1.7.0) (2026-11-12)
+
+
+### Features
+
+* cleaning network after osm conversion ([#574](https://github.com/eqasim-org/eqasim-france/issues/574)) ([f485df5](https://github.com/eqasim-org/eqasim-france/commit/f485df5d5035e3dab5e9f0b58c512917e66a1fa0))
+
+
+### Bug Fixes
+
+* **scripts:** handling when source is empty ([#573](https://github.com/eqasim-org/eqasim-france/issues/573)) ([82a8c87](https://github.com/eqasim-org/eqasim-france/commit/82a8c8774e6cb38e77b6dc226d64584a57167b4d))
+
 ## [1.6.0](https://github.com/eqasim-org/eqasim-france/compare/v1.5.0...v1.6.0) (2026-10-14)
 
 
