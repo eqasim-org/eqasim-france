@@ -46,6 +46,45 @@ def inputs(data_path, tmp_path_factory):
 
 # Reference: the former row-by-row population writer
 
+class backlog_iterator:
+    def __init__(self, iterable, backlog = 1):
+        self.iterable = iterable
+        self.forward_log = []
+        self.backward_log = [None] * (backlog + 1)
+
+    def next(self):
+        if len(self.forward_log) > 0:
+            self.backward_log.append(self.forward_log[0])
+            del self.forward_log[0]
+        else:
+            self.backward_log.append(next(self.iterable))
+
+        del self.backward_log[0]
+        return self.backward_log[-1]
+
+    def previous(self):
+        self.forward_log.insert(0, self.backward_log[-1])
+        del self.backward_log[-1]
+        self.backward_log.insert(0, None)
+        return self.backward_log[-1]
+
+    def current(self):
+        return self.backlog[-1]
+
+    def has_previous(self):
+        return len(self.backward_log) > 1
+
+    def has_next(self):
+        if len(self.forward_log) > 0:
+            return True
+
+        try:
+            self.forward_log.append(next(self.iterable))
+            return True
+        except StopIteration:
+            return False
+
+
 PERSON_FIELDS = [
     "person_id", "household_income", "car_availability", "bike_availability",
     "census_household_id", "census_person_id", "household_id",
@@ -143,9 +182,9 @@ def reference_write(df_persons, df_activities, df_locations, df_trips, df_vehicl
     writer = writers.PopulationWriter(buffer)
     writer.start_population({ "coordinateReferenceSystem": df_locations.crs })
 
-    activity_iterator = writers.backlog_iterator(iter(df_activities[ACTIVITY_FIELDS].itertuples(index = False)))
-    trip_iterator = writers.backlog_iterator(iter(df_trips[TRIP_FIELDS].itertuples(index = False)))
-    vehicle_iterator = writers.backlog_iterator(iter(df_vehicles[VEHICLE_FIELDS].itertuples(index = False)))
+    activity_iterator = backlog_iterator(iter(df_activities[ACTIVITY_FIELDS].itertuples(index = False)))
+    trip_iterator = backlog_iterator(iter(df_trips[TRIP_FIELDS].itertuples(index = False)))
+    vehicle_iterator = backlog_iterator(iter(df_vehicles[VEHICLE_FIELDS].itertuples(index = False)))
 
     def collect(iterator, index, person_id):
         items = []
