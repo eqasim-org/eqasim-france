@@ -9,7 +9,7 @@ The few vehicle types are written by the generic writer, the vehicles are
 built column-wise with polars, see matsim.writers.write_gzip_chunks.
 """
 
-CHUNK_SIZE = 100_000 # vehicles per chunk / gzip member
+CHUNK_SIZE = 10_000 # vehicles per chunk / gzip member, small chunks bound memory and balance the threads
 
 def configure(context):
     context.stage("synthesis.vehicles.vehicles")

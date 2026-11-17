@@ -13,7 +13,7 @@ matsim.writers.write_gzip_chunks. The decompressed content is identical to the
 former row-by-row writer.
 """
 
-CHUNK_SIZE = 20_000 # persons per chunk / gzip member
+CHUNK_SIZE = 5_000 # persons per chunk / gzip member, small chunks bound memory and balance the threads
 
 def configure(context):
     context.stage("synthesis.population.enriched")
