@@ -1,11 +1,19 @@
-import io, gzip
-import itertools
-
 import numpy as np
 import pandas as pd
+import polars as pl
+import shapely
 
 import matsim.writers as writers
-from matsim.writers import backlog_iterator
+
+"""
+Writes the MATSim population (population.xml.gz).
+
+The XML text is built column-wise with polars for chunks of persons, see
+matsim.writers.write_gzip_chunks. The decompressed content is identical to the
+former row-by-row writer.
+"""
+
+CHUNK_SIZE = 5_000 # persons per chunk / gzip member, small chunks bound memory and balance the threads
 
 def configure(context):
     context.stage("synthesis.population.enriched")
@@ -16,182 +24,199 @@ def configure(context):
     context.stage("synthesis.population.trips")
     context.stage("synthesis.vehicles.vehicles")
 
-PERSON_FIELDS = [
-    "person_id", "household_income", "car_availability", "bike_availability",
-    "census_household_id", "census_person_id", "household_id",
-    "has_license", "has_pt_subscription", "is_passenger",
-    "hts_person_id", "hts_household_id",
-    "age", "employed", "sex"
-]
+    context.config("processes")
 
-ACTIVITY_FIELDS = [
-    "person_id", "start_time", "end_time", "purpose", "geometry", "location_id"
-]
+# Preparation and writing
 
-TRIP_FIELDS = [
-    "person_id", "mode", "departure_time", "travel_time"
-]
+def prepare(df_persons, df_activities, df_locations, df_trips, df_vehicles):
+    """ Brings the inputs into output order as polars frames """
 
-VEHICLE_FIELDS = [
-    "owner_id", "vehicle_id", "mode"
-]
+    # Persons in output order
+    persons = writers.from_pandas(df_persons, [
+        "person_id", "household_id", "car_availability", "bike_availability",
+        "census_household_id", "census_person_id", "hts_household_id", "hts_person_id", "age", "sex"
+    ]).with_columns(
+        household_income = writers.format_python_float(df_persons["household_income"].to_numpy()),
+        has_pt_subscription = writers.format_python_bool(df_persons["has_pt_subscription"]),
+        # truthiness of the (object) column, NaN counts as "yes"
+        has_license = writers.choose(df_persons["has_license"].to_numpy().astype(bool), "yes", "no"),
+        is_passenger = writers.format_python_bool(df_persons["is_passenger"]),
+        employed = writers.format_python_bool(df_persons["employed"]),
+    )
 
-def add_person(writer, person, activities, trips, vehicles):
-    writer.start_person(person[PERSON_FIELDS.index("person_id")])
+    if "use_motorcycle" in df_persons:
+        persons = persons.with_columns(use_motorcycle = writers.format_python_bool(df_persons["use_motorcycle"]))
 
-    writer.start_attributes()
-    writer.add_attribute("householdId", "java.lang.Integer", person[PERSON_FIELDS.index("household_id")])
-    writer.add_attribute("householdIncome", "java.lang.Double", person[PERSON_FIELDS.index("household_income")])
+    persons = persons.with_columns(
+        writers.as_string("car_availability"), writers.as_string("bike_availability"),
+        writers.as_string("sex").str.slice(0, 1),
+    ).sort(["household_id", "person_id"]).with_row_index("p")
 
-    writer.add_attribute("carAvailability", "java.lang.String", person[PERSON_FIELDS.index("car_availability")])
-    writer.add_attribute("bikeAvailability", "java.lang.String", person[PERSON_FIELDS.index("bike_availability")])
+    # Vehicles attribute per person. The vehicle order is the one of the former
+    # pandas sort_values(by = "owner_id"), an unstable quicksort on the owner.
+    vehicle_order = np.argsort(df_vehicles["owner_id"].to_numpy(), kind = "quicksort")
 
-    # compatibility with standard MATSim
-    if person[PERSON_FIELDS.index("car_availability")] == "none":
-        writer.add_attribute("carAvail", "java.lang.String", "never")
+    vehicles = writers.from_pandas(df_vehicles, ["owner_id", "mode", "vehicle_id"])[vehicle_order].select(
+        person_id = pl.col("owner_id"), vehicles = pl.concat_str([
+            pl.lit('"'), writers.as_string("mode"), pl.lit('":"'), writers.as_string("vehicle_id"), pl.lit('"')
+        ])
+    ).group_by("person_id", maintain_order = True).agg(pl.col("vehicles").str.join(","))
 
-    # custom attributes for motorcycle availability
-    if getattr(person, "use_motorcycle", -1) != -1:
-        writer.add_attribute("useMotorcycle", "java.lang.Boolean", person.use_motorcycle)
+    persons = persons.join(vehicles, on = "person_id", how = "left", maintain_order = "left")
 
-    writer.add_attribute("censusHouseholdId", "java.lang.Long", person[PERSON_FIELDS.index("census_household_id")])
-    writer.add_attribute("censusPersonId", "java.lang.Long", person[PERSON_FIELDS.index("census_person_id")])
+    # Activities with their locations
+    geometry = df_locations["geometry"].values
 
-    writer.add_attribute("htsHouseholdId", "java.lang.Long", person[PERSON_FIELDS.index("hts_household_id")])
-    writer.add_attribute("htsPersonId", "java.lang.Long", person[PERSON_FIELDS.index("hts_person_id")])
+    locations = writers.from_pandas(df_locations, ["person_id", "activity_index", "location_id"]).with_columns(
+        x = pl.Series(shapely.get_x(geometry)), y = pl.Series(shapely.get_y(geometry)),
+    )
 
-    writer.add_attribute("hasPtSubscription", "java.lang.Boolean", person[PERSON_FIELDS.index("has_pt_subscription")])
-    writer.add_attribute("hasLicense", "java.lang.String", writer.yes_no(person[PERSON_FIELDS.index("has_license")]))
+    activities = writers.from_pandas(df_activities, [
+        "person_id", "activity_index", "purpose", "start_time", "end_time"
+    ]).sort(["person_id", "activity_index"]).join(
+        locations, on = ["person_id", "activity_index"], how = "left", maintain_order = "left"
+    ).select(
+        "person_id", writers.as_string("purpose"),
+        pl.col("start_time", "end_time").cast(pl.Float64),
+        "x", "y", writers.as_string("location_id"),
+    ).join(persons.select("person_id", "p", "household_id"), on = "person_id", how = "left", maintain_order = "left")
 
-    writer.add_attribute("isPassenger", "java.lang.Boolean", person[PERSON_FIELDS.index("is_passenger")])
+    trips = writers.from_pandas(df_trips, ["person_id", "mode", "departure_time", "arrival_time"]).select(
+        "person_id", writers.as_string("mode"),
+        pl.col("departure_time").cast(pl.Float64),
+        travel_time = (pl.col("arrival_time") - pl.col("departure_time")).cast(pl.Float64),
+    ).join(persons.select("person_id", "p"), on = "person_id", how = "left", maintain_order = "left")
 
-    writer.add_attribute("age", "java.lang.Integer", person[PERSON_FIELDS.index("age")])
-    writer.add_attribute("employed", "java.lang.String", person[PERSON_FIELDS.index("employed")])
-    writer.add_attribute("sex", "java.lang.String", person[PERSON_FIELDS.index("sex")][0])
+    assert activities["p"].null_count() == 0, "Found activities of unknown persons"
+    assert trips["p"].null_count() == 0, "Found trips of unknown persons"
 
-    writer.add_attribute("vehicles", "org.matsim.vehicles.PersonVehicles", "{{{content}}}".format(content = ",".join([
-        "\"{mode}\":\"{id}\"".format(mode = v[VEHICLE_FIELDS.index("mode")], id = v[VEHICLE_FIELDS.index("vehicle_id")])
-        for v in vehicles
-    ])))
+    # Output person order, keeping the order of the inputs within a person
+    activities = activities.sort("p", maintain_order = True)
+    trips = trips.sort("p", maintain_order = True)
 
-    writer.end_attributes()
+    activity_counts = np.bincount(activities["p"].to_numpy(), minlength = len(persons))
+    trip_counts = np.bincount(trips["p"].to_numpy(), minlength = len(persons))
 
-    writer.start_plan(selected = True)
+    assert np.all(activity_counts > 0), "Found persons without activities"
+    assert np.all(trip_counts == activity_counts - 1), "Number of trips does not match number of activities"
 
-    for activity, trip in itertools.zip_longest(activities, trips):
-        start_time = activity[ACTIVITY_FIELDS.index("start_time")]
-        end_time = activity[ACTIVITY_FIELDS.index("end_time")]
-        location_id = activity[ACTIVITY_FIELDS.index("location_id")]
-        geometry = activity[ACTIVITY_FIELDS.index("geometry")]
+    return persons, activities, trips, activity_counts
 
-        if activity[ACTIVITY_FIELDS.index("purpose")] == "home":
-            location_id = "home_%s" % person[PERSON_FIELDS.index("household_id")]
+def format_chunk(persons, activities, trips):
+    """ Returns the XML text for a contiguous block of persons """
+    header = persons.select(pl.concat_str(
+        [pl.lit('  <person id="'), pl.col("person_id").cast(pl.String), pl.lit('">\n    <attributes>\n')]
+        + writers.attribute("householdId", "java.lang.Integer", pl.col("household_id").cast(pl.String))
+        + writers.attribute("householdIncome", "java.lang.Double", pl.col("household_income"))
+        + writers.attribute("carAvailability", "java.lang.String", pl.col("car_availability"))
+        + writers.attribute("bikeAvailability", "java.lang.String", pl.col("bike_availability"))
+        # compatibility with standard MATSim
+        + [pl.when(pl.col("car_availability") == "none")
+           .then(pl.lit('      <attribute name="carAvail" class="java.lang.String">never</attribute>\n'))
+           .otherwise(pl.lit(""))]
+        # custom attribute for motorcycle availability
+        + (writers.attribute("useMotorcycle", "java.lang.Boolean", pl.col("use_motorcycle"))
+           if "use_motorcycle" in persons.columns else [])
+        + writers.attribute("censusHouseholdId", "java.lang.Long", pl.col("census_household_id").cast(pl.String))
+        + writers.attribute("censusPersonId", "java.lang.Long", pl.col("census_person_id").cast(pl.String))
+        + writers.attribute("htsHouseholdId", "java.lang.Long", pl.col("hts_household_id").cast(pl.String))
+        + writers.attribute("htsPersonId", "java.lang.Long", pl.col("hts_person_id").cast(pl.String))
+        + writers.attribute("hasPtSubscription", "java.lang.Boolean", pl.col("has_pt_subscription"))
+        + writers.attribute("hasLicense", "java.lang.String", pl.col("has_license"))
+        + writers.attribute("isPassenger", "java.lang.Boolean", pl.col("is_passenger"))
+        + writers.attribute("age", "java.lang.Integer", pl.col("age").cast(pl.String))
+        + writers.attribute("employed", "java.lang.String", pl.col("employed"))
+        + writers.attribute("sex", "java.lang.String", pl.col("sex"))
+        + writers.attribute("vehicles", "org.matsim.vehicles.PersonVehicles",
+            pl.concat_str([pl.lit("{"), pl.col("vehicles").fill_null(""), pl.lit("}")]))
+        + [pl.lit('    </attributes>\n    <plan selected="yes">\n')]
+    ).alias("text"))["text"]
 
-        location = writer.location(
-            geometry.x, geometry.y,
-            None if location_id == -1 else location_id
+    activity_text = activities.with_columns(
+        x = writers.format_float_f(activities["x"].to_numpy()),
+        y = writers.format_float_f(activities["y"].to_numpy()),
+        start_time = writers.format_time(activities["start_time"].to_numpy()),
+        end_time = writers.format_time(activities["end_time"].to_numpy()),
+    ).select(pl.concat_str([
+        pl.lit('      <activity type="'), pl.col("purpose"),
+        pl.lit('" x="'), pl.col("x"), pl.lit('" y="'), pl.col("y"),
+        pl.lit('" facility="'),
+        pl.when(pl.col("purpose") == "home")
+            .then(pl.concat_str([pl.lit("home_"), pl.col("household_id").cast(pl.String)]))
+            .otherwise(pl.col("location_id")),
+        pl.lit('" '),
+        pl.concat_str([pl.lit('start_time="'), pl.col("start_time"), pl.lit('" ')]).fill_null(""),
+        pl.concat_str([pl.lit('end_time="'), pl.col("end_time"), pl.lit('" ')]).fill_null(""),
+        pl.lit("/>\n"),
+    ]).alias("text"))["text"]
+
+    leg_text = trips.with_columns(
+        departure_time = writers.format_time(trips["departure_time"].to_numpy()).fill_null("None"),
+        travel_time = writers.format_time(trips["travel_time"].to_numpy()).fill_null("None"),
+    ).select(pl.concat_str([
+        pl.lit('      <leg mode="'), pl.col("mode"),
+        pl.lit('" dep_time="'), pl.col("departure_time"),
+        pl.lit('" trav_time="'), pl.col("travel_time"),
+        pl.lit('" >\n      <attributes>\n        <attribute name="routingMode" class="java.lang.String">'),
+        pl.col("mode"),
+        pl.lit("</attribute>\n      </attributes>\n      </leg>\n"),
+    ]).alias("text"))["text"]
+
+    # Interleave: the header precedes the first activity of a person, activity j is
+    # followed by leg j and the last activity by the end of the plan. With n activities
+    # and n - 1 legs per person, the leg row is the activity row minus the person row.
+    p = activities["p"].to_numpy() - persons["p"][0]
+    row = np.arange(len(p))
+
+    is_first = np.r_[True, p[1:] != p[:-1]]
+    is_last = np.r_[p[1:] != p[:-1], True]
+    leg_row = np.where(is_last, 0, row - p)
+
+    text = pl.select(pl.concat_str([
+        pl.when(pl.lit(is_first)).then(header.gather(p)).otherwise(pl.lit("")),
+        activity_text,
+        pl.when(pl.lit(is_last)).then(pl.lit("    </plan>\n  </person>\n"))
+            .otherwise(leg_text.gather(leg_row) if len(leg_text) > 0 else pl.lit("")),
+    ]).alias("text"))["text"]
+
+    return text.str.join("").item()
+
+def write(output, persons, activities, trips, activity_counts, crs,
+        workers = 1, chunk_size = CHUNK_SIZE, progress = None):
+    """ Writes the gzipped population to a binary stream """
+    activity_offsets = np.r_[0, np.cumsum(activity_counts)]
+    trip_offsets = activity_offsets - np.arange(len(activity_offsets))
+
+    def format_rows(start, end):
+        return format_chunk(
+            persons.slice(start, end - start),
+            activities.slice(activity_offsets[start], activity_offsets[end] - activity_offsets[start]),
+            trips.slice(trip_offsets[start], trip_offsets[end] - trip_offsets[start]),
         )
 
-        writer.add_activity(
-            type = activity[ACTIVITY_FIELDS.index("purpose")],
-            location = location,
-            start_time = None if np.isnan(start_time) else start_time,
-            end_time = None if np.isnan(end_time) else end_time
-        )
+    header = writers.render(writers.PopulationWriter,
+        lambda writer: writer.start_population({ "coordinateReferenceSystem": crs }))
 
-        if not trip is None:
-            writer.add_leg(
-                mode = trip[TRIP_FIELDS.index("mode")],
-                departure_time = trip[TRIP_FIELDS.index("departure_time")],
-                travel_time = trip[TRIP_FIELDS.index("travel_time")]
-            )
+    footer = writers.render(writers.PopulationWriter, lambda writer: writer.end_population(),
+        scope = writers.PopulationWriter.POPULATION_SCOPE, indent = 1)
 
-    writer.end_plan()
-    writer.end_person()
+    writers.write_gzip_chunks(output, header, footer, len(persons), format_rows,
+        workers = workers, chunk_size = chunk_size, progress = progress)
 
 def execute(context):
-    output_path = "%s/population.xml.gz" % context.path()
+    df_locations = context.stage("synthesis.population.spatial.locations")
 
-    df_persons = context.stage("synthesis.population.enriched")
-    df_persons = df_persons.sort_values(by = ["household_id", "person_id"])
+    persons, activities, trips, activity_counts = prepare(
+        context.stage("synthesis.population.enriched"),
+        context.stage("synthesis.population.activities"),
+        df_locations,
+        context.stage("synthesis.population.trips"),
+        context.stage("synthesis.vehicles.vehicles")[1],
+    )
 
-    person_fields = PERSON_FIELDS
-    
-    if "use_motorcycle" in df_persons:
-        person_fields = person_fields + ["use_motorcycle"]
-
-    df_persons = df_persons[person_fields]
-
-
-    df_activities = context.stage("synthesis.population.activities").sort_values(by = ["person_id", "activity_index"])
-    df_locations = context.stage("synthesis.population.spatial.locations")[[
-        "person_id", "activity_index", "geometry", "location_id"]].sort_values(by = ["person_id", "activity_index"])
-
-    df_activities = pd.merge(df_activities, df_locations, how = "left", on = ["person_id", "activity_index"])
-    #df_activities["location_id"] = df_activities["location_id"].fillna(-1).astype(int)
-
-    df_trips = context.stage("synthesis.population.trips")
-    df_trips["travel_time"] = df_trips["arrival_time"] - df_trips["departure_time"]
-
-    df_vehicles = context.stage("synthesis.vehicles.vehicles")[1]
-    df_vehicles = df_vehicles.sort_values(by = ["owner_id"])
-
-    with gzip.open(output_path, 'wb+') as writer:
-        with io.BufferedWriter(writer, buffer_size = 2 * 1024**3) as writer:
-            writer = writers.PopulationWriter(writer)
-            writer.start_population({
-                "coordinateReferenceSystem": df_locations.crs
-            })
-
-            activity_iterator = backlog_iterator(iter(df_activities[ACTIVITY_FIELDS].itertuples(index = False)))
-            trip_iterator = backlog_iterator(iter(df_trips[TRIP_FIELDS].itertuples(index = False)))
-            vehicle_iterator = backlog_iterator(iter(df_vehicles[VEHICLE_FIELDS].itertuples(index = False)))
-
-            with context.progress(total = len(df_persons), label = "Writing population ...") as progress:
-                for person in df_persons.itertuples(index = False):
-                    person_id = person[PERSON_FIELDS.index("person_id")]
-
-                    activities = []
-                    trips = []
-                    vehicles = []
-
-                    # Track all activities for person
-                    while activity_iterator.has_next():
-                        activity = activity_iterator.next()
-
-                        if not activity[ACTIVITY_FIELDS.index("person_id")] == person_id:
-                            activity_iterator.previous()
-                            break
-                        else:
-                            activities.append(activity)
-
-                    assert len(activities) > 0
-
-                    # Track all trips for person
-                    while trip_iterator.has_next():
-                        trip = trip_iterator.next()
-
-                        if not trip[TRIP_FIELDS.index("person_id")] == person_id:
-                            trip_iterator.previous()
-                            break
-                        else:
-                            trips.append(trip)
-
-                    assert len(trips) == len(activities) - 1
-
-                    # Track all vehicles for person
-                    while vehicle_iterator.has_next():
-                        vehicle = vehicle_iterator.next()
-
-                        if not vehicle[VEHICLE_FIELDS.index("owner_id")] == person_id:
-                            vehicle_iterator.previous()
-                            break
-                        else:
-                            vehicles.append(vehicle)
-
-                    add_person(writer, person, activities, trips, vehicles)
-                    progress.update()
-
-            writer.end_population()
+    with open("%s/population.xml.gz" % context.path(), "wb") as output:
+        with context.progress(total = len(persons), label = "Writing population ...") as progress:
+            write(output, persons, activities, trips, activity_counts, df_locations.crs,
+                workers = context.config("processes"), progress = progress)
 
     return "population.xml.gz"
