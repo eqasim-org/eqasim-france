@@ -60,6 +60,9 @@ def test_population_with_egt(data_path, tmpdir):
 def test_population_with_mode_choice(data_path, tmpdir):
     run_population(data_path, tmpdir, "entd", { "mode_choice": True })
 
+def test_population_with_mode_choice_and_schedule_merge(data_path, tmpdir):
+    run_population(data_path, tmpdir, "entd", { "mode_choice": True, "pt_schedule_merge_tolerance": 120 })
+
 def test_population_with_fleet_sample(data_path, tmpdir):
     run_population(data_path, tmpdir, "entd", { 
         "vehicles_method": "fleet_sample",
