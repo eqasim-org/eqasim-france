@@ -1,12 +1,14 @@
 from synpp import ConfigurationContext, ExecuteContext
 
 import matsim.runtime.eqasim as eqasim
+import matsim.scenario.supply.merged as merged
 
 def configure(context: ConfigurationContext):
     eqasim.configure(context)
     context.stage("matsim.runtime.eqasim")
 
     context.stage("matsim.scenario.supply.processed")
+    merged.configure_schedule(context)
 
     context.config("output_path")
     context.config("output_prefix", "ile_de_france_")
@@ -20,10 +22,7 @@ def execute(context: ExecuteContext):
         context.stage("matsim.scenario.supply.processed")["network_path"]
     )
 
-    schedule_path = "%s/%s" % (
-        context.path("matsim.scenario.supply.processed"),
-        context.stage("matsim.scenario.supply.processed")["schedule_path"]
-    )
+    schedule_path = merged.get_schedule_path(context)
 
     crs = context.config("crs")
 

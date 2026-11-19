@@ -70,7 +70,23 @@ config:
   mode_choice: true
 ```
 
-## Optionnaly export detailed link geometries
+## Optionally merge transit routes for faster public transport routing
+
+`pt2matsim` creates one transit route for each distinct timing pattern of a line, so that many routes only have one or a few departures. Public transport routing (in the upfront mode choice and in the simulation) slows down with the number of routes and of transfers between their stops.
+
+The pipeline can merge the routes of a line that serve the same stops along the same network path when their stop times differ by at most a tolerance (in seconds). A merged route keeps the stop times of its member with the most departures, the other departures keep their start time, so that their times at the following stops shift by at most the tolerance:
+
+```yaml
+config:
+  pt_schedule_merge_tolerance: 120 # seconds, 0 (default) disables merging
+```
+
+This changes the timetable used by MATSim. With a tolerance of 120 s:
+
+- on Essonne (1.3M persons), the route stops go from 116k to 44k and the public transport routing of the upfront mode choice is 2.3 times faster, while the public transport mode share changes by +0.02 percentage points and the travel time of public transport trips by 48 s on average;
+- on Île-de-France (10% sample, 1.1M persons), the route stops go from 1.16M to 502k and the upfront mode choice takes 41 min instead of 61 min, while the public transport mode share changes by +0.01 percentage points, 0.5% of the trips change their mode (11.7% when only changing the random seed) and the travel time of public transport trips changes by 42 s on average.
+
+## Optionally export detailed link geometries
 
 When creating the matsim network from the OSM data, the `pt2matsim` project simplifies link geometries.
 You can export a `detailed_network.csv` file containing the detailed geometries of every network link by the following in the`config.yml` file :

@@ -2,6 +2,7 @@ import shutil
 import os.path
 
 import matsim.runtime.eqasim as eqasim
+import matsim.scenario.supply.merged as merged
 
 def configure(context):
     context.config("activity_purposes", ["leisure", "shop"])
@@ -16,6 +17,7 @@ def configure(context):
 
     context.stage("matsim.scenario.facilities")
     context.stage("matsim.scenario.supply.processed")
+    merged.configure_schedule(context)
     context.stage("matsim.scenario.supply.gtfs")
 
     eqasim.configure(context)
@@ -68,10 +70,7 @@ def execute(context):
     )
     shutil.copy(households_path, "%s/%shouseholds.xml.gz" % (context.cache_path, context.config("output_prefix")))
 
-    transit_schedule_path = "%s/%s" % (
-        context.path("matsim.scenario.supply.processed"),
-        context.stage("matsim.scenario.supply.processed")["schedule_path"]
-    )
+    transit_schedule_path = merged.get_schedule_path(context)
     shutil.copy(transit_schedule_path, "%s/%stransit_schedule.xml.gz" % (context.cache_path, context.config("output_prefix")))
 
     transit_vehicles_path = "%s/%s" % (
