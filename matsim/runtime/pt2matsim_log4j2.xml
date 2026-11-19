@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Logging configuration for pt2matsim, same as the one bundled with pt2matsim except for the routers.
+
+	While mapping transit routes, pt2matsim routes between many candidate links that are not connected,
+	and the MATSim routers write a multi-line warning for each of them (about 1.6 million in Île-de-France,
+	which makes gigabytes of logs). Only errors of the routers are kept.
+-->
+<Configuration>
+	<Appenders>
+		<Console name="stdout" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{ISO8601} %5p %C{1}:%L %m%n" />
+			<Filters>
+				<ThresholdFilter level="WARN" onMatch="DENY" onMismatch="ACCEPT" />
+			</Filters>
+		</Console>
+		<Console name="stderr" target="SYSTEM_ERR">
+			<PatternLayout pattern="%d{ISO8601} %5p %C{1}:%L %m%n" />
+			<Filters>
+				<ThresholdFilter level="WARN" onMatch="ACCEPT" />
+			</Filters>
+		</Console>
+	</Appenders>
+
+	<Loggers>
+		<Logger name="org.matsim.core.router.speedy" level="error" />
+		<Logger name="org.matsim.core.router.Dijkstra" level="error" />
+
+		<Root level="${env:LOG_LEVEL:-info}">
+			<AppenderRef ref="stdout" />
+			<AppenderRef ref="stderr" />
+		</Root>
+	</Loggers>
+</Configuration>

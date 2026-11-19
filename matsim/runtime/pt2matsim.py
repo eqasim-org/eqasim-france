@@ -4,19 +4,25 @@ import matsim.runtime.git as git
 import matsim.runtime.java as java
 import matsim.runtime.maven as maven
 
+LOG_CONFIGURATION_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pt2matsim_log4j2.xml")
+
 def configure(context):
     git.configure(context)
     java.configure(context)
     maven.configure(context)
 
-    context.config("pt2matsim_version", "26.1")
-    context.config("pt2matsim_branch", "v26.1")
+    context.config("pt2matsim_version", "26.11")
+    context.config("pt2matsim_branch", "v26.11")
 
 def run(context, command, arguments, vm_arguments=[]):
     # Make sure there is a dependency
     jar_path = context.stage("matsim.runtime.pt2matsim")
     jar_path = "{}/{}".format(context.path("matsim.runtime.pt2matsim"), jar_path)
-    java.run(context, command, arguments, jar_path, vm_arguments)
+
+    # Silence the routing warnings emitted while mapping transit routes, see pt2matsim_log4j2.xml
+    log_configuration = "-Dlog4j2.configurationFile={}".format(LOG_CONFIGURATION_PATH)
+
+    java.run(context, command, arguments, jar_path, [log_configuration] + vm_arguments)
 
 def execute(context):
     version = context.config("pt2matsim_version")
