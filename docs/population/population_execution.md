@@ -284,7 +284,7 @@ These attributes are derived from the Household Travel Survey (HTS) using
 statistical matching.
 
 If you import the HTS using
-[MobiSurvStd](../cases/cases_summary.md#generic-process), you can further
+[Nemobi](../cases/cases_summary.md#generic-process), you can further
 enrich person attributes with additional variables.
 These variables are specified in the configuration file using the
 `extra_enriched_attributes` parameter.
@@ -297,7 +297,7 @@ config:
 ```
 
 For a complete list of possible attributes, refer to the
-[MobiSurvStd documentation](https://mobisurvstd.github.io/MobiSurvStd/format/persons.html).
+[Nemobi documentation](https://nemobi.lucasjavaudin.com/format/persons.html).
 
 ### Additional output attributes
 
@@ -392,7 +392,7 @@ config:
   activity_purposes: ["leisure", "shop"] # default value
 ```
 
-is interpreted as *other*. You can add, for instance the specific *task* and *escort* purposes, especially when using *MobiSurvStd* as the survey source:
+is interpreted as *other*. You can add, for instance the specific *task* and *escort* purposes, especially when using *Nemobi* as the survey source:
 
 ```yaml
 config:

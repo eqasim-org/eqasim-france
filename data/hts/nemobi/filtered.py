@@ -8,13 +8,13 @@ This stage filters out observations which live or travel outside of the study ar
 
 
 def configure(context):
-    context.stage("data.hts.mobisurvstd.cleaned")
+    context.stage("data.hts.nemobi.cleaned")
     context.stage("data.spatial.codes")
     context.config("filter_hts", True)
 
 
 def execute(context):
-    df_households, df_persons, df_trips = context.stage("data.hts.mobisurvstd.cleaned")
+    df_households, df_persons, df_trips = context.stage("data.hts.nemobi.cleaned")
 
     # Keep only persons which where surveyed for trips (even if they did not traveled).
     df_persons = df_persons.filter("is_surveyed")

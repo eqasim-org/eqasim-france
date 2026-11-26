@@ -1,8 +1,9 @@
 def configure(context):
     hts = context.config("hts")
 
-    if hts == "mobisurvstd":
-        context.stage("data.hts.mobisurvstd.filtered", alias = "hts")
+    # "mobisurvstd" is a legacy alias for "nemobi"
+    if hts in ("nemobi", "mobisurvstd"):
+        context.stage("data.hts.nemobi.filtered", alias = "hts")
     elif hts == "egt":
         context.stage("data.hts.egt.filtered", alias = "hts")
     elif hts == "entd":

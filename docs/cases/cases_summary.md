@@ -24,7 +24,7 @@ You have several options for the Household Travel Survey (HTS):
 - Use a **dedicated implementation for a regional survey**
   (see [specific cases](specific-cases) below).
 - Import any regional survey from
-  [**MobiSurvStd**](https://mobisurvstd.github.io/MobiSurvStd/surveys.html).
+  [**Nemobi**](https://nemobi.lucasjavaudin.com/surveys.html).
 
 Create or update the configuration file (e.g., `config_myregion.yml`) to
 specify the region or departments, data paths, and HTS source.
@@ -46,12 +46,12 @@ config:
   osm_path: osm_myregion
   gtfs_path: gtfs_myregion
 
-  # Define the HTS source: entd, emp, mobisurvstd, or a regional implementation.
-  hts: mobisurvstd
+  # Define the HTS source: entd, emp, nemobi, or a regional implementation.
+  hts: nemobi
 
-  # If using MobiSurvStd, specify the path to the survey zipfile or directory
+  # If using Nemobi, specify the path to the survey zipfile or directory
   # (relative to `data_path`).
-  mobisurvstd:
+  nemobi:
     path: my_survey.zip
 ```
 

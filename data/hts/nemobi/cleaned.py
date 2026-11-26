@@ -1,10 +1,10 @@
 import polars as pl
 
 """
-This stage convert the MobiSurvStd survey to the format expected by eqasim.
+This stage convert the Nemobi survey to the format expected by eqasim.
 """
 
-# MobiSurvStd mode group -> Eqasim mode
+# Nemobi mode group -> Eqasim mode
 # "pt" is the default mode
 # Maybe trips with unknown mode or "other" modes (airplane, boat, etc.) should be dropped instead?
 MODE_MAP = {
@@ -18,7 +18,7 @@ MODE_MAP = {
     None: "pt",
 }
 
-# MobiSurvStd purpose group -> Eqasim purpose
+# Nemobi purpose group -> Eqasim purpose
 PURPOSE_MAP = {
     "home": "home",
     "work": "work",
@@ -32,13 +32,13 @@ PURPOSE_MAP = {
 }
 
 def configure(context):
-    context.stage("data.hts.mobisurvstd.raw")
+    context.stage("data.hts.nemobi.raw")
     context.config("use_urban_type", False)
     context.config("extra_enriched_attributes", [])
 
 
 def execute(context):
-    std_survey = context.stage("data.hts.mobisurvstd.raw")
+    std_survey = context.stage("data.hts.nemobi.raw")
 
     df_households = std_survey.households.select(
         "household_id",
@@ -133,7 +133,7 @@ def execute(context):
     assert isinstance(extra_cols, list), "`extra_enriched_attributes` parameter must be a list"
     for col in extra_cols:
         assert col in std_survey.persons.columns, (
-            f"Column {col} is not a valid column name for MobiSurvStd persons"
+            f"Column {col} is not a valid column name for Nemobi persons"
         )
 
     df_persons = df_persons.select(
@@ -181,7 +181,7 @@ def execute(context):
         # consistent with the other survey implementations).
         person_weight="sample_weight_surveyed",
         trip_weight="sample_weight_surveyed",
-        # In MobiSurvStd, variable `pcs_group_code` represents the code of the socioprofessional
+        # In Nemobi, variable `pcs_group_code` represents the code of the socioprofessional
         # class (from 1 to 8) but with some differences compared to eqasim:
         # - retired / unemployed can be assigned the code of their former job
         # - students have a NULL value (unless they have a student job or apprenticeship)

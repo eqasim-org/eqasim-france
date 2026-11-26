@@ -40,7 +40,7 @@ config:
   #################################
 
   ## Define whether to use ENTD or EGT as the HTS
-  hts: entd # entd, egt, edgt_lyon, edgt_44, mobisurvstd
+  hts: entd # entd, egt, edgt_lyon, edgt_44, nemobi
 
   ## Whether to filter people going outside of the area and other filters
   # filter_hts: true
@@ -52,9 +52,9 @@ config:
   ## if selected, chose the source for edgt_lyon
   # edgt_lyon_source: unchosen # unchosen, adisp, cerema
 
-  ## path to the zipfile / directory where the HTS to be read by MobiSurvStd is located
+  ## path to the zipfile / directory where the HTS to be read by Nemobi is located
   ## path is relative to `data_path`
-  # mobisurvstd:
+  # nemobi:
   #   path: my_survey.zip
 
   ##################
@@ -141,8 +141,8 @@ config:
   # matching_attributes: ["urban_type", "*default*"]
 
   ## list of attributes to enrich the persons from hts data
-  ## this only work with hts: mobisurvstd
-  ## the list of possible keys can be found here: https://mobisurvstd.github.io/MobiSurvStd/format/persons.html
+  ## this only work with hts: nemobi
+  ## the list of possible keys can be found here: https://nemobi.lucasjavaudin.com/format/persons.html
   # extra_enriched_attributes:
     # - "detailed_education_level"
     # - "work_only_at_home"
