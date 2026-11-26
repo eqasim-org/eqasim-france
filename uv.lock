@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.13"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -374,8 +374,8 @@ dependencies = [
     { name = "geopandas" },
     { name = "httpx" },
     { name = "matplotlib" },
-    { name = "mobisurvstd" },
     { name = "mock" },
+    { name = "nemobi" },
     { name = "numba" },
     { name = "numpy" },
     { name = "openpyxl" },
@@ -405,8 +405,8 @@ requires-dist = [
     { name = "geopandas", specifier = ">=1.1.3" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "matplotlib", specifier = ">=3.10.8" },
-    { name = "mobisurvstd", specifier = ">=1.6.0" },
     { name = "mock", specifier = ">=5.2.0" },
+    { name = "nemobi", specifier = ">=2.0.0" },
     { name = "numba", specifier = ">=0.65.0" },
     { name = "numpy", specifier = ">=2.4.4" },
     { name = "openpyxl", specifier = ">=3.1.5" },
@@ -802,28 +802,6 @@ wheels = [
 ]
 
 [[package]]
-name = "mobisurvstd"
-version = "1.6.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "geopandas" },
-    { name = "humanize" },
-    { name = "loguru" },
-    { name = "pandas" },
-    { name = "platformdirs" },
-    { name = "polars", extra = ["calamine"] },
-    { name = "py7zr" },
-    { name = "pyarrow" },
-    { name = "requests" },
-    { name = "tqdm" },
-    { name = "typer" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e3/01/a2ddcdc3bc82253e5274bb41fdcf20d5e3bcb7ee45d8010ed64fdeeacabf/mobisurvstd-1.6.0.tar.gz", hash = "sha256:94cce8748b0404a5cbdf0701d84081c72a3614245040e48620a1698de8c391b0", size = 150480, upload-time = "2026-10-12T11:07:48.059Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/62/b2/20d0928b4b7a7f507e0d3aad3635c3f1b37993d78d0c149f8e1b1689a8e3/mobisurvstd-1.6.0-py3-none-any.whl", hash = "sha256:311cd67b5a2fcd48c0379777f603904a4e8c829579089d2aa619be9240e5142e", size = 182294, upload-time = "2026-10-12T11:07:46.494Z" },
-]
-
-[[package]]
 name = "mock"
 version = "5.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -848,6 +826,28 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/4e/1a/bd3317c0bdbcd9ffb710ddf5250b32898f8f2c240be99494fe137feb77a7/narwhals-2.19.0.tar.gz", hash = "sha256:14fd7040b5ff211d415a82e4827b9d04c354e213e72a6d0730205ffd72e3b7ff", size = 623698, upload-time = "2026-04-06T15:50:58.786Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/37/72/e61e3091e0e00fae9d3a8ef85ece9d2cd4b5966058e1f2901ce42679eebf/narwhals-2.19.0-py3-none-any.whl", hash = "sha256:1f8dfa4a33a6dbff878c3e9be4c3b455dfcaf2a9322f1357db00e4e92e95b84b", size = 446991, upload-time = "2026-04-06T15:50:57.046Z" },
+]
+
+[[package]]
+name = "nemobi"
+version = "2.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "geopandas" },
+    { name = "humanize" },
+    { name = "loguru" },
+    { name = "pandas" },
+    { name = "platformdirs" },
+    { name = "polars", extra = ["calamine"] },
+    { name = "py7zr" },
+    { name = "pyarrow" },
+    { name = "requests" },
+    { name = "tqdm" },
+    { name = "typer" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/97/71/fec3fc871a33246425dc98e4941957ec985c659864a7e1c28e74ac11a109/nemobi-2.0.0.tar.gz", hash = "sha256:349fd6c7ceb67e299cff626f322a8bc037850e070db00260e53840cd91dad62c", size = 150959, upload-time = "2026-11-19T16:57:32.574Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/85/2f/3b1781c892fa6ad94817ebde8a00c38bdaf254dde0216c5256ec1292fb44/nemobi-2.0.0-py3-none-any.whl", hash = "sha256:7b0b15112600e967effbfb85f3460ea7aef1dc78c0f75a7a60261d7ceb4f3e4c", size = 181689, upload-time = "2026-11-19T16:57:31.568Z" },
 ]
 
 [[package]]
